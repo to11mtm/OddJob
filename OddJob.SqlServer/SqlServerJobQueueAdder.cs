@@ -9,8 +9,11 @@ namespace OddJob.SqlServer
 {
     public class SqlServerJobQueueAdder : IJobQueueAdder
     {
-        private SqlConnection conn;
-
+        private IJobQueueDbConnectionFactory _jobQueueConnectionFactory;
+        public SqlServerJobQueueAdder(IJobQueueDbConnectionFactory jobQueueDbConnectionFactory)
+        {
+            _jobQueueConnectionFactory = jobQueueDbConnectionFactory;
+        }
         public string MainQueueTableName { get { return "MainQueueTable"; } }
         public string ParamValueTable { get { return "QueueParamValue"; } }
         private string formattedMainInsertSql
@@ -36,33 +39,37 @@ namespace OddJob.SqlServer
 
         public Guid AddJob<TJob>(Expression<Action<TJob>> jobExpression, RetryParameters retryParameters, DateTimeOffset? executionTime = null, string queueName = "default")
         {
-            var myGuid = Guid.NewGuid();
-            var ser = JobCreator.Create(jobExpression);
-            var insertedId = conn.ExecuteScalar<int>(formattedMainInsertSql,
-                new
+            using (var conn = _jobQueueConnectionFactory.GetConnection())
+            {
+                var myGuid = Guid.NewGuid();
+                var ser = JobCreator.Create(jobExpression);
+                var insertedId = conn.ExecuteScalar<int>(formattedMainInsertSql,
+                    new
+                    {
+                        queueName = queueName,
+                        typeExecutedOn = ser.TypeExecutedOn.AssemblyQualifiedName,
+                        methodName = ser.MethodName,
+                        doNotExecuteBefore = executionTime,
+                        jobGuid = ser.JobId,
+                        maxRetries = (retryParameters == null ? null : (int?)retryParameters.MaxRetries),
+                        minRetryWait = (retryParameters == null ? null : (double?)retryParameters.MinRetryWait.TotalSeconds)
+                    }
+                    );
+                var toInsert = ser.JobArgs.Select((val, index) => new { val, index }).ToList();
+                toInsert.ForEach(i =>
                 {
-                    queueName = queueName,
-                    typeExecutedOn = ser.TypeExecutedOn.AssemblyQualifiedName,
-                    methodName = ser.MethodName,
-                    doNotExecuteBefore = executionTime,
-                    jobGuid = ser.JobId,
-                    maxRetries = (retryParameters == null ? null : (int?)retryParameters.MaxRetries),
-                    minRetryWait = (retryParameters == null ? null : (double?)retryParameters.MinRetryWait.TotalSeconds)
-                }
-                );
-            var toInsert = ser.JobArgs.Select((val, index) => new { val, index }).ToList();
-            toInsert.ForEach(i => {
-                conn.ExecuteScalar<int>(formattedParamInsertSql,
-                new
-                {
-                    jobId = insertedId,
-                    paramOrdinal = i.index,
-                    serializedValue =
-                       Newtonsoft.Json.JsonConvert.SerializeObject(i.val),
-                    serializedType = i.val.GetType().AssemblyQualifiedName,
+                    conn.ExecuteScalar<int>(formattedParamInsertSql,
+                    new
+                    {
+                        jobId = insertedId,
+                        paramOrdinal = i.index,
+                        serializedValue =
+                           Newtonsoft.Json.JsonConvert.SerializeObject(i.val),
+                        serializedType = i.val.GetType().AssemblyQualifiedName,
+                    });
                 });
-            });
-            return myGuid;
+                return myGuid;
+            }
         }
     }
 }

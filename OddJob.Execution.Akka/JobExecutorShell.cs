@@ -14,7 +14,7 @@ namespace OddJob.Execution.Akka
     public class JobExecutorShell : IDisposable
     {
         private ActorSystem _actorSystem;
-        IDependencyResolver dependencyResolver;
+        IDependencyResolver _dependencyResolver;
         private Dictionary<string, IActorRef> coordinatorPool;
         private Dictionary<string, ICancelable> cancelPulsePool;
         string hoconString
@@ -27,18 +27,20 @@ my-custom-mailbox {
 }", typeof(ShutdownPriorityMailbox).Namespace, typeof(ShutdownPriorityMailbox).Name, typeof(ShutdownPriorityMailbox).Assembly.GetName().Name);
             }
         }
-        public JobExecutorShell()
+        public JobExecutorShell(Func<ActorSystem,IDependencyResolver> dependencyResolverCreator)
         {
+            
             var hocon = global::Akka.Configuration.ConfigurationFactory.Default().ToString() + Environment.NewLine + hoconString;
             _actorSystem = ActorSystem.Create("Oddjob-Akka", ConfigurationFactory.ParseString(hocon));
+            _dependencyResolver = dependencyResolverCreator(_actorSystem);
         }
         public void StartJobQueue(string queueName, int numWorkers, int pulseDelayInSeconds)
         {
-            var workerProps = dependencyResolver.Create(typeof(JobWorkerActor)).WithRouter(new ConsistentHashingPool(numWorkers, (msg) =>
+            var workerProps = _dependencyResolver.Create(typeof(JobWorkerActor)).WithRouter(new ConsistentHashingPool(numWorkers, (msg) =>
              {
                  return msg.GetHashCode();
              }));
-            var jobQueueProps = dependencyResolver.Create(typeof(JobQueueLayerActor));
+            var jobQueueProps = _dependencyResolver.Create(typeof(JobQueueLayerActor));
             var jobCoordinator = _actorSystem.ActorOf(Props.Create(() => new JobQueueCoordinator(workerProps, jobQueueProps, queueName, numWorkers)).WithMailbox("shutdown-priority-mailbox"), queueName);
             coordinatorPool.Add(queueName, jobCoordinator);
             var cancelToken = _actorSystem.Scheduler.ScheduleTellRepeatedlyCancelable((int)TimeSpan.FromSeconds(5).TotalMilliseconds, (int)TimeSpan.FromSeconds(pulseDelayInSeconds).TotalMilliseconds, jobCoordinator, new JobSweep(), null);

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
 using Dapper;
 namespace OddJob.SqlServer
@@ -10,30 +9,36 @@ namespace OddJob.SqlServer
         public int FetchSize { get; protected set; }
         public string QueueTableName { get { return "MainQueueTable"; } }
         public string ParamTableName { get { return "QueueParamValue"; } }
-        private SqlConnection conn { get; set; }
+        private IJobQueueDbConnectionFactory _jobQueueConnectionFactory { get; set; }
+        public SqlServerJobQueueManager(IJobQueueDbConnectionFactory jobQueueConnectionFactory)
+        {
+            _jobQueueConnectionFactory = jobQueueConnectionFactory;
+        }
         public IEnumerable<IOddJobWithMetadata> GetJobs(string[] queueNames)
         {
             var lockGuid = Guid.NewGuid();
             var lockTime = DateTime.Now;
-            var baseJobs = conn.Query<SqlServerDbOddJobMetaData>(GetJobSqlStringWithLock, new { queueNames = queueNames, lockGuid = lockGuid, claimTime = lockTime });
+            using (var conn = _jobQueueConnectionFactory.GetConnection())
+            {
+                var baseJobs = conn.Query<SqlServerDbOddJobMetaData>(GetJobSqlStringWithLock, new { queueNames = queueNames, lockGuid = lockGuid, claimTime = lockTime });
 
-            var jobMetaData = conn.Query<SqlServerOddJobParamMetaData>(GetJobParamSqlString, new { jobIds = baseJobs.Select(q=>q.JobId).ToList() });
-            return baseJobs
-                .GroupJoin(jobMetaData,
-                q => q.JobId,
-                r => r.JobId,
-                (q, r) =>
-                new SqlServerDbOddJob()
-                {
-                    JobId = q.JobGuid,
-                    MethodName = q.MethodName,
-                    TypeExecutedOn = Type.GetType(q.TypeExecutedOn),
-                    JobArgs = r.OrderBy(p => p.ParamOrdinal)
-                    .Select(s =>
-                    Newtonsoft.Json.JsonConvert.DeserializeObject(s.SerializedValue,Type.GetType(s.SerializedType,false))).ToArray(),
-                    RetryParameters= new RetryParameters(q.MaxRetries, TimeSpan.FromSeconds(q.MinRetryWait), q.RetryCount,q.LastAttempt )
-                });
-
+                var jobMetaData = conn.Query<SqlServerOddJobParamMetaData>(GetJobParamSqlString, new { jobIds = baseJobs.Select(q => q.JobId).ToList() });
+                return baseJobs
+                    .GroupJoin(jobMetaData,
+                    q => q.JobId,
+                    r => r.JobId,
+                    (q, r) =>
+                    new SqlServerDbOddJob()
+                    {
+                        JobId = q.JobGuid,
+                        MethodName = q.MethodName,
+                        TypeExecutedOn = Type.GetType(q.TypeExecutedOn),
+                        JobArgs = r.OrderBy(p => p.ParamOrdinal)
+                        .Select(s =>
+                        Newtonsoft.Json.JsonConvert.DeserializeObject(s.SerializedValue, Type.GetType(s.SerializedType, false))).ToArray(),
+                        RetryParameters = new RetryParameters(q.MaxRetries, TimeSpan.FromSeconds(q.MinRetryWait), q.RetryCount, q.LastAttempt)
+                    });
+            }
         }
 
         public string GetJobParamSqlString { get
@@ -70,21 +75,33 @@ end
 
         public void MarkJobFailed(Guid jobGuid)
         {
-            conn.Execute(string.Format("update {0} set status='Failed' where JobGuid = @jobGuid", QueueTableName), new { jobGuid = jobGuid });
+            using (var conn = _jobQueueConnectionFactory.GetConnection())
+            {
+                conn.Execute(string.Format("update {0} set status='Failed' where JobGuid = @jobGuid", QueueTableName), new { jobGuid = jobGuid });
+            }
         }
 
         public void MarkJobSuccess(Guid jobGuid)
         {
-            conn.Execute(string.Format("update {0} set status='Processed' where JobGuid = @jobGuid",QueueTableName), new { jobGuid = jobGuid });
+            using (var conn = _jobQueueConnectionFactory.GetConnection())
+            {
+                conn.Execute(string.Format("update {0} set status='Processed' where JobGuid = @jobGuid", QueueTableName), new { jobGuid = jobGuid });
+            }
         }
 
         public void MarkJobInProgress(Guid jobId)
         {
-            conn.Execute(string.Format("update {0} set status='In-Process', LastAttempt=getDate() where JobGuid = @jobGuid", QueueTableName), new { jobGuid = jobId });
+            using (var conn = _jobQueueConnectionFactory.GetConnection())
+            {
+                conn.Execute(string.Format("update {0} set status='In-Process', LastAttempt=getDate() where JobGuid = @jobGuid", QueueTableName), new { jobGuid = jobId });
+            }
         }
         public void MarkJobInRetryAndIncrement(Guid jobId, DateTime lastAttempt)
         {
-            conn.Execute(string.Format("update {0} set status='Retry', RetryCount = RetryCount + 1, LastAttempt=getDate() where JobGuid = @jobGuid", QueueTableName), new { jobGuid = jobId });
+            using (var conn = _jobQueueConnectionFactory.GetConnection())
+            {
+                conn.Execute(string.Format("update {0} set status='Retry', RetryCount = RetryCount + 1, LastAttempt=getDate() where JobGuid = @jobGuid", QueueTableName), new { jobGuid = jobId });
+            }
         }
     }
 }
