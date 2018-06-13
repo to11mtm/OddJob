@@ -15,8 +15,8 @@ namespace OddJob.Execution.Akka
     {
         private ActorSystem _actorSystem;
         IDependencyResolver _dependencyResolver;
-        private Dictionary<string, IActorRef> coordinatorPool;
-        private Dictionary<string, ICancelable> cancelPulsePool;
+        private Dictionary<string, IActorRef> coordinatorPool = new Dictionary<string, IActorRef>();
+        private Dictionary<string, ICancelable> cancelPulsePool = new Dictionary<string, ICancelable>();
         string hoconString
         {
             get

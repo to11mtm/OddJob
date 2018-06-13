@@ -50,13 +50,25 @@ namespace OddJob.Execution.Akka
                 //Naieve Backpressure
                 if (PendingItems < WorkerCount * 2)
                 {
-                    var jobsToQueue = JobQueueActor.Ask(new GetJobs(QueueName)).Result as IEnumerable<IOddJobWithMetadata>;
-                    foreach (var job in jobsToQueue)
+                    IEnumerable<IOddJobWithMetadata> jobsToQueue = null;
+                    try
                     {
+                        jobsToQueue = JobQueueActor.Ask(new GetJobs(QueueName), TimeSpan.FromSeconds(30)).Result as IEnumerable<IOddJobWithMetadata>;
 
-                        WorkerRouterRef.Tell(new ExecuteJobRequest(job));
-                        JobQueueActor.Tell(new MarkJobInProgress(job.JobId));
-                        PendingItems = PendingItems + 1;
+                    }
+                    catch (Exception ex)
+                    {
+                        Context.System.Log.Error(ex, "Timeout Retrieving data for Queue {0}", QueueName);
+                    }
+                    if (jobsToQueue != null)
+                    {
+                        foreach (var job in jobsToQueue)
+                        {
+
+                            WorkerRouterRef.Tell(new ExecuteJobRequest(job));
+                            JobQueueActor.Tell(new MarkJobInProgress(job.JobId));
+                            PendingItems = PendingItems + 1;
+                        }
                     }
                 }
             }
@@ -65,7 +77,14 @@ namespace OddJob.Execution.Akka
                 var msg = (JobSuceeded)message;
                 JobQueueActor.Tell(new MarkJobSuccess(msg.JobData.JobId));
                 PendingItems = PendingItems - 1;
-                OnJobSuccess(msg);
+                try
+                {
+                    OnJobSuccess(msg);
+                }
+                catch(Exception ex)
+                {
+                    Context.System.Log.Error(ex, "Error Running OnJobSuccess Handler for Queue {0}, job {1}", QueueName, msg.JobData.JobId);
+                }
             }
             else if (message is JobFailed)
             {
@@ -81,7 +100,7 @@ namespace OddJob.Execution.Akka
                     }
                     catch (Exception ex)
                     {
-
+                        Context.System.Log.Error(ex, "Error Running OnJobFailed Handler for Queue {0}, job {1}", QueueName, msg.JobData.JobId);
                     }
                 }
                 else
@@ -93,7 +112,7 @@ namespace OddJob.Execution.Akka
                     }
                     catch (Exception ex)
                     {
-
+                        Context.System.Log.Error(ex, "Error Running OnJobRetry Handler for Queue {0}, job {1}", QueueName, msg.JobData.JobId);
                     }
                 }
             }
