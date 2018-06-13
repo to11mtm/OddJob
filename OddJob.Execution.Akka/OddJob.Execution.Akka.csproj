@@ -33,6 +33,9 @@
     <Reference Include="Akka, Version=1.3.8.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Akka.1.3.8\lib\net45\Akka.dll</HintPath>
     </Reference>
+    <Reference Include="Akka.DI.Core, Version=1.3.8.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Akka.DI.Core.1.3.8\lib\net45\Akka.DI.Core.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -50,13 +53,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ExecuteJobRequest.cs" />
-    <Compile Include="JobFailed.cs" />
+    <Compile Include="Messages\ExecuteJobRequest.cs" />
+    <Compile Include="Messages\GetJobs.cs" />
+    <Compile Include="JobExecutorShell.cs" />
+    <Compile Include="Messages\JobFailed.cs" />
     <Compile Include="JobQueueCoordinator.cs" />
-    <Compile Include="JobSuceeded.cs" />
-    <Compile Include="JobSweep.cs" />
+    <Compile Include="JobQueueLayerActor.cs" />
+    <Compile Include="Messages\JobSuceeded.cs" />
+    <Compile Include="Messages\JobSweep.cs" />
     <Compile Include="JobWorkerActor.cs" />
+    <Compile Include="Messages\MarkJobFailed.cs" />
+    <Compile Include="Messages\MarkJobInProgress.cs" />
+    <Compile Include="Messages\MarkJobInRetryAndIncrement.cs" />
+    <Compile Include="Messages\MarkJobSuccess.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Messages\QueueShutDown.cs" />
+    <Compile Include="Messages\ShutDownQueues.cs" />
+    <Compile Include="ShutdownPriorityMailbox.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

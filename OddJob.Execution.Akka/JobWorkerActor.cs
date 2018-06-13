@@ -11,9 +11,14 @@ namespace OddJob.Execution.Akka
         {
             _jobExecutor = jobExecutor;
         }
+
         protected override bool Receive(object message)
         {
-            if (message is ExecuteJobRequest)
+            if (message is ShutDownQueues)
+            {
+                Context.Sender.Tell(new QueueShutDown());
+            }
+            else if (message is ExecuteJobRequest)
             {
                 RunJob(message as ExecuteJobRequest);
             }

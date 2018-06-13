@@ -41,14 +41,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DefaultContainerFactory.cs" />
-    <Compile Include="GenExprSerFactory.cs" />
-    <Compile Include="IContainerFactory.cs" />
-    <Compile Include="IJobQueueAdder.cs" />
-    <Compile Include="IJobQueueManager.cs" />
-    <Compile Include="IOddJob.cs" />
+    <Compile Include="Interfaces\IContainerFactory.cs" />
+    <Compile Include="Interfaces\IJobQueueAdder.cs" />
+    <Compile Include="Interfaces\IJobQueueManager.cs" />
+    <Compile Include="Interfaces\IOddJob.cs" />
+    <Compile Include="Interfaces\IOddJobWithMetadata.cs" />
+    <Compile Include="Interfaces\IRetryParameters.cs" />
+    <Compile Include="JobCreator.cs" />
     <Compile Include="JobExecutor.cs" />
+    <Compile Include="OddJob.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReflectionExprSerTest.cs" />
+    <Compile Include="RetryParameters.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

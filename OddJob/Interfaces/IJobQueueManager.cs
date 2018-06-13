@@ -7,7 +7,8 @@ namespace OddJob
     {
         void MarkJobSuccess(Guid jobGuid);
         void MarkJobFailed(Guid jobGuid);
-        IEnumerable<IOddJob> GetJobs(string[] queueNames);
+        IEnumerable<IOddJobWithMetadata> GetJobs(string[] queueNames);
         void MarkJobInProgress(Guid jobId);
+        void MarkJobInRetryAndIncrement(Guid jobId, DateTime lastAttempt);
     }
 }

@@ -7,11 +7,11 @@ namespace OddJob.Execution.Akka
 {
     public class JobFailed
     {
-        public JobFailed(IOddJob jobData, Exception exception)
+        public JobFailed(IOddJobWithMetadata jobData, Exception exception)
         {
             JobData = jobData;
         }
-        public IOddJob JobData { get; protected set; }
+        public IOddJobWithMetadata JobData { get; protected set; }
         public Exception exception { get; protected set; }
     }
 }

@@ -2,10 +2,10 @@
 {
     public class ExecuteJobRequest
     {
-        public ExecuteJobRequest(IOddJob jobData)
+        public ExecuteJobRequest(IOddJobWithMetadata jobData)
         {
             JobData = jobData;
         }
-        public IOddJob JobData { get; protected set; }
+        public IOddJobWithMetadata JobData { get; protected set; }
     }
 }
