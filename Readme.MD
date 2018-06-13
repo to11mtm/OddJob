@@ -31,3 +31,28 @@ Not-Initial-Goals (Will be done when there's a need):
  - Repeated Scheduling.
 
  - Perfect API Surface
+
+ - Ability to run without DI
+   - Jobs themselves essentially require DI to run.
+
+
+Usage:
+
+ - Queue Insertion:
+   - Use an Implementation of `IJobQueueAdder`
+    - If Using `SqlServerJobQueueAdder`, you'll also require an implementation of `IJobQueueDbConnectionFactory`
+
+ - Queue Processor:
+   - Register the following types in your DI Container:
+     - `JobWorkerActor`
+     - `JobQueueCoordinator`
+     - `JobQueueLayerActor`
+   - Make sure you have registered Implementations of the following:
+     - `IContainerFactory`
+     - `IJobQueueManager`
+	   - If Using `SqlServerJobQueueManager`, you'll also require registering an implementation of `IJobQueueDbConnectionFactory`
+   - Register Dependencies for the jobs you expect the queue to process.
+   - Create a JobExecutorShell
+     - Make sure to hold on to a reference to this for the life of your application!
+   - Start a queue with `JobExecutorShell.StartJobQueue`
+   - Stop queues with `JobExecutorShell.StopJobQueue` when shutting down.
