@@ -35,6 +35,13 @@ Not-Initial-Goals (Will be done when there's a need):
  - Ability to run without DI
    - Jobs themselves essentially require DI to run.
 
+ - Minimal DB Round-Trips
+   - Due to a semi-questionable design decision we have to:
+     - Insert the Job Record in an 'Inserting' state (To prevent it being picked up before we are done)
+	 - Insert each Parameter (And relevant Type Information)
+	 - Mark the Job record as 'New'
+   - A different design option would be to Organize all parameter data (type included) into it's own serializable object.
+
 
 Usage:
 
@@ -56,3 +63,8 @@ Usage:
      - Make sure to hold on to a reference to this for the life of your application!
    - Start a queue with `JobExecutorShell.StartJobQueue`
    - Stop queues with `JobExecutorShell.StopJobQueue` when shutting down.
+
+Extensibility:
+  - Everything except the core Job Creator is an interface.
+  - `JobQueueCoordinator` has Virtual methods for `OnJobSuccess`, `OnJobFailed` and `OnJobRetry`
+    - These methods are called after the Storage layer has been told to mark a given state change.

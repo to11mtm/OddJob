@@ -22,8 +22,15 @@ namespace OddJob.SqlServer
             {
                 return string.Format(
                     @"insert into {0} (QueueName,TypeExecutedOn,MethodName,Status, DoNotExecuteBefore,JobGuid, MaxRetries, MinRetryWait)
-                      values (@queueName,@typeExecutedOn,@methodName,'New',@doNotExecuteBefore, @jobGuid, @maxRetries, @minRetryWait)
+                      values (@queueName,@typeExecutedOn,@methodName,'Inserting',@doNotExecuteBefore, @jobGuid, @maxRetries, @minRetryWait)
                       select scope_identity()",MainQueueTableName);
+            }
+        }
+        private string formattedMarkNewSql
+        {
+            get
+            {
+                return string.Format(@"update {0} set Status='New' where JobId = @jobId", MainQueueTableName);
             }
         }
 
@@ -68,6 +75,7 @@ namespace OddJob.SqlServer
                         serializedType = i.val.GetType().AssemblyQualifiedName,
                     });
                 });
+                conn.ExecuteScalar(formattedMarkNewSql, new { jobId = insertedId });
                 return myGuid;
             }
         }
