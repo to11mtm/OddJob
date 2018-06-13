@@ -42,21 +42,23 @@ string.Format(@"select top {0}
         where QueueName in (@queueNames) 
             and (DoNotExecuteBefore <=get_date() 
                or DoNotExecuteBefore is null)
+            and (Status ='New' or (Status='Retry' and MaxRetry>AttemptCount and dateadd(seconds,MinRetryWait,LastAttempt<=getdate())))
+        order by JobId asc
         select JobId, ParamOrdinal,SerializedValue, SerializedType
 from {2} where JobId in (select top {0}
-         QueueName,TypeExecutedOn,
-         MethodName,Status, 
-         DoNotExecuteBefore 
+         jobid
         from {1} 
         where QueueName in (@queueNames) 
             and (DoNotExecuteBefore <=get_date() 
-               or DoNotExecuteBefore is null))"
+               or DoNotExecuteBefore is null)
+            and (Status ='New' or (Status='Retry' and MaxRetry>AttemptCount and dateadd(seconds,MinRetryWait,LastAttempt<=getdate())))
+        order by JobId asc)"
 , FetchSize, QueueTableName,ParamTableName);
 } }
 
         public void MarkJobFailed(Guid jobGuid)
         {
-            throw new NotImplementedException();
+
         }
 
         public void MarkJobSuccess(Guid jobGuid)
