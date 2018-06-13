@@ -20,6 +20,11 @@ Non-Goals:
   - Handling of Methods more complex than an explicit method call
     - The API doesn't go as far as forcing Interfaces on your methods, because it trusts you to follow this rule.
 
+  - Perfect Work Distribution
+    - Backpressure algorithm will stop when there are more `numWorkers*2` pending jobs in a queue. You could theoretically wind up with up to `(numWorkers*3)-1)` queued up before it stops fetching.
+    - Jobs are grabbed in batches and distributed in a round-robin fashion. 
+	- However, Coordinators do not keep track of individual worker queue sizes.
+	
 
 Not-Initial-Goals (Will be done when there's a need):
 

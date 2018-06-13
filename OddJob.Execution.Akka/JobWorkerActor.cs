@@ -5,9 +5,9 @@ namespace OddJob.Execution.Akka
 {
     public class JobWorkerActor : ActorBase
     {
-        public JobExecutor _jobExecutor { get; protected set; }
+        public DefaultJobExecutor _jobExecutor { get; protected set; }
 
-        public JobWorkerActor(JobExecutor jobExecutor)
+        public JobWorkerActor(DefaultJobExecutor jobExecutor)
         {
             _jobExecutor = jobExecutor;
         }

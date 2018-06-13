@@ -5,16 +5,6 @@ namespace OddJob
 {
     public static class JobCreator
     {
-        private static object GetValue(MemberExpression member)
-        {
-            var objectMember = Expression.Convert(member, typeof(object));
-
-            var getterLambda = Expression.Lambda<Func<object>>(objectMember);
-
-            var getter = getterLambda.Compile();
-
-            return getter();
-        }
         public static OddJob Create<T>(Expression<Action<T>> jobExpr)
         {
             var _jobExpr = jobExpr;
@@ -34,7 +24,6 @@ namespace OddJob
                 else if (theArg is MemberExpression)
                 {
                     _jobArgs[i] = Expression.Lambda(theArg).Compile().DynamicInvoke();
-                    //_jobArgs[i] = ((theArg as MemberExpression).Expression as ConstantExpression).Value;
                 }
                 else if (theArg is MemberInitExpression)
                 {

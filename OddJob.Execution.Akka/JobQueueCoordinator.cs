@@ -15,6 +15,7 @@ namespace OddJob.Execution.Akka
         public int WorkerCount { get; protected set; }
         public int ShutdownCount { get; protected set; }
         public IActorRef ShutdownRequester { get; protected set; }
+        public int PendingItems { get; protected set; }
         public JobQueueCoordinator(Props workerProps, Props jobQueueActorProps, string queueName,int workerCount)
         {
             QueueName = queueName;
@@ -22,6 +23,7 @@ namespace OddJob.Execution.Akka
             WorkerRouterRef = Context.ActorOf(workerProps,"workerPool");
             ShuttingDown = false;
             WorkerCount = workerCount;
+            PendingItems = 0;
         }
         protected override bool Receive(object message)
         {
@@ -29,34 +31,46 @@ namespace OddJob.Execution.Akka
             {
                 ShutdownRequester = Context.Sender;
                 ShuttingDown = true;
-                JobQueueActor.Tell(new Broadcast(new ShutDownQueues()));
+                //Tell all of the children to stop what they're doing.
+                WorkerRouterRef.Tell(new Broadcast(new ShutDownQueues()));
             }
             if (message is QueueShutDown)
             {
                 ShutdownCount = ShutdownCount + 1;
                 if (ShutdownCount == WorkerCount)
                 {
+                    //We Do this ask to make sure that all DB commands from the queues have been flushed.
+                    var storeShutdown = JobQueueActor.Ask(new ShutDownQueues()).Result as QueueShutDown;
+                    //Tell our requester that we are truly done.
                     ShutdownRequester.Tell(new QueueShutDown());
                 }
             }
-            if (message is JobSweep && !ShuttingDown)
+            else if (message is JobSweep && !ShuttingDown)
             {
-                var jobsToQueue = JobQueueActor.Ask(new GetJobs(QueueName)).Result as IEnumerable<IOddJobWithMetadata>;
-                foreach (var job in jobsToQueue)
+                //Naieve Backpressure
+                if (PendingItems < WorkerCount * 2)
                 {
-                    WorkerRouterRef.Tell(new ExecuteJobRequest(job));
-                    JobQueueActor.Tell(new MarkJobInProgress(job.JobId));
+                    var jobsToQueue = JobQueueActor.Ask(new GetJobs(QueueName)).Result as IEnumerable<IOddJobWithMetadata>;
+                    foreach (var job in jobsToQueue)
+                    {
+
+                        WorkerRouterRef.Tell(new ExecuteJobRequest(job));
+                        JobQueueActor.Tell(new MarkJobInProgress(job.JobId));
+                        PendingItems = PendingItems + 1;
+                    }
                 }
             }
             else if (message is JobSuceeded)
             {
                 var msg = (JobSuceeded)message;
                 JobQueueActor.Tell(new MarkJobSuccess(msg.JobData.JobId));
+                PendingItems = PendingItems - 1;
                 OnJobSuccess(msg);
             }
             else if (message is JobFailed)
             {
                 var msg = message as JobFailed;
+                PendingItems = PendingItems - 1;
                 if (msg.JobData.RetryParameters.MaxRetries >= msg.JobData.RetryParameters.RetryCount)
                 {
                     JobQueueActor.Tell(new MarkJobFailed(msg.JobData.JobId));

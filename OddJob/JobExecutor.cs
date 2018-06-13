@@ -1,12 +1,16 @@
 ﻿namespace OddJob
 {
-    public class JobExecutor
+    public interface IJobExecutor
     {
-        public JobExecutor(IContainerFactory containerFactory)
+        void ExecuteJob(IOddJob job);
+    }
+    public class DefaultJobExecutor : IJobExecutor
+    {
+        public DefaultJobExecutor(IContainerFactory containerFactory)
         {
             _containerFactory = containerFactory;
         }
-        private IContainerFactory _containerFactory = new DefaultContainerFactory();
+        private IContainerFactory _containerFactory;
         public void ExecuteJob(IOddJob expr)
         {
             var instance = _containerFactory.CreateInstance(expr.TypeExecutedOn);

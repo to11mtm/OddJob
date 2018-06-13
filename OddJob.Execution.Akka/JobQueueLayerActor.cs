@@ -7,9 +7,13 @@ namespace OddJob.Execution.Akka
         public IJobQueueManager jobQueue { get; protected set; }
         protected override bool Receive(object message)
         {
-            if (message is GetJobs)
+            if (message is ShutDownQueues)
             {
-                jobQueue.GetJobs(new[] { ((GetJobs)message).QueueName });
+                Context.Sender.Tell(new QueueShutDown());
+            }
+            else if (message is GetJobs)
+            {
+               Context.Sender.Tell(jobQueue.GetJobs(new[] { ((GetJobs)message).QueueName }));
             }
             else if (message is MarkJobInProgress)
             {
