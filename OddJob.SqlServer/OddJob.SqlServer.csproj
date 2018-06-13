@@ -58,10 +58,10 @@
     <Compile Include="IJobQueueDbConnectionFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlServerDbOddJob.cs" />
-    <Compile Include="SqlServerDbOddJobMetaData.cs" />
+    <Compile Include="DbDtos\SqlServerDbOddJobMetaData.cs" />
     <Compile Include="SqlServerJobQueueAdder.cs" />
     <Compile Include="SqlServerJobQueueManager.cs" />
-    <Compile Include="SqlServerOddJobParamMetaData.cs" />
+    <Compile Include="DbDtos\SqlServerOddJobParamMetaData.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OddJob\OddJob.csproj">
