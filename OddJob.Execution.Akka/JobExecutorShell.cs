@@ -22,9 +22,10 @@ namespace OddJob.Execution.Akka
             get
             {
                 return string.Format(@"
-my-custom-mailbox {
+shutdown-priority-mailbox {
     mailbox-type : ""{0}.{1},{2}""
-}", typeof(ShutdownPriorityMailbox).Namespace, typeof(ShutdownPriorityMailbox).Name, typeof(ShutdownPriorityMailbox).Assembly.GetName().Name);
+}
+", typeof(ShutdownPriorityMailbox).Namespace, typeof(ShutdownPriorityMailbox).Name, typeof(ShutdownPriorityMailbox).Assembly.GetName().Name);
             }
         }
         public JobExecutorShell(Func<ActorSystem,IDependencyResolver> dependencyResolverCreator)

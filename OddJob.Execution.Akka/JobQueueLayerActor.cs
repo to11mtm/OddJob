@@ -4,6 +4,10 @@ namespace OddJob.Execution.Akka
 {
     public class JobQueueLayerActor : ActorBase
     {
+        public JobQueueLayerActor(IJobQueueManager jobQueueManager)
+        {
+            jobQueue = jobQueueManager;
+        }
         public IJobQueueManager jobQueue { get; protected set; }
         protected override bool Receive(object message)
         {
