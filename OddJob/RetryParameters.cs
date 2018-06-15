@@ -4,8 +4,8 @@ namespace OddJob
 {
     public class RetryParameters : IRetryParameters
     {
-        public int RetryCount { get; }
-        public DateTime? LastAttempt { get; }
+        public int RetryCount { get; set; }
+        public DateTime? LastAttempt { get; set; }
 
         public int MaxRetries { get; set; }
         public TimeSpan MinRetryWait { get; set; }

@@ -1,0 +1,165 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+
+namespace OddJob.Storage.FileSystem
+{
+    public class FileSystemJobQueueManager : IJobQueueManager
+    {
+        public FileSystemJobQueueManager(string fileNameWithPath, IJobQueueFetchSettings fetchSize)
+        {
+            FileName = fileNameWithPath;
+            FetchSettings = fetchSize;
+        }
+
+        public string FileName { get; protected set; }
+        public IJobQueueFetchSettings FetchSettings { get; protected set; }
+
+        public IEnumerable<IOddJobWithMetadata> GetJobs(string[] queueNames)
+        {
+            IEnumerable<IOddJobWithMetadata> results = null;
+            bool written = false;
+            while (!written)
+            {
+                try
+                {
+                    using (FileStream fs =
+                 File.Open(FileName, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                    {
+                        byte[] toRead = null;
+                        using (var memStream = new MemoryStream())
+                        {
+                            fs.CopyTo(memStream);
+                            toRead = memStream.ToArray();
+                        }
+                        var serializer =
+                            Newtonsoft.Json.JsonConvert.DeserializeObject<List<FileSystemJobMetaData>>(Encoding.UTF8.GetString(toRead));
+                        var filtered = serializer.Where(q =>
+                        queueNames.Contains(q.QueueName)
+                        && (q.Status=="New" || q.Status=="Retry")
+                        &&
+                        ((q.RetryParameters == null) ||
+                        (q.RetryParameters.RetryCount < q.RetryParameters.MaxRetries)
+                        &&
+                        (q.RetryParameters.LastAttempt == null
+                          || q.RetryParameters.
+                              LastAttempt.Value.Add(q.RetryParameters.MinRetryWait)
+                               > DateTime.Now)))
+                               .OrderBy(q =>
+                               Math.Min(q.CreatedOn.Ticks, (q.RetryParameters ?? new RetryParameters(0, TimeSpan.FromSeconds(0), 0, null)).LastAttempt.GetValueOrDefault(DateTime.MaxValue).Ticks)
+                               ).Take(FetchSettings.FetchSize);
+                        foreach(var item in filtered)
+                        {
+                            item.Status = "Queued";
+                            item.QueueTime = DateTime.Now;
+                        }
+                        var newData = Newtonsoft.Json.JsonConvert.SerializeObject(serializer);
+                        var toWrite = Encoding.UTF8.GetBytes(newData);
+                        fs.Write(toWrite, 0, toWrite.Length);
+                        written = true;
+                        results = filtered;
+                    }
+                }
+                catch (IOException ex)
+                {
+                    //Magic Number Source:
+                    //https://stackoverflow.com/questions/2568875/how-to-tell-if-a-caught-ioexception-is-caused-by-the-file-being-used-by-another
+                    if (ex.HResult == unchecked((int)0x80070020))
+                    {
+                        //Retry.
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
+            return results;
+        }
+
+        public void WriteJobState(Guid jobId, Action<FileSystemJobMetaData> transformFunc)
+        {
+            bool written = false;
+            while (!written)
+            {
+                try
+                {
+                    using (FileStream fs =
+                 File.Open(FileName, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                    {
+                        byte[] toRead = null;
+                        using (var memStream = new MemoryStream())
+                        {
+                            fs.CopyTo(memStream);
+                            toRead = memStream.ToArray();
+                        }
+                        var serializer =
+                            Newtonsoft.Json.JsonConvert.DeserializeObject<List<FileSystemJobMetaData>>(Encoding.UTF8.GetString(toRead));
+                        var filtered = serializer.FirstOrDefault(q =>
+                        q.JobId == jobId);
+                        if (filtered != null)
+                        {
+                            transformFunc(filtered);
+                        }
+                        var newData = Newtonsoft.Json.JsonConvert.SerializeObject(serializer);
+                        var toWrite = Encoding.UTF8.GetBytes(newData);
+                        fs.Write(toWrite, 0, toWrite.Length);
+                        written = true;
+                    }
+                }
+                catch (IOException ex)
+                {
+                    //Magic Number Source:
+                    //https://stackoverflow.com/questions/2568875/how-to-tell-if-a-caught-ioexception-is-caused-by-the-file-being-used-by-another
+                    if (ex.HResult == unchecked((int)0x80070020))
+                    {
+                        //Retry.
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
+        }
+    
+
+        public void MarkJobFailed(Guid jobGuid)
+        {
+            WriteJobState(jobGuid, (q) =>
+             {
+                 q.Status = "Failed";
+                 q.FailureTime = DateTime.Now;
+             });
+        }
+
+        public void MarkJobInProgress(Guid jobId)
+        {
+            WriteJobState(jobId, (q) =>
+            {
+                q.Status = "In-Progress";
+                q.LastAttemptTime = DateTime.Now;
+            });
+        }
+
+        public void MarkJobInRetryAndIncrement(Guid jobId, DateTime lastAttempt)
+        {
+            WriteJobState(jobId, (q) =>
+             {
+                 q.Status = "Retry";
+                 q.RetryParameters.LastAttempt = lastAttempt;
+             });
+        }
+
+        public void MarkJobSuccess(Guid jobGuid)
+        {
+            WriteJobState(jobGuid, (q) =>
+            {
+                q.Status = "Success";
+                q.LastAttemptTime = DateTime.Now;
+            });
+        }
+    }
+}

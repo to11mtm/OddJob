@@ -24,6 +24,9 @@ Non-Goals:
     - Backpressure algorithm will stop when there are more `numWorkers*2` pending jobs in a queue. You could theoretically wind up with up to `(numWorkers*3)-1)` queued up before it stops fetching.
     - Jobs are grabbed in batches and distributed in a round-robin fashion. 
 	- However, Coordinators do not keep track of individual worker queue sizes.
+
+  - Fast File System Queues
+    - The File System Storage exists for Testing purposes. The way it adds/updates the Queue is absolutely terrifyingly bad in every sense of the word.
 	
 
 Not-Initial-Goals (Will be done when there's a need):
@@ -41,6 +44,9 @@ Not-Initial-Goals (Will be done when there's a need):
 	 - Insert each Parameter (And relevant Type Information)
 	 - Mark the Job record as 'New'
    - A different design option would be to Organize all parameter data (type included) into it's own serializable object.
+
+ - Different Storage Options
+   - I'd love to see this work with something like RabbitMQ.
 
 
 Usage:

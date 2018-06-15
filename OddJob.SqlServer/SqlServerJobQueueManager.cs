@@ -4,13 +4,14 @@ using System.Linq;
 using Dapper;
 namespace OddJob.SqlServer
 {
+    
     public class SqlServerJobQueueManager : IJobQueueManager
     {
         public int FetchSize { get; protected set; }
         public string QueueTableName { get { return "MainQueueTable"; } }
         public string ParamTableName { get { return "QueueParamValue"; } }
         private IJobQueueDbConnectionFactory _jobQueueConnectionFactory { get; set; }
-        public SqlServerJobQueueManager(IJobQueueDbConnectionFactory jobQueueConnectionFactory)
+        public SqlServerJobQueueManager(IJobQueueDbConnectionFactory jobQueueConnectionFactory, IJobQueueFetchSettings settings)
         {
             _jobQueueConnectionFactory = jobQueueConnectionFactory;
         }
