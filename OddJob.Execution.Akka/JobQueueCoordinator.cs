@@ -53,7 +53,7 @@ namespace OddJob.Execution.Akka
                     IEnumerable<IOddJobWithMetadata> jobsToQueue = null;
                     try
                     {
-                        jobsToQueue = JobQueueActor.Ask(new GetJobs(QueueName), TimeSpan.FromSeconds(30)).Result as IEnumerable<IOddJobWithMetadata>;
+                        jobsToQueue = JobQueueActor.Ask(new GetJobs(QueueName,WorkerCount), TimeSpan.FromSeconds(30)).Result as IEnumerable<IOddJobWithMetadata>;
 
                     }
                     catch (Exception ex)

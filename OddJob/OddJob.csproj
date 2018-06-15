@@ -43,7 +43,6 @@
     <Compile Include="DefaultContainerFactory.cs" />
     <Compile Include="Interfaces\IContainerFactory.cs" />
     <Compile Include="Interfaces\IJobQueueAdder.cs" />
-    <Compile Include="Interfaces\IJobQueueFetchSettings.cs" />
     <Compile Include="Interfaces\IJobQueueManager.cs" />
     <Compile Include="Interfaces\IOddJob.cs" />
     <Compile Include="Interfaces\IOddJobWithMetadata.cs" />

@@ -8,16 +8,15 @@ namespace OddJob.Storage.FileSystem
 {
     public class FileSystemJobQueueManager : IJobQueueManager
     {
-        public FileSystemJobQueueManager(string fileNameWithPath, IJobQueueFetchSettings fetchSize)
+        public FileSystemJobQueueManager(string fileNameWithPath)
         {
             FileName = fileNameWithPath;
-            FetchSettings = fetchSize;
         }
 
         public string FileName { get; protected set; }
-        public IJobQueueFetchSettings FetchSettings { get; protected set; }
+        
 
-        public IEnumerable<IOddJobWithMetadata> GetJobs(string[] queueNames)
+        public IEnumerable<IOddJobWithMetadata> GetJobs(string[] queueNames,int fetchSize)
         {
             IEnumerable<IOddJobWithMetadata> results = null;
             bool written = false;
@@ -49,7 +48,7 @@ namespace OddJob.Storage.FileSystem
                                > DateTime.Now)))
                                .OrderBy(q =>
                                Math.Min(q.CreatedOn.Ticks, (q.RetryParameters ?? new RetryParameters(0, TimeSpan.FromSeconds(0), 0, null)).LastAttempt.GetValueOrDefault(DateTime.MaxValue).Ticks)
-                               ).Take(FetchSettings.FetchSize);
+                               ).Take(fetchSize);
                         foreach(var item in filtered)
                         {
                             item.Status = "Queued";

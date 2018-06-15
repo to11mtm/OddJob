@@ -10,38 +10,33 @@ namespace OddJob.SqlServer
     public class SqlServerJobQueueAdder : IJobQueueAdder
     {
         private IJobQueueDbConnectionFactory _jobQueueConnectionFactory;
-        public SqlServerJobQueueAdder(IJobQueueDbConnectionFactory jobQueueDbConnectionFactory)
+        ISqlServerJobQueueTableConfiguration _jobQueueTableConfiguration;
+        public SqlServerJobQueueAdder(IJobQueueDbConnectionFactory jobQueueDbConnectionFactory,ISqlServerJobQueueTableConfiguration jobQueueTableConfiguration)
         {
             _jobQueueConnectionFactory = jobQueueDbConnectionFactory;
-        }
-        public string MainQueueTableName { get { return "MainQueueTable"; } }
-        public string ParamValueTable { get { return "QueueParamValue"; } }
-        private string formattedMainInsertSql
-        {
-            get
-            {
-                return string.Format(
+            _jobQueueTableConfiguration = jobQueueTableConfiguration;
+            formattedMainInsertSql = string.Format(
                     @"insert into {0} (QueueName,TypeExecutedOn,MethodName,Status, DoNotExecuteBefore,JobGuid, MaxRetries, MinRetryWait)
                       values (@queueName,@typeExecutedOn,@methodName,'Inserting',@doNotExecuteBefore, @jobGuid, @maxRetries, @minRetryWait)
-                      select scope_identity()",MainQueueTableName);
-            }
+                      select scope_identity()", _jobQueueTableConfiguration.ParamTableName);
+            formattedMarkNewSql= string.Format(@"update {0} set Status='New' where JobId = @jobId", _jobQueueTableConfiguration.QueueTableName);
+            formattedParamInsertSql = string.Format(
+                    @"insert into {0} (JobId, ParamOrdinal,SerializedValue, SerializedType)
+                      values (@jobId,@paramOrdinal, @serializedValue, @serializedType)", _jobQueueTableConfiguration.ParamTableName);
+        }
+        private string formattedMainInsertSql
+        {
+            get; set;
         }
         private string formattedMarkNewSql
         {
-            get
-            {
-                return string.Format(@"update {0} set Status='New' where JobId = @jobId", MainQueueTableName);
-            }
+            get;set;
         }
 
         private string formattedParamInsertSql
         {
-            get
-            {
-                return string.Format(
-                    @"insert into {0} (JobId, ParamOrdinal,SerializedValue, SerializedType)
-                      values (@jobId,@paramOrdinal, @serializedValue, @serializedType)", ParamValueTable);
-            }
+            get;set;
+            
         }
 
         public Guid AddJob<TJob>(Expression<Action<TJob>> jobExpression, RetryParameters retryParameters, DateTimeOffset? executionTime = null, string queueName = "default")

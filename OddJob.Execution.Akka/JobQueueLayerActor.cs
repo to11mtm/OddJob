@@ -17,7 +17,8 @@ namespace OddJob.Execution.Akka
             }
             else if (message is GetJobs)
             {
-               Context.Sender.Tell(jobQueue.GetJobs(new[] { ((GetJobs)message).QueueName }));
+                var msg = (GetJobs)message;
+                Context.Sender.Tell(jobQueue.GetJobs(new[] { msg.QueueName }, msg.FetchSize));
             }
             else if (message is MarkJobInProgress)
             {
