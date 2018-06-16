@@ -21,7 +21,8 @@ namespace OddJob.Execution.Akka.Test
                 MethodName = jobInfo.MethodName,
                 RetryParameters = retryParameters,
                 TypeExecutedOn = jobInfo.TypeExecutedOn,
-                CreatedOn = DateTime.Now
+                CreatedOn = DateTime.Now,
+                Status = "New"
             };
             if (jobStore.ContainsKey(queueName) == false)
             {
@@ -61,7 +62,7 @@ namespace OddJob.Execution.Akka.Test
                                > DateTime.Now)))
                                .OrderBy(q =>
                                Math.Min(q.CreatedOn.Ticks, (q.RetryParameters ?? new RetryParameters(0, TimeSpan.FromSeconds(0), 0, null)).LastAttempt.GetValueOrDefault(DateTime.MaxValue).Ticks)
-                               ).Take(fetchSize);
+                               ).Take(fetchSize).ToList();
                         foreach (var item in filtered)
                         {
                             item.Status = "Queued";

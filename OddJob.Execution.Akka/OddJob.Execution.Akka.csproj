@@ -53,6 +53,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DependencyInjectedJobExecutorShell.cs" />
+    <Compile Include="HardInjectedJobExecutorShell.cs" />
     <Compile Include="Messages\ExecuteJobRequest.cs" />
     <Compile Include="Messages\GetJobs.cs" />
     <Compile Include="JobExecutorShell.cs" />

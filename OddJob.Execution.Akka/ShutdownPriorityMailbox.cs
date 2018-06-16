@@ -6,7 +6,7 @@ namespace OddJob.Execution.Akka
 {
     public class ShutdownPriorityMailbox : UnboundedPriorityMailbox
     {
-        protected ShutdownPriorityMailbox(Settings settings, Config config) : base(settings, config)
+        public ShutdownPriorityMailbox(Settings settings, Config config) : base(settings, config)
         {
         }
 
