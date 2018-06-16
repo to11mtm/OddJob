@@ -14,12 +14,13 @@ namespace OddJob.Execution.Akka.Test
             //Warning: this test is a bit racy, due to the nature of JobExecutor and the scheduler.
             //Lowering the timeouts may cause false failures on the test, as the timer may fire before the shutdown is even called.
             var jobStore = new InMemoryTestStore();
+            jobStore.AddJob((ShellShutdownMockJob m) => m.DoThing(0), null, null, "test");
             var executor = new HardInjectedJobExecutorShell(() => new JobQueueLayerActor(jobStore),
                 () => new JobWorkerActor(new DefaultJobExecutor(new DefaultContainerFactory())));
-            executor.StartJobQueue("test", 5, 5);
-            jobStore.AddJob((ShellShutdownMockJob m) => m.DoThing(0), null, null, "test");
+            executor.StartJobQueue("test", 5, 3);
+            
             executor.ShutDownQueue("test");
-            SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(8));
+            SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(5));
             Xunit.Assert.True(ShellShutdownMockJob.MyCounter.ContainsKey(0) == false);
         }
 
@@ -29,13 +30,15 @@ namespace OddJob.Execution.Akka.Test
             //Warning: this test is a bit racy, due to the nature of JobExecutor and the scheduler.
             //Lowering the timeouts may cause false failures on the test, as the timer may fire before the shutdown is even called.
             var jobStore = new InMemoryTestStore();
+            jobStore.AddJob((ShellShutdownMockJob m) => m.DoThing(1), null, null, "test");
             var executor = new HardInjectedJobExecutorShell(() => new JobQueueLayerActor(jobStore),
                 () => new JobWorkerActor(new DefaultJobExecutor(new DefaultContainerFactory())));
-            executor.StartJobQueue("test", 5, 5);
-            jobStore.AddJob((ShellShutdownMockJob m) => m.DoThing(1), null, null, "test");
+            
+            executor.StartJobQueue("test", 5, 3);
+            
             
             executor.Dispose();
-            SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(8));
+            SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(5));
             Xunit.Assert.True(ShellShutdownMockJob.MyCounter.ContainsKey(1)==false);
         }
     }
