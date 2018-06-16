@@ -16,8 +16,8 @@ namespace OddJob.SqlServer
             _jobQueueConnectionFactory = jobQueueDbConnectionFactory;
             _jobQueueTableConfiguration = jobQueueTableConfiguration;
             formattedMainInsertSql = string.Format(
-                    @"insert into {0} (QueueName,TypeExecutedOn,MethodName,Status, DoNotExecuteBefore,JobGuid, MaxRetries, MinRetryWait)
-                      values (@queueName,@typeExecutedOn,@methodName,'Inserting',@doNotExecuteBefore, @jobGuid, @maxRetries, @minRetryWait)
+                    @"insert into {0} (QueueName,TypeExecutedOn,MethodName,Status, DoNotExecuteBefore,JobGuid, MaxRetries, MinRetryWait, CreatedDate)
+                      values (@queueName,@typeExecutedOn,@methodName,'Inserting',@doNotExecuteBefore, @jobGuid, @maxRetries, @minRetryWait, getdate())
                       select scope_identity()", _jobQueueTableConfiguration.ParamTableName);
             formattedMarkNewSql= string.Format(@"update {0} set Status='New' where JobId = @jobId", _jobQueueTableConfiguration.QueueTableName);
             formattedParamInsertSql = string.Format(

@@ -26,7 +26,10 @@ namespace OddJob.Execution.Akka.Test
             SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(8));
             Xunit.Assert.Equal(1,ShellMockJob.MyCounter);
         }
+
+        
     }
+
 
     public class ShellMockJob
     {

@@ -74,6 +74,7 @@
     <Compile Include="InMemoryTestStore.cs" />
     <Compile Include="JobCoordinatorTests.cs" />
     <Compile Include="JobExecutorShellTests.cs" />
+    <Compile Include="JobExecutorShutdownTests.cs" />
     <Compile Include="JobQueueLayerTests.cs" />
     <Compile Include="JobWorkerTests.cs" />
     <Compile Include="MockJob.cs" />

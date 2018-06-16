@@ -82,15 +82,16 @@ update {0} set LockClaimTime=@claimTime, LockGuid = @lockGuid
 where JobId in(
 select top ";
         private const string lockStringToFormatAfterTopNumber = @"
-JobGuid, QueueName,TypeExecutedOn,
-         MethodName,Status, 
-         DoNotExecuteBefore 
+JobId from (select JobId, CASE WHEN ISNULL(CreatedDate,'01-01-1753') > ISNULL(LastAttempt,'01-01-1753') THEN CreatedDate
+            ELSE LastAttempt
+       END AS MostRecentDate
         from {0} 
         where QueueName in (@queueNames) 
             and (DoNotExecuteBefore <=get_date() 
                or DoNotExecuteBefore is null)
-            and (Status ='New' or (Status='Retry' and MaxRetry>AttemptCount and dateadd(seconds,MinRetryWait,LastAttempt<=getdate())))
+            and (Status ='New' or (Status='Retry' and MaxRetries>AttemptCount and dateadd(seconds,MinRetryWait,LastAttempt<=getdate())))
             and (LockClaimTime is null or LockClaimTime < dateadd(seconds,lockClaimTime,0-{1}))
+order by MostRecentDate asc)
         )
 select JobGuid, QueueName, TypeExecutedOn, MethodName, Status, DoNotExecuteBefore, MaxRetries, MinRetryWait, RetryCount
 from {0}

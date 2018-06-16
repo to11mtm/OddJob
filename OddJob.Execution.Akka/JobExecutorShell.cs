@@ -89,7 +89,7 @@ shutdown-priority-mailbox {{
         }
         public void Dispose()
         {
-            var keys = cancelPulsePool.Select(q => q.Key);
+            var keys = cancelPulsePool.Select(q => q.Key).ToList();
             foreach (var key in keys)
             {
                 ShutDownQueue(key);
