@@ -118,6 +118,12 @@ namespace OddJob.Execution.Akka.Test
             });
         }
 
+        public IOddJobWithMetadata GetJob(Guid jobId)
+        {
+            return jobStore.FirstOrDefault(q => q.Value.Any(r => r.JobId == jobId)).Value
+                .FirstOrDefault(q => q.JobId == jobId);
+        }
+
         public void MarkJobSuccess(Guid jobGuid)
         {
             WriteJobState(jobGuid, (q) =>

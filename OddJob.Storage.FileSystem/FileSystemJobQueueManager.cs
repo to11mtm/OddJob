@@ -78,6 +78,47 @@ namespace OddJob.Storage.FileSystem
             return results;
         }
 
+        public IOddJobWithMetadata GetJob(Guid jobId)
+        {
+            IOddJobWithMetadata results = null;
+            bool written = false;
+            while (!written)
+            {
+                try
+                {
+                    using (FileStream fs =
+                 File.Open(FileName, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                    {
+                        byte[] toRead = null;
+                        using (var memStream = new MemoryStream())
+                        {
+                            fs.CopyTo(memStream);
+                            toRead = memStream.ToArray();
+                        }
+                        var serializer =
+                            Newtonsoft.Json.JsonConvert.DeserializeObject<List<FileSystemJobMetaData>>(Encoding.UTF8.GetString(toRead));
+                        var filtered = serializer.Where(q => q.JobId == jobId).FirstOrDefault();
+                        written = true;
+                        results = filtered;
+                    }
+                }
+                catch (IOException ex)
+                {
+                    //Magic Number Source:
+                    //https://stackoverflow.com/questions/2568875/how-to-tell-if-a-caught-ioexception-is-caused-by-the-file-being-used-by-another
+                    if (ex.HResult == unchecked((int)0x80070020))
+                    {
+                        //Retry.
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+            }
+            return results;
+        }
+
         public void WriteJobState(Guid jobId, Action<FileSystemJobMetaData> transformFunc)
         {
             bool written = false;

@@ -10,5 +10,6 @@ namespace OddJob
         IEnumerable<IOddJobWithMetadata> GetJobs(string[] queueNames, int fetchSize);
         void MarkJobInProgress(Guid jobId);
         void MarkJobInRetryAndIncrement(Guid jobId, DateTime lastAttempt);
+        IOddJobWithMetadata GetJob(Guid jobId);
     }
 }
