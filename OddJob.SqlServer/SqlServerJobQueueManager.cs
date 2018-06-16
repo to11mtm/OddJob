@@ -105,7 +105,7 @@ JobId from (select JobId, CASE WHEN ISNULL(CreatedDate,'01-01-1753') > ISNULL(La
         where QueueName in (@queueNames) 
             and (DoNotExecuteBefore <=get_date() 
                or DoNotExecuteBefore is null)
-            and (Status ='New' or (Status='Retry' and MaxRetries>AttemptCount and dateadd(seconds,MinRetryWait,LastAttempt<=getdate())))
+            and (Status ='New' or (Status='Retry' and MaxRetries>RetryCount and dateadd(seconds,MinRetryWait,LastAttempt<=getdate())))
             and (LockClaimTime is null or LockClaimTime < dateadd(seconds,lockClaimTime,0-{1}))
 order by MostRecentDate asc)
         )
