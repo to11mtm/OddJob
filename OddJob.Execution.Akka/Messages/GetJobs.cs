@@ -6,7 +6,7 @@
         public int FetchSize { get; protected set; }
         public GetJobs(string queueName,int fetchSize)
         {
-            QueueName = QueueName;
+            QueueName = queueName;
             FetchSize = fetchSize;
         }
     }
