@@ -34,6 +34,12 @@ Not-Initial-Goals (Will be done when there's a need):
  - Repeated Scheduling.
 
  - Perfect API Surface
+   - By this we are referring to the total API space. 
+   - The public API is meant to be clean and lead towards the pit of success.
+   - The Extensible parts of the API are supposed to be clean enough.
+     - Shortcuts in cleanliness for the sake of extensibility are present. They will be removed when the need is there.
+   - The Private API is subject to changes at any time, including undoing awkward surfaces.
+
 
  - Ability to run without DI
    - Jobs themselves essentially require DI to run.
@@ -44,6 +50,7 @@ Not-Initial-Goals (Will be done when there's a need):
 	 - Insert each Parameter (And relevant Type Information)
 	 - Mark the Job record as 'New'
    - A different design option would be to Organize all parameter data (type included) into it's own serializable object.
+     - This was avoided so that large parameter abuse would not cause too much overhead.
 
  - Different Storage Options
    - I'd love to see this work with something like RabbitMQ.
@@ -74,3 +81,5 @@ Extensibility:
   - Everything except the core Job Creator is an interface.
   - `JobQueueCoordinator` has Virtual methods for `OnJobSuccess`, `OnJobFailed` and `OnJobRetry`
     - These methods are called after the Storage layer has been told to mark a given state change.
+  - `JobQueueCoordinator` also has a virtual method for `OnQueueSaturation`
+    - This method can be used to warn someone when a queue isn't working the way they expect.

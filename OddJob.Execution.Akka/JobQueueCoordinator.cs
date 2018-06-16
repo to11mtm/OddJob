@@ -16,6 +16,8 @@ namespace OddJob.Execution.Akka
         public int ShutdownCount { get; protected set; }
         public IActorRef ShutdownRequester { get; protected set; }
         public int PendingItems { get; protected set; }
+        public DateTime? SaturationStartTime { get; protected set; }
+        public int SaturationPulseCount { get; protected set; }
         public JobQueueCoordinator(Props workerProps, Props jobQueueActorProps, string queueName,int workerCount)
         {
             QueueName = queueName;
@@ -37,6 +39,7 @@ namespace OddJob.Execution.Akka
             if (message is QueueShutDown)
             {
                 ShutdownCount = ShutdownCount + 1;
+                SaturationPulseCount = 0;
                 if (ShutdownCount == WorkerCount)
                 {
                     //We Do this ask to make sure that all DB commands from the queues have been flushed.
@@ -50,6 +53,7 @@ namespace OddJob.Execution.Akka
                 //Naieve Backpressure
                 if (PendingItems < WorkerCount * 2)
                 {
+                    SaturationStartTime = null;
                     IEnumerable<IOddJobWithMetadata> jobsToQueue = null;
                     try
                     {
@@ -71,6 +75,12 @@ namespace OddJob.Execution.Akka
                         }
                     }
                 }
+                else
+                {
+                    SaturationStartTime = SaturationStartTime ?? DateTime.Now;
+                    SaturationPulseCount = SaturationPulseCount + 1;
+                    OnJobQueueSaturated(SaturationStartTime.Value,SaturationPulseCount);
+                }
             }
             else if (message is JobSuceeded)
             {
@@ -90,7 +100,7 @@ namespace OddJob.Execution.Akka
             {
                 var msg = message as JobFailed;
                 PendingItems = PendingItems - 1;
-                if (msg.JobData.RetryParameters.MaxRetries >= msg.JobData.RetryParameters.RetryCount)
+                if (msg.JobData.RetryParameters == null || msg.JobData.RetryParameters.MaxRetries <= msg.JobData.RetryParameters.RetryCount)
                 {
                     JobQueueActor.Tell(new MarkJobFailed(msg.JobData.JobId));
 
@@ -123,17 +133,44 @@ namespace OddJob.Execution.Akka
             return true;
         }
 
+        /// <summary>
+        /// Method to handle action taken when a job has suceeded.
+        /// This method is called after the success has been marked in storage.
+        /// </summary>
+        /// <param name="msg">the Job success</param>
         protected virtual void OnJobSuccess(JobSuceeded msg)
         {
 
         }
 
+        /// <summary>
+        /// Method to handle action taken when a job is put in retry.
+        /// This method is called after the retry has been marked in storage.
+        /// </summary>
+        /// <param name="msg">the Job failure message</param>
         protected virtual void OnJobFailed(JobFailed msg)
         {
 
         }
-
+        /// <summary>
+        /// Method to handle action taken when a job is put in retry.
+        /// This method is called after the retry has been marked in storage.
+        /// </summary>
+        /// <param name="msg">the Job retry message</param>
         protected virtual void OnJobRetry(JobFailed msg)
+        {
+
+        }
+
+        /// <summary>
+        /// Method to handle Job Queue Saturation;
+        /// As an example, if you want an Email or other notification sent when the queue is saturated. 
+        /// The time saturation started as well as the number of missed pulses are provided for use of threshholds.
+        /// e.x. Send an email when you have had a saturated queue for more than 10 minutes, or have missed more than 10 pulses.
+        /// </summary>
+        /// <param name="saturationTime">The time Saturation initially started</param>
+        /// <param name="saturationMissedPulseCount">The number of pulses that have been missed due to saturation.</param>
+        protected virtual void OnJobQueueSaturated(DateTime saturationTime, int saturationMissedPulseCount)
         {
 
         }
