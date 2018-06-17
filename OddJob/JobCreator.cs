@@ -1,8 +1,27 @@
 ﻿using System;
 using System.Linq.Expressions;
+using System.Runtime.Serialization;
 
 namespace OddJob
 {
+    public class JobCreationExeption : Exception
+    {
+        public JobCreationExeption()
+        {
+        }
+
+        public JobCreationExeption(string message) : base(message)
+        {
+        }
+
+        public JobCreationExeption(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
+        protected JobCreationExeption(SerializationInfo info, StreamingContext context) : base(info, context)
+        {
+        }
+    }
     public static class JobCreator
     {
         public static OddJob Create<T>(Expression<Action<T>> jobExpr)
@@ -28,6 +47,23 @@ namespace OddJob
                 else if (theArg is MemberInitExpression)
                 {
                     _jobArgs[i] = Expression.Lambda(theArg).Compile().DynamicInvoke();
+                }
+                else if (theArg is MethodCallExpression)
+                {
+                    try
+                    {
+                        _jobArgs[i] = Expression.Lambda(theArg).Compile().DynamicInvoke();
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new JobCreationExeption(
+                            "Couldn't derive value from job! Please use variables whenever possible and avoid methods that take parameters", ex);
+                    }
+                }
+                else
+                {
+                    throw new JobCreationExeption(
+                        "Couldn't derive value from job! Please use variables whenever possible and avoid methods that take parameters");
                 }
          
             }

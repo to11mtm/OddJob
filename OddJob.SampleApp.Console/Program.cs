@@ -26,7 +26,7 @@ namespace OddJob.SampleApp.Console
                     var counter = CounterClass.Counter;
                     CounterClass.Counter = counter + 1;
                     var counterString = counter.ToString();
-                    store.AddJob((SampleJob job) => job.WriteSomething(counterString), queueName: "sample");
+                    store.AddJob((SampleJob job) => job.WriteSomething(counterString, DateTime.Now.ToString()), queueName: "sample");
                 }, null,
                 TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
                 System.Console.WriteLine("Press ENTER to quit...");
@@ -40,9 +40,9 @@ namespace OddJob.SampleApp.Console
 
     public class SampleJob
     {
-        public void WriteSomething(string thing)
+        public void WriteSomething(string thing, string time)
         {
-            System.Console.WriteLine("Hello! I got {0}", thing);
+            System.Console.WriteLine("Hello! I got {0} at {1}, and am executing at {2}", thing,time,DateTime.Now.ToString());
         }
     }
 
