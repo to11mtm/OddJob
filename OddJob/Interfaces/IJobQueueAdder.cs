@@ -3,6 +3,10 @@ using System.Linq.Expressions;
 
 namespace OddJob
 {
+    public interface IJobQueuePurger
+    {
+        void PurgeQueue(string name, string stateToPurge, DateTime purgeOlderThan);
+    }
     public interface IJobQueueAdder
     {
         /// <summary>

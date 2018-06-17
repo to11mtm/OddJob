@@ -31,6 +31,9 @@ Non-Goals:
 
 Not-Initial-Goals (Will be done when there's a need):
 
+ - Net Core Support
+   - I don't think there's anything being done here that can't be done in core; But it's not at all set up for it, let alone validated.
+
  - Repeated Scheduling.
 
  - Perfect API Surface
