@@ -11,7 +11,7 @@ namespace OddJob.Execution.Akka.Test
         {
             var jobStore = new InMemoryTestStore();
             var executor = new HardInjectedJobExecutorShell(() => new JobQueueLayerActor(jobStore),
-                () => new JobWorkerActor(new MockJobSuccessExecutor()));
+                () => new JobWorkerActor(new MockJobSuccessExecutor()), null);
             executor.StartJobQueue("test",5,1);
         }
 
@@ -20,7 +20,7 @@ namespace OddJob.Execution.Akka.Test
         {
             var jobStore = new InMemoryTestStore();
             var executor = new HardInjectedJobExecutorShell(() => new JobQueueLayerActor(jobStore),
-                () => new JobWorkerActor(new DefaultJobExecutor(new DefaultContainerFactory())));
+                () => new JobWorkerActor(new DefaultJobExecutor(new DefaultContainerFactory())),null);
             executor.StartJobQueue("test",5,3);
             jobStore.AddJob((ShellMockJob m) => m.DoThing(0),null,null,"test");
             SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(8));

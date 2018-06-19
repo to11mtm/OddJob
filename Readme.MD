@@ -34,7 +34,7 @@ Not-Initial-Goals (Will be done when there's a need):
  - Net Core Support
    - I don't think there's anything being done here that can't be done in core; But it's not at all set up for it, let alone validated.
 
- - Repeated Scheduling.
+ - Repeated Scheduling
 
  - Perfect API Surface
    - By this we are referring to the total API space. 
@@ -48,11 +48,13 @@ Not-Initial-Goals (Will be done when there's a need):
    - Jobs themselves essentially require DI to run.
      -To be clear; There is a `DefaultContainerFactory` that will work as long as your job type has a public, paramterless constructor. It will not work if your type has any constructor dependencies, or expects properties to be injected after the fact. This is used primarily for test scenarios as well as for if you are really DI averse.
 	   - If you're in that camp, you'll want to use the `HardInjectedJobExecutorShell`. This shell will require you to provide creator functions for the `JobQueueLayerActor` and `JobWorkerActor`.
+
      -If you're not using DI, you can either use
 	   - `HardInjectedJobExecutorShell` 
 	     - See above for notes on initialziation
 	   - `DependencyInjectedJobExecutorShell`. 
 	     - If you are using this, you will have to register your 'JobQueueLayerActor' and 'JobWorkerActor' with the DI container of choice, and install the Akka.DI.%diFlavor% nuget packege so that you can provide a Func<ActorSystem,IDependencyResolver> to the constructor.
+
  - Minimal DB Round-Trips
    - Due to a semi-questionable design decision we have to:
      - Insert the Job Record in an 'Inserting' state (To prevent it being picked up before we are done)

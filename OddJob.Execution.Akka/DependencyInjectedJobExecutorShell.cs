@@ -1,13 +1,15 @@
 ﻿using System;
 using Akka.Actor;
+using Akka.Dispatch;
 using Akka.DI.Core;
+using Akka.Event;
 
 namespace OddJob.Execution.Akka
 {
     public class DependencyInjectedJobExecutorShell : BaseJobExecutorShell
     {
         IDependencyResolver _dependencyResolver;
-        protected DependencyInjectedJobExecutorShell(Func<ActorSystem, IDependencyResolver> dependencyResolverCreator)
+        protected DependencyInjectedJobExecutorShell(Func<ActorSystem, IDependencyResolver> dependencyResolverCreator, Func<IRequiresMessageQueue<ILoggerMessageQueueSemantics>> loggerTypeFactory) :base(loggerTypeFactory)
         {
             _dependencyResolver = dependencyResolverCreator(_actorSystem);
         }

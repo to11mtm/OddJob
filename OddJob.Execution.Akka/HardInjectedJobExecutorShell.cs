@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Linq.Expressions;
 using Akka.Actor;
+using Akka.Dispatch;
+using Akka.Event;
 
 namespace OddJob.Execution.Akka
 {
     public class HardInjectedJobExecutorShell : BaseJobExecutorShell
     {
-        public HardInjectedJobExecutorShell(Expression<Func<JobQueueLayerActor>> jobQueueFunc, Expression<Func<JobWorkerActor>> workerFunc)
+        public HardInjectedJobExecutorShell(Expression<Func<JobQueueLayerActor>> jobQueueFunc, Expression<Func<JobWorkerActor>> workerFunc, Func<IRequiresMessageQueue<ILoggerMessageQueueSemantics>> loggerTypeFactory) : base(loggerTypeFactory)
         {
             JobQueueProps = Props.Create(jobQueueFunc);
             WorkerProps = Props.Create(workerFunc);

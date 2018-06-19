@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Akka;
 using Akka.Actor;
 using Akka.Configuration;
+using Akka.Dispatch;
+using Akka.Event;
 using Akka.Routing;
 
 namespace OddJob.Execution.Akka
@@ -20,17 +22,26 @@ namespace OddJob.Execution.Akka
         {
             get
             {
-                return string.Format(@"
-shutdown-priority-mailbox {{
+                return string.Format(@"shutdown-priority-mailbox {{
     mailbox-type : ""{0}.{1},{2}""
 }}
 ", typeof(ShutdownPriorityMailbox).Namespace, typeof(ShutdownPriorityMailbox).Name, typeof(ShutdownPriorityMailbox).Assembly.GetName().Name);
             }
         }
-        protected BaseJobExecutorShell()
+        protected BaseJobExecutorShell(Func<IRequiresMessageQueue<ILoggerMessageQueueSemantics>> loggerTypeFactory)
         {
-            
-            var hocon = global::Akka.Configuration.ConfigurationFactory.Default().ToString() + Environment.NewLine + hoconString;
+            string loggerConfigString = string.Empty;
+            if (loggerTypeFactory != null)
+            {
+                    loggerConfigString = loggerTypeFactory == null
+                        ? ""
+                        : string.Format(@"akka.loglevel = DEBUG
+                    akka.loggers=[""{0}.{1}, {2}""]", loggerTypeFactory.Method.ReturnType.Namespace, loggerTypeFactory.Method.ReturnType.Name,
+                            loggerTypeFactory.Method.ReturnType.Assembly.GetName().Name);
+            }
+
+            var hocon = global::Akka.Configuration.ConfigurationFactory.Default().ToString() +
+                        hoconString + Environment.NewLine + loggerConfigString;
             _actorSystem = ActorSystem.Create("Oddjob-Akka", ConfigurationFactory.ParseString(hocon));
             
         }
