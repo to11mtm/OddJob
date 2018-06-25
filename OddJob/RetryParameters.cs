@@ -10,6 +10,11 @@ namespace OddJob
         public int MaxRetries { get; set; }
         public TimeSpan MinRetryWait { get; set; }
 
+        public RetryParameters()
+        {
+
+        }
+
         public RetryParameters(int maxRetries, TimeSpan minRetryWait)
         {
             MaxRetries = maxRetries;

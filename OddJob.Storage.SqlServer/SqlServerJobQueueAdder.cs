@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 using Dapper;
-namespace OddJob.SqlServer
+
+namespace OddJob.Storage.SqlServer
 {
     public class SqlServerJobQueueAdder : IJobQueueAdder
     {
@@ -17,8 +15,8 @@ namespace OddJob.SqlServer
             _jobQueueTableConfiguration = jobQueueTableConfiguration;
             formattedMainInsertSql = string.Format(
                     @"insert into {0} (QueueName,TypeExecutedOn,MethodName,Status, DoNotExecuteBefore,JobGuid, MaxRetries, MinRetryWait, CreatedDate, RetryCount)
-                      values (@queueName,@typeExecutedOn,@methodName,'Inserting',@doNotExecuteBefore, @jobGuid, @maxRetries, @minRetryWait, getdate())
-                      select scope_identity()", _jobQueueTableConfiguration.ParamTableName);
+                      values (@queueName,@typeExecutedOn,@methodName,'Inserting',@doNotExecuteBefore, @jobGuid, @maxRetries, @minRetryWait, getdate(), @retryCount)
+                      select scope_identity()", _jobQueueTableConfiguration.QueueTableName);
             formattedMarkNewSql= string.Format(@"update {0} set Status='New' where JobId = @jobId", _jobQueueTableConfiguration.QueueTableName);
             formattedParamInsertSql = string.Format(
                     @"insert into {0} (JobId, ParamOrdinal,SerializedValue, SerializedType)
@@ -43,7 +41,6 @@ namespace OddJob.SqlServer
         {
             using (var conn = _jobQueueConnectionFactory.GetConnection())
             {
-                var myGuid = Guid.NewGuid();
                 var ser = JobCreator.Create(jobExpression);
                 var insertedId = conn.ExecuteScalar<int>(formattedMainInsertSql,
                     new
@@ -54,7 +51,8 @@ namespace OddJob.SqlServer
                         doNotExecuteBefore = executionTime,
                         jobGuid = ser.JobId,
                         maxRetries = (retryParameters == null ? 0 : (int?)retryParameters.MaxRetries),
-                        minRetryWait = (retryParameters == null ? 0 : (double?)retryParameters.MinRetryWait.TotalSeconds)
+                        minRetryWait = (retryParameters == null ? 0 : (double?)retryParameters.MinRetryWait.TotalSeconds),
+                        retryCount = 0
                     }
                     );
                 var toInsert = ser.JobArgs.Select((val, index) => new { val, index }).ToList();
@@ -63,7 +61,7 @@ namespace OddJob.SqlServer
                     conn.ExecuteScalar<int>(formattedParamInsertSql,
                     new
                     {
-                        jobId = insertedId,
+                        jobId = ser.JobId,
                         paramOrdinal = i.index,
                         serializedValue =
                            Newtonsoft.Json.JsonConvert.SerializeObject(i.val),
@@ -71,7 +69,7 @@ namespace OddJob.SqlServer
                     });
                 });
                 conn.ExecuteScalar(formattedMarkNewSql, new { jobId = insertedId });
-                return myGuid;
+                return ser.JobId;
             }
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System;
-namespace OddJob.SqlServer
+
+namespace OddJob.Storage.SqlServer
 {
     public class SqlServerDbOddJob : IOddJobWithMetadata
     {
@@ -9,6 +10,7 @@ namespace OddJob.SqlServer
         public Type TypeExecutedOn { get; set; }
 
         public string MethodName { get; set; }
+        public string Status { get; set; }
 
         public IRetryParameters RetryParameters { get; set; }
     }

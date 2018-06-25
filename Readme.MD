@@ -100,3 +100,8 @@ Extensibility:
     - These methods are called after the Storage layer has been told to mark a given state change.
   - `JobQueueCoordinator` also has a virtual method for `OnQueueSaturation`
     - This method can be used to warn someone when a queue isn't working the way they expect.
+
+
+Unit Test Notes:
+  - SqlServer Unit test uses LocalDB. 
+    - Please be careful if using this against a non LocalDB instance, as the tests start by dropping and recreating the Queue schema under the default table names.

@@ -1,5 +1,6 @@
 ﻿using System.Data.SqlClient;
-namespace OddJob.SqlServer
+
+namespace OddJob.Storage.SqlServer
 {
     public interface IJobQueueDbConnectionFactory
     {

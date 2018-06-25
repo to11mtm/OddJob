@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace OddJob.Storage.FileSystem
 {
@@ -23,7 +24,7 @@ namespace OddJob.Storage.FileSystem
                 try
                 {
                     using (FileStream fs =
-                 File.Open(FileName, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                 File.Open(FileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
                     {
                         byte[] toRead = null;
                         using (var memStream = new MemoryStream())
@@ -31,11 +32,24 @@ namespace OddJob.Storage.FileSystem
                             fs.CopyTo(memStream);
                             toRead = memStream.ToArray();
                         }
-                        var serializer =
-                            Newtonsoft.Json.JsonConvert.DeserializeObject<List<FileSystemJobMetaData>>(Encoding.UTF8.GetString(toRead));
-                        serializer.Add(data);
-                        var newData = Newtonsoft.Json.JsonConvert.SerializeObject(serializer);
+
+                        List<FileSystemJobMetaData> serializedData = null;
+                        if (toRead.Length > 0)
+                        {
+                            serializedData =
+                                Newtonsoft.Json.JsonConvert.DeserializeObject<List<FileSystemJobMetaData>>(
+                                    Encoding.UTF8.GetString(toRead), new JsonSerializerSettings(){TypeNameHandling = TypeNameHandling.All});
+                        }
+                        else
+                        {
+                            serializedData = new List<FileSystemJobMetaData>();
+                        }
+
+                        serializedData.Add(data);
+                        var newData = Newtonsoft.Json.JsonConvert.SerializeObject(serializedData, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
                         var toWrite = Encoding.UTF8.GetBytes(newData);
+                        fs.Position = 0;
+                        fs.SetLength(toWrite.Length);
                         fs.Write(toWrite, 0, toWrite.Length);
                         written = true;
                     }
@@ -63,7 +77,7 @@ namespace OddJob.Storage.FileSystem
                 JobId = Guid.NewGuid(),
                 JobArgs = jobData.JobArgs,
                 MethodName = jobData.MethodName,
-                RetryParameters = retryParameters,
+                RetryParameters = retryParameters ?? new RetryParameters(0,TimeSpan.FromSeconds(0),0,null),
                 TypeExecutedOn = jobData.TypeExecutedOn,
                 QueueName = queueName,
                 CreatedOn = DateTime.Now

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace OddJob.Storage.FileSystem
 {
@@ -34,7 +35,7 @@ namespace OddJob.Storage.FileSystem
                             toRead = memStream.ToArray();
                         }
                         var serializer =
-                            Newtonsoft.Json.JsonConvert.DeserializeObject<List<FileSystemJobMetaData>>(Encoding.UTF8.GetString(toRead));
+                            Newtonsoft.Json.JsonConvert.DeserializeObject<List<FileSystemJobMetaData>>(Encoding.UTF8.GetString(toRead), new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
                         var filtered = serializer.Where(q =>
                         queueNames.Contains(q.QueueName)
                         && (q.Status=="New" || q.Status=="Retry")
@@ -54,8 +55,10 @@ namespace OddJob.Storage.FileSystem
                             item.Status = "Queued";
                             item.QueueTime = DateTime.Now;
                         }
-                        var newData = Newtonsoft.Json.JsonConvert.SerializeObject(serializer);
+                        var newData = Newtonsoft.Json.JsonConvert.SerializeObject(serializer, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
                         var toWrite = Encoding.UTF8.GetBytes(newData);
+                        fs.Position = 0;
+                        fs.SetLength(toWrite.Length);
                         fs.Write(toWrite, 0, toWrite.Length);
                         written = true;
                         results = filtered;
@@ -96,7 +99,7 @@ namespace OddJob.Storage.FileSystem
                             toRead = memStream.ToArray();
                         }
                         var serializer =
-                            Newtonsoft.Json.JsonConvert.DeserializeObject<List<FileSystemJobMetaData>>(Encoding.UTF8.GetString(toRead));
+                            Newtonsoft.Json.JsonConvert.DeserializeObject<List<FileSystemJobMetaData>>(Encoding.UTF8.GetString(toRead), new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
                         var filtered = serializer.Where(q => q.JobId == jobId).FirstOrDefault();
                         written = true;
                         results = filtered;
@@ -136,15 +139,18 @@ namespace OddJob.Storage.FileSystem
                             toRead = memStream.ToArray();
                         }
                         var serializer =
-                            Newtonsoft.Json.JsonConvert.DeserializeObject<List<FileSystemJobMetaData>>(Encoding.UTF8.GetString(toRead));
+                            Newtonsoft.Json.JsonConvert.DeserializeObject<List<FileSystemJobMetaData>>(Encoding.UTF8.GetString(toRead), new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
                         var filtered = serializer.FirstOrDefault(q =>
                         q.JobId == jobId);
                         if (filtered != null)
                         {
                             transformFunc(filtered);
                         }
-                        var newData = Newtonsoft.Json.JsonConvert.SerializeObject(serializer);
+                        var newData = Newtonsoft.Json.JsonConvert.SerializeObject(serializer, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
+                        
                         var toWrite = Encoding.UTF8.GetBytes(newData);
+                        fs.Position = 0;
+                        fs.SetLength(toWrite.Length);
                         fs.Write(toWrite, 0, toWrite.Length);
                         written = true;
                     }

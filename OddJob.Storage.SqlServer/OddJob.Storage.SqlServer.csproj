@@ -7,8 +7,8 @@
     <ProjectGuid>{033469ED-9C96-4F49-BEF8-D373029799B3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>OddJob.SqlServer</RootNamespace>
-    <AssemblyName>OddJob.SqlServer</AssemblyName>
+    <RootNamespace>OddJob.Storage.SqlServer</RootNamespace>
+    <AssemblyName>OddJob.Storage.SqlServer</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

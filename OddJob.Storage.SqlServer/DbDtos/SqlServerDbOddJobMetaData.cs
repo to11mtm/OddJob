@@ -1,5 +1,6 @@
 ﻿using System;
-namespace OddJob.SqlServer
+
+namespace OddJob.Storage.SqlServer.DbDtos
 {
     public class SqlServerDbOddJobMetaData
     {
@@ -15,5 +16,6 @@ namespace OddJob.SqlServer
         public int MinRetryWait { get; set; }
         public DateTime? LastAttempt { get; set; }
         public int RetryCount { get; set; }
+        public string Status { get; set; }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using Dapper;
 
-namespace OddJob.SqlServer
+namespace OddJob.Storage.SqlServer
 {
     public class SqlServerJobQueuePurger : IJobQueuePurger
     {

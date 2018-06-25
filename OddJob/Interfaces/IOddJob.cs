@@ -13,5 +13,6 @@ namespace OddJob
         object[] JobArgs { get; }
         Type TypeExecutedOn { get; }
         string MethodName { get; }
+        string Status { get; }
     }
 }

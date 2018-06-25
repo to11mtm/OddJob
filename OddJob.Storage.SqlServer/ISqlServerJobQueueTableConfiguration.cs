@@ -1,4 +1,4 @@
-﻿namespace OddJob.SqlServer
+﻿namespace OddJob.Storage.SqlServer
 {
     public interface ISqlServerJobQueueTableConfiguration
     {

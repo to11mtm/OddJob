@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Dapper;
-namespace OddJob.SqlServer
+using OddJob.Storage.SqlServer.DbDtos;
+
+namespace OddJob.Storage.SqlServer
 {
     public class SqlServerJobQueueManager : IJobQueueManager
     {
@@ -24,16 +26,16 @@ public string JobByIdString { get; private set; }
             GetJobParamSqlString = string.Format(@"
 select JobId, ParamOrdinal,SerializedValue, SerializedType
 from {0} where JobId in (@jobIds)", _tableConfig.ParamTableName);
-            JobFailedString = string.Format("update {0} set status='Failed' where JobGuid = @jobGuid",
+            JobFailedString = string.Format("update {0} set status='Failed', LockClaimTime = null where JobGuid = @jobGuid",
                 _tableConfig.QueueTableName);
-            JobSuccessString = string.Format("update {0} set status='Processed' where JobGuid = @jobGuid",
+            JobSuccessString = string.Format("update {0} set status='Processed', LockClaimTime = null where JobGuid = @jobGuid",
                 _tableConfig.QueueTableName);
             JobInProcessString =
-                string.Format("update {0} set status='In-Process', LastAttempt=getDate() where JobGuid = @jobGuid",
+                string.Format("update {0} set status='In-Process', LockClaimTime=null, LastAttempt=getDate() where JobGuid = @jobGuid",
                     _tableConfig.QueueTableName);
             JobRetryIncrementString =
                 string.Format(
-                    "update {0} set status='Retry', RetryCount = RetryCount + 1, LastAttempt=getDate() where JobGuid = @jobGuid",
+                    "update {0} set status='Retry', RetryCount = RetryCount + 1, LastAttempt=getDate(), LockClaimTime=null where JobGuid = @jobGuid",
                     _tableConfig.QueueTableName);
             preFormattedLockSqlString = string.Format(lockStringToFormatBeforeTopNumber, _tableConfig.QueueTableName) +
                                         "{0}" + string.Format(lockStringToFormatAfterTopNumber,
@@ -52,18 +54,18 @@ from {0} where JobId in (@jobIds)", _tableConfig.ParamTableName);
             if (fetchSqlCache.ContainsKey(fetchSize) == false)
             {
                 fetchSqlCache[fetchSize] = GetJobSqlStringWithLock(fetchSize);
-                myFetchString = fetchSqlCache[fetchSize];
             }
+            myFetchString = fetchSqlCache[fetchSize];
             var lockGuid = Guid.NewGuid();
             var lockTime = DateTime.Now;
             using (var conn = _jobQueueConnectionFactory.GetConnection())
             {
                 var baseJobs = conn.Query<SqlServerDbOddJobMetaData>(myFetchString, new { queueNames = queueNames, lockGuid = lockGuid, claimTime = lockTime });
 
-                var jobMetaData = conn.Query<SqlServerOddJobParamMetaData>(GetJobParamSqlString, new { jobIds = baseJobs.Select(q => q.JobId).ToList() });
+                var jobMetaData = conn.Query<SqlServerOddJobParamMetaData>(GetJobParamSqlString, new { jobIds = baseJobs.Select(q => q.JobGuid).ToList() });
                 return baseJobs
                     .GroupJoin(jobMetaData,
-                    q => q.JobId,
+                    q => q.JobGuid,
                     r => r.JobId,
                     (q, r) =>
                     new SqlServerDbOddJob()
@@ -84,21 +86,21 @@ update {0} set LockClaimTime=@claimTime, LockGuid = @lockGuid
 where JobId in(
 select top ";
         private const string lockStringToFormatAfterTopNumber = @"
-JobId from (select JobId, CASE WHEN ISNULL(CreatedDate,'01-01-1753') > ISNULL(LastAttempt,'01-01-1753') THEN CreatedDate
+a.JobId from (select JobId, CASE WHEN ISNULL(CreatedDate,'01-01-1753') > ISNULL(LastAttempt,'01-01-1753') THEN CreatedDate
             ELSE LastAttempt
        END AS MostRecentDate
         from {0} 
         where QueueName in (@queueNames) 
-            and (DoNotExecuteBefore <=get_date() 
+            and (DoNotExecuteBefore <=getdate() 
                or DoNotExecuteBefore is null)
-            and (Status ='New' or (Status='Retry' and MaxRetries>RetryCount and dateadd(seconds,MinRetryWait,LastAttempt<=getdate())))
-            and (LockClaimTime is null or LockClaimTime < dateadd(seconds,lockClaimTime,0-{1}))
-order by MostRecentDate asc)
+            and (Status ='New' or (Status='Retry' and MaxRetries>=RetryCount and dateadd(second,MinRetryWait,LastAttempt)<=getdate()))
+            and (LockClaimTime is null or LockClaimTime < dateadd(second,0-{1},lockClaimTime))
+) a
+order by a.MostRecentDate asc
         )
 select JobGuid, QueueName, TypeExecutedOn, MethodName, Status, DoNotExecuteBefore, MaxRetries, MinRetryWait, RetryCount
 from {0}
 where LockGuid = @lockGuid
-)
 end";
         public string GetJobSqlStringWithLock(int fetchSize)
         {
@@ -145,10 +147,10 @@ string.Format(preFormattedLockSqlString,fetchSize);
             {
                 var jobs = conn.Query<SqlServerDbOddJobMetaData>(JobByIdString, new {jobGuid = jobId});
                 var jobMetaData = conn.Query<SqlServerOddJobParamMetaData>(GetJobParamSqlString,
-                    new {jobIds = jobs.Select(q => q.JobId).ToList()});
+                    new {jobIds = jobs.Select(q => q.JobGuid).ToList()});
                 return jobs
                     .GroupJoin(jobMetaData,
-                        q => q.JobId,
+                        q => q.JobGuid,
                         r => r.JobId,
                         (q, r) =>
                             new SqlServerDbOddJob()
@@ -159,7 +161,8 @@ string.Format(preFormattedLockSqlString,fetchSize);
                                 JobArgs = r.OrderBy(p => p.ParamOrdinal)
                                     .Select(s =>
                                         Newtonsoft.Json.JsonConvert.DeserializeObject(s.SerializedValue, Type.GetType(s.SerializedType, false))).ToArray(),
-                                RetryParameters = new RetryParameters(q.MaxRetries, TimeSpan.FromSeconds(q.MinRetryWait), q.RetryCount, q.LastAttempt)
+                                RetryParameters = new RetryParameters(q.MaxRetries, TimeSpan.FromSeconds(q.MinRetryWait), q.RetryCount, q.LastAttempt),
+                                Status = q.Status
                             }).FirstOrDefault();
             }
         }
