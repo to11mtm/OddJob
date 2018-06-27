@@ -16,6 +16,14 @@ namespace OddJob.Tests
         }
 
         [Fact]
+        public void Can_Run_Job_With_Simple_Method_Calls()
+        {
+            var myValue = new ClassTest() { classTestValue = TestConstants.classTestValue };
+            var next = JobCreator.Create<SampleJob>((j) => j.DoThing(TestConstants.derp, int.Parse(TestConstants.herp.ToString()), myValue));
+            var jobEx = new OldDefaultJobExecutor(new DefaultContainerFactory());
+            jobEx.ExecuteJob(next);
+        }
+        [Fact]
         public void Can_Run_Jobs_With_Param_Type_Matching()
         {
             var myValue = new ClassTest() { classTestValue = TestConstants.classTestValue };

@@ -107,3 +107,12 @@ Unit Test Notes:
     - Please be careful if using this against a non LocalDB instance, as the tests start by dropping and recreating the Queue schema under the default table names.
   - Shutdown Tests are touchy!
     - Because of the timers used for shutdown and it's testing, you may experience issues if running all of the unit tests in parallel.
+
+SQL Server Notes:
+
+  - Table create scripts can be made by looking at `SqlServerDbJobTableHelper`.
+    - Indexes are at the discretion of your DBA. I'd personally suggest columns `QueueName`, `JobGuid` (Unique on QueueTable, Non-Unique on QueueParamTable), `Status`, and `LockGuid` as minimums.
+	  - Work with your DBA so they understand your load and can decide what indexes will be most useful to balance storage requirements and performance.
+  - Please Note that Jobs are NOT automatically deleted.
+	- `SqlServerJobQueuePurger` exists for you to purge your stale jobs, if you choose to do so that way.
+	  - The SQL used is meant to be easy to implement wherever needed.

@@ -76,29 +76,34 @@ namespace OddJob.Execution.Akka
         /// <param name="timeoutInSeconds">How long to wait before giving up on waiting. After Timeout has passed, there are no guarantees whether jobs are still running, or whether a completed job will be marked as successful. Default is 2 minutes.</param>
         public void ShutDownQueue(string queueName, int timeoutInSeconds = 120)
         {
-            cancelPulsePool[queueName].Cancel();
-            var result =
-                coordinatorPool[queueName].Ask(new ShutDownQueues(), TimeSpan.FromSeconds(timeoutInSeconds))
-                    .Result as QueueShutDown;
-            coordinatorPool[queueName].Tell(PoisonPill.Instance);
             try
             {
-                cancelPulsePool.Remove(queueName);
+                cancelPulsePool[queueName].Cancel();
+                var result =
+                    coordinatorPool[queueName].Ask(new ShutDownQueues(), TimeSpan.FromSeconds(timeoutInSeconds))
+                        .Result as QueueShutDown;
+                coordinatorPool[queueName].Tell(PoisonPill.Instance);
             }
             finally
             {
+                try
+                {
+                    cancelPulsePool.Remove(queueName);
+                }
+                finally
+                {
 
-            }
+                }
 
-            try
-            {
-                coordinatorPool.Remove(queueName);
-            }
-            finally
-            {
+                try
+                {
+                    coordinatorPool.Remove(queueName);
+                }
+                finally
+                {
 
+                }
             }
-            
         }
         public void Dispose()
         {

@@ -6,7 +6,6 @@ namespace OddJob.Storage.SqlServer.DbDtos
     {
         public int JobId { get; set; }
         public Guid JobGuid { get; set; }
-        public object[] JobArgs { get; set; }
 
         public string TypeExecutedOn { get; set; }
 
