@@ -1,24 +1,25 @@
 ﻿using System;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
 
 namespace OddJob
 {
-    public class JobCreationExeption : Exception
+    public class JobCreationException : Exception
     {
-        public JobCreationExeption()
+        public JobCreationException()
         {
         }
 
-        public JobCreationExeption(string message) : base(message)
+        public JobCreationException(string message) : base(message)
         {
         }
 
-        public JobCreationExeption(string message, Exception innerException) : base(message, innerException)
+        public JobCreationException(string message, Exception innerException) : base(message, innerException)
         {
         }
 
-        protected JobCreationExeption(SerializationInfo info, StreamingContext context) : base(info, context)
+        protected JobCreationException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
     }
@@ -56,19 +57,19 @@ namespace OddJob
                     }
                     catch (Exception ex)
                     {
-                        throw new JobCreationExeption(
+                        throw new JobCreationException(
                             "Couldn't derive value from job! Please use variables whenever possible and avoid methods that take parameters", ex);
                     }
                 }
                 else
                 {
-                    throw new JobCreationExeption(
+                    throw new JobCreationException(
                         "Couldn't derive value from job! Please use variables whenever possible and avoid methods that take parameters");
                 }
          
             }
             var moarInfo = ((MethodCallExpression)_jobExpr.Body).Method.Name;
-            var methodName = typeof(T).GetMethod(moarInfo);
+            var methodName = typeof(T).GetMethod(moarInfo, _jobArgs.Select(q=>q.GetType()).ToArray());
             return new OddJob(methodName.Name, _jobArgs, TypeExecutedOn);
         }
     }

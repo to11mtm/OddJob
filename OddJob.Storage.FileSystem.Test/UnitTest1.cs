@@ -174,13 +174,13 @@ namespace OddJob.Storage.FileSystem.Test
             jobMgrStore.MarkJobInRetryAndIncrement(jobGuid, DateTime.Now);
             var jobAfter1stIncrement = jobMgrStore.GetJob(jobGuid);
             Xunit.Assert.Equal(1, jobAfter1stIncrement.RetryParameters.RetryCount);
-            SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(1));
+            SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(2));
             var jobsAfterFirstRetry = jobMgrStore.GetJobs(new[] { "test" }, 5);
             Xunit.Assert.True(jobsAfterFirstRetry.Any(q => q.JobId == jobGuid));
             jobMgrStore.MarkJobInRetryAndIncrement(jobGuid, DateTime.Now);
             var jobAfter2ndstIncrement = jobMgrStore.GetJob(jobGuid);
             Xunit.Assert.Equal(2, jobAfter2ndstIncrement.RetryParameters.RetryCount);
-            SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(1));
+            SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(2));
             var jobsAfterSecondRetry = jobMgrStore.GetJobs(new[] { "test" }, 5);
             Xunit.Assert.True(jobsAfterSecondRetry.All(q => q.JobId != jobGuid));
         }

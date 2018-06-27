@@ -40,16 +40,16 @@ namespace OddJob.Storage.FileSystem
                         queueNames.Contains(q.QueueName)
                         && (q.Status=="New" || q.Status=="Retry")
                         &&
-                        ((q.RetryParameters == null) ||
-                        (q.RetryParameters.RetryCount < q.RetryParameters.MaxRetries)
+                        ((q.RetryParameters == null ||q.Status=="New") ||
+                        (q.RetryParameters.RetryCount <= q.RetryParameters.MaxRetries)
                         &&
                         (q.RetryParameters.LastAttempt == null
                           || q.RetryParameters.
                               LastAttempt.Value.Add(q.RetryParameters.MinRetryWait)
-                               > DateTime.Now)))
+                               < DateTime.Now)))
                                .OrderBy(q =>
                                Math.Min(q.CreatedOn.Ticks, (q.RetryParameters ?? new RetryParameters(0, TimeSpan.FromSeconds(0), 0, null)).LastAttempt.GetValueOrDefault(DateTime.MaxValue).Ticks)
-                               ).Take(fetchSize);
+                               ).Take(fetchSize).ToList();
                         foreach(var item in filtered)
                         {
                             item.Status = "Queued";
@@ -196,6 +196,7 @@ namespace OddJob.Storage.FileSystem
              {
                  q.Status = "Retry";
                  q.RetryParameters.LastAttempt = lastAttempt;
+                 q.RetryParameters.RetryCount = q.RetryParameters.RetryCount + 1;
              });
         }
 

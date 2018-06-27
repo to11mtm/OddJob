@@ -11,6 +11,24 @@ namespace OddJob.Tests
         {
             var myValue = new ClassTest() { classTestValue = TestConstants.classTestValue };
             var next = JobCreator.Create<SampleJob>((j) => j.DoThing(TestConstants.derp, TestConstants.herp, myValue));
+            var jobEx = new OldDefaultJobExecutor(new DefaultContainerFactory());
+            jobEx.ExecuteJob(next);
+        }
+
+        [Fact]
+        public void Can_Run_Jobs_With_Param_Type_Matching()
+        {
+            var myValue = new ClassTest() { classTestValue = TestConstants.classTestValue };
+            var next = JobCreator.Create<SampleJob>((j) => j.DoThing(TestConstants.derp, TestConstants.herp, myValue));
+            var jobEx = new DefaultJobExecutor(new DefaultContainerFactory());
+            jobEx.ExecuteJob(next);
+        }
+
+        [Fact]
+        public void Can_Run_Jobs_With_Param_Type_Matching_And_Overloads()
+        {
+            var myValue = new ClassTest() { classTestValue = TestConstants.classTestValue };
+            var next = JobCreator.Create<SampleJob2>((j) => j.DoThing(TestConstants.derp, TestConstants.herp, myValue));
             var jobEx = new DefaultJobExecutor(new DefaultContainerFactory());
             jobEx.ExecuteJob(next);
         }
@@ -30,12 +48,28 @@ namespace OddJob.Tests
 
     public class SampleJob
     {
-        public void DoThing(string derp, int herp, ClassTest aClass)
+        public void DoThing(string derp, long herp, ClassTest aClass)
         {
             Xunit.Assert.Equal(derp, TestConstants.derp);
             Xunit.Assert.Equal(herp, TestConstants.herp);
             Xunit.Assert.Equal(aClass.classTestValue, TestConstants.classTestValue);
             System.Console.WriteLine("derp");
+        }
+    }
+
+    public class SampleJob2
+    {
+        public void DoThing(string derp, long herp, ClassTest aClass)
+        {
+            Xunit.Assert.Equal(derp, TestConstants.derp);
+            Xunit.Assert.Equal(herp, TestConstants.herp);
+            Xunit.Assert.Equal(aClass.classTestValue, TestConstants.classTestValue);
+            System.Console.WriteLine("derp");
+        }
+
+        public void DoThing(object derp, object herp, object aClass)
+        {
+            throw new Exception("Should not be called!");
         }
     }
 }

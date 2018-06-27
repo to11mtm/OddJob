@@ -21,7 +21,7 @@ Non-Goals:
     - The API doesn't go as far as forcing Interfaces on your methods, because it trusts you to follow this rule.
 
   - Perfect Work Distribution
-    - Backpressure algorithm will stop when there are more `numWorkers*2` pending jobs in a queue. You could theoretically wind up with up to `(numWorkers*3)-1)` queued up before it stops fetching.
+    - Backpressure algorithm will stop when there are more `numWorkers*2` pending jobs in a queue. You could theoretically wind up with up to `(numWorkers*3)-1` queued up before it stops fetching.
     - Jobs are grabbed in batches and distributed in a round-robin fashion. 
 	- However, Coordinators do not keep track of individual worker queue sizes.
 
@@ -48,7 +48,6 @@ Not-Initial-Goals (Will be done when there's a need):
    - Jobs themselves essentially require DI to run.
      -To be clear; There is a `DefaultContainerFactory` that will work as long as your job type has a public, paramterless constructor. It will not work if your type has any constructor dependencies, or expects properties to be injected after the fact. This is used primarily for test scenarios as well as for if you are really DI averse.
 	   - If you're in that camp, you'll want to use the `HardInjectedJobExecutorShell`. This shell will require you to provide creator functions for the `JobQueueLayerActor` and `JobWorkerActor`.
-
      -If you're not using DI, you can either use
 	   - `HardInjectedJobExecutorShell` 
 	     - See above for notes on initialziation
@@ -83,6 +82,7 @@ Usage:
         - `IContainerFactory`
         - `IJobQueueManager`
 	      - If Using `SqlServerJobQueueManager`, you'll also require registering an implementation of `IJobQueueDbConnectionFactory`
+		- 'IJobQueueExecutor'
       - Register Dependencies for the jobs you expect the queue to process.
       - Create a JobExecutorShell
         - Make sure to hold on to a reference to this for the life of your application!
@@ -105,3 +105,5 @@ Extensibility:
 Unit Test Notes:
   - SqlServer Unit test uses LocalDB. 
     - Please be careful if using this against a non LocalDB instance, as the tests start by dropping and recreating the Queue schema under the default table names.
+  - Shutdown Tests are touchy!
+    - Because of the timers used for shutdown and it's testing, you may experience issues if running all of the unit tests in parallel.

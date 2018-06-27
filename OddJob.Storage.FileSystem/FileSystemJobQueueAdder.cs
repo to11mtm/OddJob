@@ -80,7 +80,8 @@ namespace OddJob.Storage.FileSystem
                 RetryParameters = retryParameters ?? new RetryParameters(0,TimeSpan.FromSeconds(0),0,null),
                 TypeExecutedOn = jobData.TypeExecutedOn,
                 QueueName = queueName,
-                CreatedOn = DateTime.Now
+                CreatedOn = DateTime.Now,
+                Status = "New"
             };
             WriteJobToQueue(toSer);
             return toSer.JobId;
