@@ -62,6 +62,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\OddJob.Storage.BaseTests\OddJob.Storage.BaseTests.csproj">
+      <Project>{6F6AA4D7-A77C-4C32-8F10-1240AD39FB11}</Project>
+      <Name>OddJob.Storage.BaseTests</Name>
+    </ProjectReference>
     <ProjectReference Include="..\OddJob.Storage.FileSystem\OddJob.Storage.FileSystem.csproj">
       <Project>{55035D4F-B1DB-4DFD-BB92-33BB1C96183A}</Project>
       <Name>OddJob.Storage.FileSystem</Name>

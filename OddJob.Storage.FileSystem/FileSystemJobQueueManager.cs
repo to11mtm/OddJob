@@ -204,7 +204,7 @@ namespace OddJob.Storage.FileSystem
         {
             WriteJobState(jobGuid, (q) =>
             {
-                q.Status = "Success";
+                q.Status = "Processed";
                 q.LastAttemptTime = DateTime.Now;
             });
         }
