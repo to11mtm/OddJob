@@ -22,7 +22,7 @@ namespace OddJob.Execution.Akka.Test
                 RetryParameters = retryParameters,
                 TypeExecutedOn = jobInfo.TypeExecutedOn,
                 CreatedOn = DateTime.Now,
-                Status = "New"
+                Status = JobStates.New
             };
             if (jobStore.ContainsKey(queueName) == false)
             {
@@ -51,7 +51,7 @@ namespace OddJob.Execution.Akka.Test
                     if (jobStore.ContainsKey(queueName))
                     {
                         var filtered = jobStore[queueName].Where(q =>
-                        (q.Status == "New" || q.Status == "Retry")
+                        (q.Status == JobStates.New || q.Status == JobStates.Retry)
                         &&
                         ((q.RetryParameters == null) ||
                         (q.RetryParameters.RetryCount < q.RetryParameters.MaxRetries)
@@ -94,7 +94,7 @@ namespace OddJob.Execution.Akka.Test
         {
             WriteJobState(jobGuid, (q) =>
             {
-                q.Status = "Failed";
+                q.Status = JobStates.Failed;
                 q.FailureTime = DateTime.Now;
             });
         }
@@ -112,7 +112,7 @@ namespace OddJob.Execution.Akka.Test
         {
             WriteJobState(jobId, (q) =>
             {
-                q.Status = "Retry";
+                q.Status = JobStates.Retry;
                 q.RetryParameters.LastAttempt = lastAttempt;
                 q.RetryParameters.RetryCount = q.RetryParameters.RetryCount + 1;
             });

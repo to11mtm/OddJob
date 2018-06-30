@@ -42,17 +42,18 @@ Not-Initial-Goals (Will be done when there's a need):
    - The Extensible parts of the API are supposed to be clean enough.
      - Shortcuts in cleanliness for the sake of extensibility are present. They will be removed when the need is there.
    - The Private API is subject to changes at any time, including undoing awkward surfaces.
+   -`DependencyInjectedJobExecutorShell` is messy
+   	 - Please note that the `DependencyInjectedJobExecutorShell`, despite it's name, may not be the best choice for many scenarios.
+	    - The way you register DI is clunky at this time
+		- The Execution layer's registration doesn't play nicely with things like SimpleInjector's beautiful `Verify` method.
+	 - Realistically, in most scenarios, The executor will be at or near-enough to the composition root that this is a moot point
+	   - Unless you have a complex scenario, just use `HardInjectedJobExecutorShell` and get on with your life.
 
 
  - Robust Ability to run without DI
    - Jobs themselves essentially require DI to run.
      -To be clear; There is a `DefaultContainerFactory` that will work as long as your job type has a public, paramterless constructor. It will not work if your type has any constructor dependencies, or expects properties to be injected after the fact. This is used primarily for test scenarios as well as for if you are really DI averse.
 	   - If you're in that camp, you'll want to use the `HardInjectedJobExecutorShell`. This shell will require you to provide creator functions for the `JobQueueLayerActor` and `JobWorkerActor`.
-     -If you're not using DI, you can either use
-	   - `HardInjectedJobExecutorShell` 
-	     - See above for notes on initialziation
-	   - `DependencyInjectedJobExecutorShell`. 
-	     - If you are using this, you will have to register your 'JobQueueLayerActor' and 'JobWorkerActor' with the DI container of choice, and install the Akka.DI.%diFlavor% nuget packege so that you can provide a Func<ActorSystem,IDependencyResolver> to the constructor.
 
  - Minimal DB Round-Trips
    - Due to a semi-questionable design decision we have to:
@@ -73,7 +74,12 @@ Usage:
     - If Using `SqlServerJobQueueAdder`, you'll also require an implementation of `IJobQueueDbConnectionFactory`
 
  - Queue Processor:
-   - If using `DependencyInjectedJobExecutorShell`:
+   - If using 'HardInjectedJobExecutorShell' (Reccomended for most scenarios; lowest friction setup):
+      - Implement an `IContainerFactory` if you have special initialization requirements or wish to use a DI container. Otherwise use `DefaultContainerFactory` which expectes a public parameterless constructor on any jobs.
+	  - New-Up an instance of `HardInjectedJobExecutorShell`, providing functions to initialize the above interfaces as needed when newing up your components.
+	    - If reaching into a DI container for these pieces, please note that these should be treated as non-singleton (i.e. transient) grabs from a container. This is the default for most DI Scenarios but is worth noting.
+   
+   - If using `DependencyInjectedJobExecutorShell` (Reccomended only for advanced scenarios):
       - Register the following types in your DI Container:
         - `JobWorkerActor`
         - `JobQueueCoordinator`
@@ -82,14 +88,11 @@ Usage:
         - `IContainerFactory`
         - `IJobQueueManager`
 	      - If Using `SqlServerJobQueueManager`, you'll also require registering an implementation of `IJobQueueDbConnectionFactory`
-		- 'IJobQueueExecutor'
+		- 'IJobQueueExecutor'.
       - Register Dependencies for the jobs you expect the queue to process.
+	  - Install the Akka.DI.%diFlavor% nuget package so that you can provide a Func<ActorSystem,IDependencyResolver> to the constructor
       - Create a JobExecutorShell
         - Make sure to hold on to a reference to this for the life of your application!
-   - If using 'HardInjectedJobExecutorShell':
-      - Implement an `IContainerFactory` if you have special initialization requirements or wish to use a DI container. Otherwise use `DefaultContainerFactory` which expectes a public parameterless constructor.
-	  - New-Up an instance of `HardInjectedJobExecutorShell`, providing functions to initialize the above interfaces as needed when newing up your components.
-	    - If reaching into a DI container for these pieces, please note that these should be treated as non-singleton (i.e. transient) grabs from a container!
    - In Both Cases:
       - Start a queue with `StartJobQueue`
       - Stop queues with `StopJobQueue` when shutting down.
@@ -116,3 +119,9 @@ SQL Server Notes:
   - Please Note that Jobs are NOT automatically deleted.
 	- `SqlServerJobQueuePurger` exists for you to purge your stale jobs, if you choose to do so that way.
 	  - The SQL used is meant to be easy to implement wherever needed.
+
+Creating your own Modules:
+  - Storage Modules benefit from the existence of `OddJob.Storage.BaseTests`
+    - Your test harness can implement `StorageTests` and provide functions for the abstract properties `jobAddStoreFunc` and `jobMgrStoreFunc`
+	  - Look at `OddJob.Storage.SqlServer.Tests` and `OddJob.Storage.FileSystem.Test` projects for example.
+  

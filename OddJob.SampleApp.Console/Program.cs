@@ -16,10 +16,19 @@ namespace OddJob.SampleApp.Console
         {
             var store = new InMemoryTestStore();
             var jobQueue = new HardInjectedJobExecutorShell(() => new JobQueueLayerActor(store),
-                () => new JobWorkerActor(new DefaultJobExecutor(new DefaultContainerFactory())),null);
+                () => new JobWorkerActor(new DefaultJobExecutor(new DefaultContainerFactory())), loggerTypeFactory: null);
             jobQueue.StartJobQueue("sample",5,5);
-            var done = false;
-            var timer = new Timer(
+
+
+            var timer = StartSampleJobTimer(store);
+
+            System.Console.WriteLine("Press ENTER to quit...");
+            System.Console.ReadLine();
+        }
+
+        private static Timer StartSampleJobTimer(InMemoryTestStore store)
+        {
+            return new Timer(
 
                 (state) =>
                 {
@@ -29,8 +38,6 @@ namespace OddJob.SampleApp.Console
                     store.AddJob((SampleJob job) => job.WriteSomething(counterString, DateTime.Now.ToString()), queueName: "sample");
                 }, null,
                 TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(2));
-                System.Console.WriteLine("Press ENTER to quit...");
-                System.Console.ReadLine();
         }
     }
     public static class CounterClass

@@ -9,7 +9,7 @@ namespace OddJob
         public Type TypeExecutedOn { get; protected set; }
         public string MethodName { get; protected set; }
         public string Status { get; protected set; }
-        public OddJob(string methodName, object[] jobArgs, Type typeExecutedOn, string status="New")
+        public OddJob(string methodName, object[] jobArgs, Type typeExecutedOn, string status=JobStates.New)
         {
             JobId = Guid.NewGuid();
             MethodName = methodName;

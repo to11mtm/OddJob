@@ -14,7 +14,7 @@ namespace OddJob.Storage.SqlServer
         public string GetJobParamSqlString { get; private set; }
         public string JobFailedString { get; private set; }
         public string JobSuccessString { get; private set; }
-        public string JobInProcessString { get; private set; }
+        public string JobInProgressString { get; private set; }
         public string JobRetryIncrementString { get; private set; }
 public string JobByIdString { get; private set; }
 
@@ -26,17 +26,17 @@ public string JobByIdString { get; private set; }
             GetJobParamSqlString = string.Format(@"
 select JobId, ParamOrdinal,SerializedValue, SerializedType
 from {0} where JobId in (@jobIds)", _tableConfig.ParamTableName);
-            JobFailedString = string.Format("update {0} set status='Failed', LockClaimTime = null where JobGuid = @jobGuid",
-                _tableConfig.QueueTableName);
-            JobSuccessString = string.Format("update {0} set status='Processed', LockClaimTime = null where JobGuid = @jobGuid",
-                _tableConfig.QueueTableName);
-            JobInProcessString =
-                string.Format("update {0} set status='In-Process', LockClaimTime=null, LastAttempt=getDate() where JobGuid = @jobGuid",
-                    _tableConfig.QueueTableName);
+            JobFailedString = string.Format("update {0} set status='{1}', LockClaimTime = null where JobGuid = @jobGuid",
+                _tableConfig.QueueTableName,JobStates.Failed);
+            JobSuccessString = string.Format("update {0} set status='{1}', LockClaimTime = null where JobGuid = @jobGuid",
+                _tableConfig.QueueTableName,JobStates.Processed);
+            JobInProgressString =
+                string.Format("update {0} set status='{1}', LockClaimTime=null, LastAttempt=getDate() where JobGuid = @jobGuid",
+                    _tableConfig.QueueTableName,JobStates.InProgress);
             JobRetryIncrementString =
                 string.Format(
-                    "update {0} set status='Retry', RetryCount = RetryCount + 1, LastAttempt=getDate(), LockClaimTime=null where JobGuid = @jobGuid",
-                    _tableConfig.QueueTableName);
+                    "update {0} set status='{1}', RetryCount = RetryCount + 1, LastAttempt=getDate(), LockClaimTime=null where JobGuid = @jobGuid",
+                    _tableConfig.QueueTableName, JobStates.Retry);
             preFormattedLockSqlString = string.Format(lockStringToFormatBeforeTopNumber, _tableConfig.QueueTableName) +
                                         "{0}" + string.Format(lockStringToFormatAfterTopNumber,
                                             _tableConfig.QueueTableName, _tableConfig.JobClaimLockTimeoutInSeconds);
@@ -130,7 +130,7 @@ string.Format(preFormattedLockSqlString,fetchSize);
         {
             using (var conn = _jobQueueConnectionFactory.GetConnection())
             {
-                conn.Execute(JobInProcessString, new { jobGuid = jobId });
+                conn.Execute(JobInProgressString, new { jobGuid = jobId });
             }
         }
         public void MarkJobInRetryAndIncrement(Guid jobId, DateTime lastAttempt)

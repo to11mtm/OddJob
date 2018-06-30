@@ -81,7 +81,7 @@ namespace OddJob.Storage.FileSystem
                 TypeExecutedOn = jobData.TypeExecutedOn,
                 QueueName = queueName,
                 CreatedOn = DateTime.Now,
-                Status = "New"
+                Status = JobStates.New
             };
             WriteJobToQueue(toSer);
             return toSer.JobId;

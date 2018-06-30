@@ -17,7 +17,7 @@ namespace OddJob.Execution.Akka.Test
             ForwardTo.Forward(message);
             if (message is GetJobs)
             {
-                Context.Sender.Tell(new[] { new OddJobWithMetaData() { CreatedOn = DateTime.Now, FailureTime = null, JobArgs = new object[] { 0, 1, "derp" }, JobId = Guid.NewGuid(), LastAttemptTime = null, MethodName = GenerateJobType, QueueTime = DateTime.Now, RetryParameters = null, Status = "New", TypeExecutedOn = "derp".GetType() } });
+                Context.Sender.Tell(new[] { new OddJobWithMetaData() { CreatedOn = DateTime.Now, FailureTime = null, JobArgs = new object[] { 0, 1, "derp" }, JobId = Guid.NewGuid(), LastAttemptTime = null, MethodName = GenerateJobType, QueueTime = DateTime.Now, RetryParameters = null, Status = JobStates.New, TypeExecutedOn = "derp".GetType() } });
             }
             else return false;
             return true;

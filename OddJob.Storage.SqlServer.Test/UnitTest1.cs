@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Globalization;
 using System.IO;
@@ -7,7 +8,6 @@ using System.Reflection;
 using System.Threading;
 using Dapper;
 using OddJob.Storage.TestKit;
-using Xunit;
 using Xunit.Abstractions;
 using Timer = System.Timers.Timer;
 

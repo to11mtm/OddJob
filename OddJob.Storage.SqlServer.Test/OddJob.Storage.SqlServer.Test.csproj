@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="SqlConnectionHelper.cs" />
+    <Compile Include="SqlServerPurgerTest.cs" />
     <Compile Include="TestConnectionFactory.cs" />
     <Compile Include="UnitTest1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

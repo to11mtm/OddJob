@@ -9,7 +9,7 @@ namespace OddJob.Execution.Akka
     public class DependencyInjectedJobExecutorShell : BaseJobExecutorShell
     {
         IDependencyResolver _dependencyResolver;
-        protected DependencyInjectedJobExecutorShell(Func<ActorSystem, IDependencyResolver> dependencyResolverCreator, Func<IRequiresMessageQueue<ILoggerMessageQueueSemantics>> loggerTypeFactory) :base(loggerTypeFactory)
+        public DependencyInjectedJobExecutorShell(Func<ActorSystem, IDependencyResolver> dependencyResolverCreator, Func<IRequiresMessageQueue<ILoggerMessageQueueSemantics>> loggerTypeFactory) :base(loggerTypeFactory)
         {
             _dependencyResolver = dependencyResolverCreator(_actorSystem);
         }

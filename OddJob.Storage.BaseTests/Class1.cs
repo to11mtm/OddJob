@@ -99,7 +99,7 @@ namespace OddJob.Storage.TestKit
 
             jobMgrStore.MarkJobSuccess(jobGuid);
             var job = jobMgrStore.GetJob((jobGuid));
-            Xunit.Assert.Equal("Processed", job.Status);
+            Xunit.Assert.Equal(JobStates.Processed, job.Status);
         }
 
         [Fact]
@@ -123,7 +123,32 @@ namespace OddJob.Storage.TestKit
 
             jobMgrStore.MarkJobFailed(jobGuid);
             var job = jobMgrStore.GetJob((jobGuid));
-            Xunit.Assert.Equal("Failed", job.Status);
+            Xunit.Assert.Equal(JobStates.Failed, job.Status);
+        }
+
+
+        [Fact]
+        public void Job_Can_Be_Marked_as_InProgess()
+        {
+            var jobAddStore = jobAddStoreFunc();
+            var jobMgrStore = jobMgrStoreFunc();
+            var jobGuid = jobAddStore.AddJob(
+                (MockJob j) => j.DoThing(TestConstants.SimpleParam,
+                    new OddParam()
+                    {
+                        Param1 = TestConstants.OddParam1,
+                        Param2 = TestConstants.OddParam2,
+                        Nested = new NestedOddParam()
+                        {
+                            NestedParam1 = TestConstants.NestedOddParam1,
+                            NestedParam2 = TestConstants.NestedOddParam2
+                        }
+                    }), null, null, "test");
+
+
+            jobMgrStore.MarkJobFailed(jobGuid);
+            var job = jobMgrStore.GetJob((jobGuid));
+            Xunit.Assert.Equal(JobStates.Failed, job.Status);
         }
 
         [Fact]
@@ -147,7 +172,7 @@ namespace OddJob.Storage.TestKit
 
             jobMgrStore.MarkJobInRetryAndIncrement(jobGuid, DateTime.Now);
             var job = jobMgrStore.GetJob((jobGuid));
-            Xunit.Assert.Equal("Retry", job.Status);
+            Xunit.Assert.Equal(JobStates.Retry, job.Status);
         }
 
         [Fact]

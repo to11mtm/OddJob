@@ -33,7 +33,7 @@ namespace OddJob.Execution.Akka.Test
             
             var executor = new MockJobSuccessExecutor();
             var probe = CreateTestProbe("queue");
-            var queueLayerProps = Props.Create(() => new QueueLayerMock(probe,"New"));
+            var queueLayerProps = Props.Create(() => new QueueLayerMock(probe,JobStates.New));
             var workerProps = Props.Create(() => new JobWorkerActor(executor)).WithRouter(new RoundRobinPool(workerCount));
             var coordinator = Sys.ActorOf(Props.Create(() => new JobQueueCoordinator(workerProps, queueLayerProps, "test", workerCount)));
             coordinator.Tell(new JobSweep());

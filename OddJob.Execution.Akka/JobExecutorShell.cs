@@ -25,9 +25,9 @@ namespace OddJob.Execution.Akka
             get
             {
                 return string.Format(@"shutdown-priority-mailbox {{
-    mailbox-type : ""{0}.{1},{2}""
+    mailbox-type : ""{0}""
 }}
-", typeof(ShutdownPriorityMailbox).Namespace, typeof(ShutdownPriorityMailbox).Name, typeof(ShutdownPriorityMailbox).Assembly.GetName().Name);
+", typeof(ShutdownPriorityMailbox).AssemblyQualifiedName);
             }
         }
         protected BaseJobExecutorShell(Func<IRequiresMessageQueue<ILoggerMessageQueueSemantics>> loggerTypeFactory)

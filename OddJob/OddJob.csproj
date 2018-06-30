@@ -49,6 +49,7 @@
     <Compile Include="Interfaces\IRetryParameters.cs" />
     <Compile Include="JobCreator.cs" />
     <Compile Include="JobExecutor.cs" />
+    <Compile Include="JobStates.cs" />
     <Compile Include="OddJob.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RetryParameters.cs" />

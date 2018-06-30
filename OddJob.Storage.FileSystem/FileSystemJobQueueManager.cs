@@ -38,9 +38,9 @@ namespace OddJob.Storage.FileSystem
                             Newtonsoft.Json.JsonConvert.DeserializeObject<List<FileSystemJobMetaData>>(Encoding.UTF8.GetString(toRead), new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
                         var filtered = serializer.Where(q =>
                         queueNames.Contains(q.QueueName)
-                        && (q.Status=="New" || q.Status=="Retry")
+                        && (q.Status==JobStates.New || q.Status==JobStates.Retry)
                         &&
-                        ((q.RetryParameters == null ||q.Status=="New") ||
+                        ((q.RetryParameters == null ||q.Status==JobStates.New) ||
                         (q.RetryParameters.RetryCount <= q.RetryParameters.MaxRetries)
                         &&
                         (q.RetryParameters.LastAttempt == null
@@ -176,7 +176,7 @@ namespace OddJob.Storage.FileSystem
         {
             WriteJobState(jobGuid, (q) =>
              {
-                 q.Status = "Failed";
+                 q.Status = JobStates.Failed;
                  q.FailureTime = DateTime.Now;
              });
         }
@@ -194,7 +194,7 @@ namespace OddJob.Storage.FileSystem
         {
             WriteJobState(jobId, (q) =>
              {
-                 q.Status = "Retry";
+                 q.Status = JobStates.Retry;
                  q.RetryParameters.LastAttempt = lastAttempt;
                  q.RetryParameters.RetryCount = q.RetryParameters.RetryCount + 1;
              });
@@ -204,7 +204,7 @@ namespace OddJob.Storage.FileSystem
         {
             WriteJobState(jobGuid, (q) =>
             {
-                q.Status = "Processed";
+                q.Status = JobStates.Processed;
                 q.LastAttemptTime = DateTime.Now;
             });
         }

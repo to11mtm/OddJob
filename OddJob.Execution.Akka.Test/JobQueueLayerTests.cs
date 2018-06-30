@@ -32,7 +32,7 @@ namespace OddJob.Execution.Akka.Test
             var ourJob = InMemoryTestStore.jobPeeker["test"].FirstOrDefault(q => q.JobId == myGuid);
             actor.Tell(new MarkJobFailed(myGuid));
             System.Threading.SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(2));
-            Xunit.Assert.Equal("Failed", ourJob.Status);
+            Xunit.Assert.Equal(JobStates.Failed, ourJob.Status);
         }
 
         [Fact]
@@ -46,7 +46,7 @@ namespace OddJob.Execution.Akka.Test
             var attemptTime = DateTime.Now;
             actor.Tell(new MarkJobInRetryAndIncrement(myGuid, attemptTime));
             System.Threading.SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(2));
-            Xunit.Assert.Equal("Retry", ourJob.Status);
+            Xunit.Assert.Equal(JobStates.Retry, ourJob.Status);
             Xunit.Assert.Equal(1, ourJob.RetryParameters.RetryCount);
             Xunit.Assert.Equal(attemptTime, ourJob.RetryParameters.LastAttempt);
         }
