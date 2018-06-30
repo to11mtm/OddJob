@@ -28,10 +28,6 @@ namespace OddJob.Execution.Akka.Test
                     }
                 }
             }
-            else
-            {
-                return false;
-            }
             return true;
         }
     }

@@ -29,6 +29,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OddJob.Storage.FileSystem.T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OddJob.Storage.BaseTests", "OddJob.Storage.BaseTests\OddJob.Storage.BaseTests.csproj", "{6F6AA4D7-A77C-4C32-8F10-1240AD39FB11}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OddJob.Storage.SQLite", "OddJob.Storage.SQLite\OddJob.Storage.SQLite.csproj", "{29E7E72F-E6C0-41F6-A613-4AFF6C402F14}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OddJob.Storage.SQL.Common", "OddJob.Storage.SQL.Common\OddJob.Storage.SQL.Common.csproj", "{AFBE476A-4893-4F86-B4C1-91054BEA9B33}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +79,14 @@ Global
 		{6F6AA4D7-A77C-4C32-8F10-1240AD39FB11}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6F6AA4D7-A77C-4C32-8F10-1240AD39FB11}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6F6AA4D7-A77C-4C32-8F10-1240AD39FB11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29E7E72F-E6C0-41F6-A613-4AFF6C402F14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29E7E72F-E6C0-41F6-A613-4AFF6C402F14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29E7E72F-E6C0-41F6-A613-4AFF6C402F14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29E7E72F-E6C0-41F6-A613-4AFF6C402F14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AFBE476A-4893-4F86-B4C1-91054BEA9B33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFBE476A-4893-4F86-B4C1-91054BEA9B33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFBE476A-4893-4F86-B4C1-91054BEA9B33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFBE476A-4893-4F86-B4C1-91054BEA9B33}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

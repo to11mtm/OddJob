@@ -1,7 +1,8 @@
 ﻿using System;
 
-namespace OddJob.Storage.SqlServer
+namespace OddJob.Storage.SQL.Common
 {
+
     public class SqlServerDbOddJob : IOddJobWithMetadata
     {
         public Guid JobId { get; set; }

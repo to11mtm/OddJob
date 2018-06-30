@@ -1,4 +1,5 @@
 ﻿using System.Data.SqlClient;
+using OddJob.Storage.SQL.Common;
 
 namespace OddJob.Storage.SqlServer.Test
 {

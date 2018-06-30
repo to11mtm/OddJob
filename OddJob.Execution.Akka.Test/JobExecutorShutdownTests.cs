@@ -6,6 +6,7 @@ using Xunit;
 
 namespace OddJob.Execution.Akka.Test
 {
+    [CollectionDefinition(name:"Shutdown", DisableParallelization = true)]
     public class JobExecutorShutdownTests
     {
         [Fact]
@@ -29,15 +30,17 @@ namespace OddJob.Execution.Akka.Test
             //Warning: this test is a bit racy, due to the nature of JobExecutor and the scheduler.
             //Lowering the timeouts may cause false failures on the test, as the timer may fire before the shutdown is even called.
             var jobStore = new InMemoryTestStore();
-            jobStore.AddJob((ShellShutdownMockJob2 m) => m.DoThing(1), null, null, "test");
+            
             var executor = new HardInjectedJobExecutorShell(() => new JobQueueLayerActor(jobStore),
                 () => new JobWorkerActor(new DefaultJobExecutor(new DefaultContainerFactory())),null);
             
             executor.StartJobQueue("test", 5, 3);
-            
-            
+            jobStore.AddJob((ShellShutdownMockJob2 m) => m.DoThing(1), null, null, "test");
+
             executor.Dispose();
+
             SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(5));
+            Xunit.Assert.False(executor.coordinatorPool.ContainsKey("test"));
             Xunit.Assert.True(ShellShutdownMockJob2.MyCounter.ContainsKey(1)==false);
         }
     }

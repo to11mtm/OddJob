@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,14 +13,16 @@ using Akka.Dispatch;
 using Akka.Event;
 using Akka.Routing;
 
+[assembly: InternalsVisibleTo("OddJob.Execution.Akka.Test")]
 namespace OddJob.Execution.Akka
 {
+    
     public abstract class BaseJobExecutorShell : IDisposable
     {
         protected ActorSystem _actorSystem { get; private set; }
         
-        private Dictionary<string, IActorRef> coordinatorPool = new Dictionary<string, IActorRef>();
-        private Dictionary<string, ICancelable> cancelPulsePool = new Dictionary<string, ICancelable>();
+        internal  Dictionary<string, IActorRef> coordinatorPool = new Dictionary<string, IActorRef>();
+        internal  Dictionary<string, ICancelable> cancelPulsePool = new Dictionary<string, ICancelable>();
         string hoconString
         {
             get
@@ -47,6 +50,7 @@ namespace OddJob.Execution.Akka
             _actorSystem = ActorSystem.Create("Oddjob-Akka", ConfigurationFactory.ParseString(hocon));
             
         }
+
         /// <summary>
         /// Starts a Job Queue. If the Queue already exists, it will not be added.
         /// To reconfigure a queue, first shut it down, then call Start again.
@@ -54,7 +58,8 @@ namespace OddJob.Execution.Akka
         /// <param name="queueName">The name of the Queue</param>
         /// <param name="numWorkers">The number of Workers for the Queue</param>
         /// <param name="pulseDelayInSeconds">The Delay in seconds between 'pulses'.</param>
-        public void StartJobQueue(string queueName, int numWorkers, int pulseDelayInSeconds)
+        /// <param name="firstPulseDelayInSeconds">The time to wait before the first pulse delay. Default is 5. Can use any value greater than 0</param>
+        public void StartJobQueue(string queueName, int numWorkers, int pulseDelayInSeconds, int firstPulseDelayInSeconds = 5)
         {
             if (coordinatorPool.ContainsKey(queueName) == false)
             {
@@ -62,7 +67,7 @@ namespace OddJob.Execution.Akka
                 var jobQueueProps = JobQueueProps;
                 var jobCoordinator = _actorSystem.ActorOf(Props.Create(() => new JobQueueCoordinator(workerProps, jobQueueProps, queueName, numWorkers)).WithMailbox("shutdown-priority-mailbox"), queueName);
                 coordinatorPool.Add(queueName, jobCoordinator);
-                var cancelToken = _actorSystem.Scheduler.ScheduleTellRepeatedlyCancelable((int)TimeSpan.FromSeconds(5).TotalMilliseconds, (int)TimeSpan.FromSeconds(pulseDelayInSeconds).TotalMilliseconds, jobCoordinator, new JobSweep(), null);
+                var cancelToken = _actorSystem.Scheduler.ScheduleTellRepeatedlyCancelable((int)TimeSpan.FromSeconds(firstPulseDelayInSeconds).TotalMilliseconds, (int)TimeSpan.FromSeconds(pulseDelayInSeconds).TotalMilliseconds, jobCoordinator, new JobSweep(), null);
                 cancelPulsePool.Add(queueName, cancelToken);
             }
         }

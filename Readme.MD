@@ -124,4 +124,5 @@ Creating your own Modules:
   - Storage Modules benefit from the existence of `OddJob.Storage.BaseTests`
     - Your test harness can implement `StorageTests` and provide functions for the abstract properties `jobAddStoreFunc` and `jobMgrStoreFunc`
 	  - Look at `OddJob.Storage.SqlServer.Tests` and `OddJob.Storage.FileSystem.Test` projects for example.
-  
+  - SQL was written in a manner that tries to be a bit closer to ANSI semantics
+    - This is in the interest of portability.

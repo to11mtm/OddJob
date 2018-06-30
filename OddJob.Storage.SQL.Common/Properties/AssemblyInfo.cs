@@ -1,16 +1,15 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Xunit;
 
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("OddJob.Execution.Akka.Test")]
+[assembly: AssemblyTitle("OddJob.Storage.SQL.Common")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("OddJob.Execution.Akka.Test")]
+[assembly: AssemblyProduct("OddJob.Storage.SQL.Common")]
 [assembly: AssemblyCopyright("Copyright ©  2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -21,7 +20,7 @@ using Xunit;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("d5d7aa25-80c6-4556-bd44-0e3da3123e3e")]
+[assembly: Guid("afbe476a-4893-4f86-b4c1-91054bea9b33")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -35,4 +34,3 @@ using Xunit;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-[assembly: CollectionBehavior(DisableTestParallelization = true)]

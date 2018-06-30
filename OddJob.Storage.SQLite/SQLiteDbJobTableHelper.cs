@@ -1,6 +1,8 @@
-﻿namespace OddJob.Storage.SqlServer
+﻿using OddJob.Storage.SQL.Common;
+
+namespace OddJob.Storage.SQLite
 {
-    public static class SqlServerDbJobTableHelper
+    public static class SQLiteDbJobTableHelper
     {
         public static string JobTableCreateScript(ISqlServerJobQueueTableConfiguration configuration)
         {
@@ -8,7 +10,7 @@
 
 create Table {0}
 (
-JobId BIGINT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+JobId INT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 QueueName NVarchar(255) not null,
 TypeExecutedOn NVarChar(255) not null,
 MethodName NVarChar(255) not null,

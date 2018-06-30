@@ -1,5 +1,6 @@
 ﻿using System;
 using Dapper;
+using OddJob.Storage.SQL.Common;
 
 namespace OddJob.Storage.SqlServer
 {

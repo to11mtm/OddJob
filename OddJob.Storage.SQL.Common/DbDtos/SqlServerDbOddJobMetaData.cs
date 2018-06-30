@@ -1,10 +1,10 @@
 ﻿using System;
 
-namespace OddJob.Storage.SqlServer.DbDtos
+namespace OddJob.Storage.SQL.Common.DbDtos
 {
-    public class SqlServerDbOddJobMetaData
+    public class SqlCommonDbOddJobMetaData
     {
-        public int JobId { get; set; }
+        public long JobId { get; set; }
         public Guid JobGuid { get; set; }
 
         public string TypeExecutedOn { get; set; }
