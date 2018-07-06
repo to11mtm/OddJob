@@ -8,8 +8,8 @@
     <ProjectGuid>{9DB8AC09-E124-4133-97BC-6A13F1BB0B2A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>OddJob.Storage.SqlServer.Test</RootNamespace>
-    <AssemblyName>OddJob.Storage.SqlServer.Test</AssemblyName>
+    <RootNamespace>GlutenFree.OddJob.Storage.Sql.SqlServer.Test</RootNamespace>
+    <AssemblyName>GlutenFree.OddJob.Storage.Sql.SqlServer.Test</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -78,21 +78,21 @@
     <Analyzer Include="..\packages\xunit.analyzers.0.7.0\analyzers\dotnet\cs\xunit.analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OddJob.Storage.BaseTests\OddJob.Storage.BaseTests.csproj">
+    <ProjectReference Include="..\OddJob.Storage.BaseTests\GlutenFree.OddJob.Storage.BaseTests.csproj">
       <Project>{6F6AA4D7-A77C-4C32-8F10-1240AD39FB11}</Project>
-      <Name>OddJob.Storage.BaseTests</Name>
+      <Name>GlutenFree.OddJob.Storage.BaseTests</Name>
     </ProjectReference>
-    <ProjectReference Include="..\OddJob.Storage.SQL.Common\OddJob.Storage.SQL.Common.csproj">
+    <ProjectReference Include="..\OddJob.Storage.SQL.Common\GlutenFree.OddJob.Storage.SQL.Common.csproj">
       <Project>{AFBE476A-4893-4F86-B4C1-91054BEA9B33}</Project>
-      <Name>OddJob.Storage.SQL.Common</Name>
+      <Name>GlutenFree.OddJob.Storage.SQL.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\OddJob.Storage.SqlServer\OddJob.Storage.SqlServer.csproj">
+    <ProjectReference Include="..\OddJob.Storage.SqlServer\GlutenFree.OddJob.Storage.Sql.SqlServer.csproj">
       <Project>{033469ed-9c96-4f49-bef8-d373029799b3}</Project>
-      <Name>OddJob.Storage.SqlServer</Name>
+      <Name>GlutenFree.OddJob.Storage.Sql.SqlServer</Name>
     </ProjectReference>
-    <ProjectReference Include="..\OddJob\OddJob.csproj">
+    <ProjectReference Include="..\OddJob\GlutenFree.OddJob.csproj">
       <Project>{AA34BEA9-12EC-4BF0-A6E0-9C459A4EBAE9}</Project>
-      <Name>OddJob</Name>
+      <Name>GlutenFree.OddJob</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />

@@ -1,6 +1,7 @@
 ﻿using System;
+using GlutenFree.OddJob.Interfaces;
 
-namespace OddJob.Storage.FileSystem
+namespace GlutenFree.OddJob.Storage.FileSystem
 {
     public class FileSystemJobMetaData : IOddJobWithMetadata
     {

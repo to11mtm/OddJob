@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Dapper;
-using OddJob.Storage.SQL.Common;
+﻿using GlutenFree.OddJob.Storage.SQL.Common;
 
-namespace OddJob.Storage.SqlServer
+namespace GlutenFree.OddJob.Storage.Sql.SqlServer
 {
     
     public class SqlServerJobQueueManager : BaseSqlJobQueueManager

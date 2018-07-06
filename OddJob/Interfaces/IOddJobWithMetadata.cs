@@ -1,4 +1,4 @@
-﻿namespace OddJob
+﻿namespace GlutenFree.OddJob.Interfaces
 {
     public interface IOddJobWithMetadata : IOddJob
     {

@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Threading;
+using GlutenFree.OddJob.Interfaces;
 using Xunit;
 
-namespace OddJob.Storage.TestKit
+namespace GlutenFree.OddJob.Storage.BaseTests
 {
     public abstract class StorageTests
     {

@@ -1,4 +1,6 @@
-﻿namespace OddJob.Storage.SqlServer.Test
+﻿using GlutenFree.OddJob.Storage.Sql.SqlServer;
+
+namespace OddJob.Storage.Sql.SqlServer.Test
 {
     public static class UnitTestTableHelper
     {

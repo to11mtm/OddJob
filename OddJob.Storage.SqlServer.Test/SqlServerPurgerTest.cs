@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using GlutenFree.OddJob;
+using GlutenFree.OddJob.Interfaces;
+using GlutenFree.OddJob.Storage.Sql.SqlServer;
 using Xunit;
 
-namespace OddJob.Storage.SqlServer.Test
+namespace OddJob.Storage.Sql.SqlServer.Test
 {
     public class SqlServerPurgerTest
     {

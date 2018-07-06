@@ -1,17 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Threading;
-using Dapper;
-using OddJob.Storage.TestKit;
-using Xunit.Abstractions;
-using Timer = System.Timers.Timer;
+using GlutenFree.OddJob.Interfaces;
+using GlutenFree.OddJob.Storage.BaseTests;
+using GlutenFree.OddJob.Storage.Sql.SqlServer;
 
-namespace OddJob.Storage.SqlServer.Test
+namespace OddJob.Storage.Sql.SqlServer.Test
 {
     public class SqlServerStorageTest: StorageTests
     {

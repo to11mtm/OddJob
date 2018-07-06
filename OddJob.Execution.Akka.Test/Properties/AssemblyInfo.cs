@@ -6,11 +6,11 @@ using Xunit;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("OddJob.Execution.Akka.Test")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("GlutenFree.OddJob.Execution.Akka.Test")]
+[assembly: AssemblyDescription("Oddjob - Akka Execution Engine Tests")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("OddJob.Execution.Akka.Test")]
+[assembly: AssemblyCompany("Gluten Free Solutions")]
+[assembly: AssemblyProduct("GlutenFree.OddJob.Execution.Akka.Test")]
 [assembly: AssemblyCopyright("Copyright ©  2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

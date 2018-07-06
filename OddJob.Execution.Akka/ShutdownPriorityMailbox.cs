@@ -1,8 +1,9 @@
 ﻿using Akka.Actor;
 using Akka.Configuration;
 using Akka.Dispatch;
+using GlutenFree.OddJob.Execution.Akka.Messages;
 
-namespace OddJob.Execution.Akka
+namespace GlutenFree.OddJob.Execution.Akka
 {
     public class ShutdownPriorityMailbox : UnboundedPriorityMailbox
     {

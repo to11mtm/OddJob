@@ -1,6 +1,6 @@
 ﻿using System.Data.SqlClient;
 
-namespace OddJob.Storage.SQL.Common
+namespace GlutenFree.OddJob.Storage.SQL.Common
 {
     public interface IJobQueueDbConnectionFactory
     {

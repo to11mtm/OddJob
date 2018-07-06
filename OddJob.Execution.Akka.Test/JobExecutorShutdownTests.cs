@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading;
 using Xunit;
 
-namespace OddJob.Execution.Akka.Test
+namespace GlutenFree.OddJob.Execution.Akka.Test
 {
     [CollectionDefinition(name:"Shutdown", DisableParallelization = true)]
     public class JobExecutorShutdownTests

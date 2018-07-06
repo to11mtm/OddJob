@@ -1,4 +1,6 @@
-﻿namespace OddJob.Execution.Akka
+﻿using GlutenFree.OddJob.Interfaces;
+
+namespace GlutenFree.OddJob.Execution.Akka.Messages
 {
     public class ExecuteJobRequest
     {

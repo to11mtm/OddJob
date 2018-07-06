@@ -1,7 +1,7 @@
 ﻿using System;
 using Xunit;
 
-namespace OddJob.Tests
+namespace GlutenFree.OddJob.Tests
 {
     public class UnitTest1
     {

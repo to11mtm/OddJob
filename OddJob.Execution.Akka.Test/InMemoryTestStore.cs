@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using GlutenFree.OddJob.Interfaces;
 
-namespace OddJob.Execution.Akka.Test
+namespace GlutenFree.OddJob.Execution.Akka.Test
 {
     public class InMemoryTestStore : IJobQueueAdder, IJobQueueManager
     {

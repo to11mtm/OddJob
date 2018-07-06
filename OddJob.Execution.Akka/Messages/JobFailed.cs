@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+using GlutenFree.OddJob.Interfaces;
 
-namespace OddJob.Execution.Akka
+namespace GlutenFree.OddJob.Execution.Akka.Messages
 {
     public class JobFailed
     {

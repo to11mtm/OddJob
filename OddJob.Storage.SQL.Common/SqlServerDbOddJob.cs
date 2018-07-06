@@ -1,6 +1,7 @@
 ﻿using System;
+using GlutenFree.OddJob.Interfaces;
 
-namespace OddJob.Storage.SQL.Common
+namespace GlutenFree.OddJob.Storage.SQL.Common
 {
 
     public class SqlServerDbOddJob : IOddJobWithMetadata

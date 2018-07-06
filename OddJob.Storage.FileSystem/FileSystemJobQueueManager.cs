@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using GlutenFree.OddJob.Interfaces;
 using Newtonsoft.Json;
 
-namespace OddJob.Storage.FileSystem
+namespace GlutenFree.OddJob.Storage.FileSystem
 {
     public class FileSystemJobQueueManager : IJobQueueManager
     {

@@ -1,7 +1,8 @@
-﻿using Akka.Actor;
-using System;
+﻿using System;
+using Akka.Actor;
+using GlutenFree.OddJob.Execution.Akka.Messages;
 
-namespace OddJob.Execution.Akka.Test
+namespace GlutenFree.OddJob.Execution.Akka.Test
 {
     public class MockJobWorker : ActorBase
     {

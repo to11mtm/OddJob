@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
 
-namespace OddJob
+namespace GlutenFree.OddJob.Interfaces
 {
     public interface IJobQueuePurger
     {

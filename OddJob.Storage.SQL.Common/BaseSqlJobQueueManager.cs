@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Dapper;
-using OddJob.Storage.SQL.Common.DbDtos;
+using GlutenFree.OddJob.Interfaces;
+using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
 
-namespace OddJob.Storage.SQL.Common
+namespace GlutenFree.OddJob.Storage.SQL.Common
 {
     public abstract class BaseSqlJobQueueManager : IJobQueueManager
     {

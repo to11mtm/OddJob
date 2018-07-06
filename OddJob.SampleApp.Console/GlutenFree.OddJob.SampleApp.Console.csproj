@@ -4,15 +4,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{55035D4F-B1DB-4DFD-BB92-33BB1C96183A}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>OddJob.Storage.FileSystem</RootNamespace>
-    <AssemblyName>OddJob.Storage.FileSystem</AssemblyName>
+    <ProjectGuid>{E8BD023A-4BEC-40B9-8FCA-FEB200922DCD}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>OddJob.SampleApp.Console</RootNamespace>
+    <AssemblyName>OddJob.SampleApp.Console</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -22,6 +23,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -30,9 +32,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
+    <Reference Include="Akka, Version=1.3.8.0, Culture=neutral, PublicKeyToken=null" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -43,19 +43,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FileSystemJobMetaData.cs" />
-    <Compile Include="FileSystemJobQueueAdder.cs" />
-    <Compile Include="FileSystemJobQueueManager.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OddJob\OddJob.csproj">
-      <Project>{aa34bea9-12ec-4bf0-a6e0-9c459a4ebae9}</Project>
-      <Name>OddJob</Name>
-    </ProjectReference>
+    <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <ProjectReference Include="..\OddJob.Execution.Akka.Test\GlutenFree.OddJob.Execution.Akka.Test.csproj">
+      <Project>{d5d7aa25-80c6-4556-bd44-0e3da3123e3e}</Project>
+      <Name>GlutenFree.OddJob.Execution.Akka.Test</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\OddJob.Execution.Akka\GlutenFree.OddJob.Execution.Akka.csproj">
+      <Project>{0ae03157-a9b2-4fbd-8db7-36dc09ee01d3}</Project>
+      <Name>GlutenFree.OddJob.Execution.Akka</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\OddJob\GlutenFree.OddJob.csproj">
+      <Project>{aa34bea9-12ec-4bf0-a6e0-9c459a4ebae9}</Project>
+      <Name>GlutenFree.OddJob</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

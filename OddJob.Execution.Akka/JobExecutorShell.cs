@@ -1,20 +1,16 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Akka;
 using Akka.Actor;
 using Akka.Configuration;
 using Akka.Dispatch;
 using Akka.Event;
 using Akka.Routing;
+using GlutenFree.OddJob.Execution.Akka.Messages;
 
-[assembly: InternalsVisibleTo("OddJob.Execution.Akka.Test")]
-namespace OddJob.Execution.Akka
+[assembly: InternalsVisibleTo("GlutenFree.OddJob.Execution.Akka.Test")]
+namespace GlutenFree.OddJob.Execution.Akka
 {
     
     public abstract class BaseJobExecutorShell : IDisposable

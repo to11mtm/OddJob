@@ -1,11 +1,13 @@
-﻿using Akka.Actor;
-using Akka.TestKit.Xunit2;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Akka.Actor;
+using Akka.TestKit.Xunit2;
+using GlutenFree.OddJob.Execution.Akka.Messages;
+using GlutenFree.OddJob.Interfaces;
 using Xunit;
 
-namespace OddJob.Execution.Akka.Test
+namespace GlutenFree.OddJob.Execution.Akka.Test
 {
     public class JobQueueLayerTests : TestKit
     {

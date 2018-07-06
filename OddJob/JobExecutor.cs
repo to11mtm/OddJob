@@ -1,6 +1,7 @@
 ﻿using System.Linq;
+using GlutenFree.OddJob.Interfaces;
 
-namespace OddJob
+namespace GlutenFree.OddJob
 {
     public interface IJobExecutor
     {

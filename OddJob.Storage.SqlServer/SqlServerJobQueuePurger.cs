@@ -1,8 +1,9 @@
 ﻿using System;
 using Dapper;
-using OddJob.Storage.SQL.Common;
+using GlutenFree.OddJob.Interfaces;
+using GlutenFree.OddJob.Storage.SQL.Common;
 
-namespace OddJob.Storage.SqlServer
+namespace GlutenFree.OddJob.Storage.Sql.SqlServer
 {
     public class SqlServerJobQueuePurger : IJobQueuePurger
     {

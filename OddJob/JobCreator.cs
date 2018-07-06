@@ -3,7 +3,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
 
-namespace OddJob
+namespace GlutenFree.OddJob
 {
     public class JobCreationException : Exception
     {

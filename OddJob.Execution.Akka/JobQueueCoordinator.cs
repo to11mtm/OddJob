@@ -1,10 +1,11 @@
-﻿using Akka.Actor;
-using Akka.Routing;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using Akka.Actor;
+using Akka.Routing;
+using GlutenFree.OddJob.Execution.Akka.Messages;
+using GlutenFree.OddJob.Interfaces;
 
-namespace OddJob.Execution.Akka
+namespace GlutenFree.OddJob.Execution.Akka
 {
     public class JobQueueCoordinator : ActorBase
     {

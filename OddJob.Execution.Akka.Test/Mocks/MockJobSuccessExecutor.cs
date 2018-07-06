@@ -1,4 +1,6 @@
-﻿namespace OddJob.Execution.Akka.Test
+﻿using GlutenFree.OddJob.Interfaces;
+
+namespace GlutenFree.OddJob.Execution.Akka.Test.Mocks
 {
     public class MockJobSuccessExecutor : IJobExecutor
     {

@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Linq.Expressions;
 using Dapper;
-using OddJob.Storage.SQL.Common;
+using GlutenFree.OddJob.Interfaces;
 
-namespace OddJob.Storage.SqlServer
+namespace GlutenFree.OddJob.Storage.SQL.Common
 {
     public abstract class BaseSqlJobQueueAdder : IJobQueueAdder
     {

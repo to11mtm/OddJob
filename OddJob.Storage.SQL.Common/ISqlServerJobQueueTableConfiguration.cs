@@ -1,4 +1,4 @@
-﻿namespace OddJob.Storage.SQL.Common
+﻿namespace GlutenFree.OddJob.Storage.SQL.Common
 {
     public interface ISqlServerJobQueueTableConfiguration
     {

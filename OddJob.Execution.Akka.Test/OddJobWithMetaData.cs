@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Text;
-using System.Threading.Tasks;
+using GlutenFree.OddJob.Interfaces;
 
-namespace OddJob.Execution.Akka.Test
+namespace GlutenFree.OddJob.Execution.Akka.Test
 {
     public class OddJobWithMetaData : IOddJobWithMetadata
     {

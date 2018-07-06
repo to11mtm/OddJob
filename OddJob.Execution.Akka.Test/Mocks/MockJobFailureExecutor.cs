@@ -1,6 +1,7 @@
 ﻿using System;
+using GlutenFree.OddJob.Interfaces;
 
-namespace OddJob.Execution.Akka.Test
+namespace GlutenFree.OddJob.Execution.Akka.Test.Mocks
 {
     public class MockJobFailureExecutor : IJobExecutor
     {

@@ -5,11 +5,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{6F6AA4D7-A77C-4C32-8F10-1240AD39FB11}</ProjectGuid>
+    <ProjectGuid>{D5D7AA25-80C6-4556-BD44-0E3DA3123E3E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>OddJob.Storage.BaseTests</RootNamespace>
-    <AssemblyName>OddJob.Storage.BaseTests</AssemblyName>
+    <RootNamespace>GlutenFree.OddJob.Execution.Akka.Test</RootNamespace>
+    <AssemblyName>GlutenFree.OddJob.Execution.Akka.Test</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>
@@ -33,7 +33,32 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Akka, Version=1.3.8.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Akka.1.3.8\lib\net45\Akka.dll</HintPath>
+    </Reference>
+    <Reference Include="Akka.DI.Core, Version=1.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Akka.DI.Core.1.3.0\lib\net45\Akka.DI.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Akka.DI.SimpleInjector, Version=1.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Akka.DI.SimpleInjector.1.3.0\lib\net45\Akka.DI.SimpleInjector.dll</HintPath>
+    </Reference>
+    <Reference Include="Akka.TestKit, Version=1.3.8.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Akka.TestKit.1.3.8\lib\net45\Akka.TestKit.dll</HintPath>
+    </Reference>
+    <Reference Include="Akka.TestKit.Xunit2, Version=1.3.8.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Akka.TestKit.Xunit2.1.3.8\lib\net45\Akka.TestKit.Xunit2.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="SimpleInjector, Version=4.0.8.0, Culture=neutral, PublicKeyToken=984cb50dea722e99, processorArchitecture=MSIL">
+      <HintPath>..\packages\SimpleInjector.4.0.8\lib\net45\SimpleInjector.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable, Version=1.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Collections.Immutable.1.3.1\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -55,20 +80,36 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
+    <Compile Include="InMemoryTestStore.cs" />
+    <Compile Include="JobCoordinatorTests.cs" />
+    <Compile Include="JobExecutorShellTests.cs" />
+    <Compile Include="JobExecutorShutdownTests.cs" />
+    <Compile Include="JobQueueLayerTests.cs" />
+    <Compile Include="JobWorkerTests.cs" />
+    <Compile Include="MockJob.cs" />
+    <Compile Include="MockJobWorker.cs" />
+    <Compile Include="Mocks\MockJobFailureExecutor.cs" />
+    <Compile Include="Mocks\MockJobSuccessExecutor.cs" />
+    <Compile Include="OddJobWithMetaData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QueueLayerMock.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\OddJob.Execution.Akka\GlutenFree.OddJob.Execution.Akka.csproj">
+      <Project>{0ae03157-a9b2-4fbd-8db7-36dc09ee01d3}</Project>
+      <Name>GlutenFree.OddJob.Execution.Akka</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\OddJob\GlutenFree.OddJob.csproj">
+      <Project>{aa34bea9-12ec-4bf0-a6e0-9c459a4ebae9}</Project>
+      <Name>GlutenFree.OddJob</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="..\packages\xunit.analyzers.0.7.0\analyzers\dotnet\cs\xunit.analyzers.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\OddJob\OddJob.csproj">
-      <Project>{AA34BEA9-12EC-4BF0-A6E0-9C459A4EBAE9}</Project>
-      <Name>OddJob</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

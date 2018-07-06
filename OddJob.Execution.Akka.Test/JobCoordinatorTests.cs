@@ -1,14 +1,12 @@
-﻿using Akka.Actor;
-using Akka.TestKit.Xunit2;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
+﻿using System;
+using Akka.Actor;
 using Akka.Routing;
+using Akka.TestKit.Xunit2;
+using GlutenFree.OddJob.Execution.Akka.Messages;
+using GlutenFree.OddJob.Execution.Akka.Test.Mocks;
+using Xunit;
 
-namespace OddJob.Execution.Akka.Test
+namespace GlutenFree.OddJob.Execution.Akka.Test
 {
     public class JobCoordinatorTests : TestKit
     {

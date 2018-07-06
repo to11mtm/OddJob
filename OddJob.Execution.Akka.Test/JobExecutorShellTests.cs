@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Threading;
-using Akka.DI.Core;
 using Akka.DI.SimpleInjector;
+using GlutenFree.OddJob.Execution.Akka.Test.Mocks;
+using GlutenFree.OddJob.Interfaces;
 using SimpleInjector;
 using Xunit;
 
-namespace OddJob.Execution.Akka.Test
+namespace GlutenFree.OddJob.Execution.Akka.Test
 {
     public class TestSimpleInjectorContainerFactory : IContainerFactory
     {

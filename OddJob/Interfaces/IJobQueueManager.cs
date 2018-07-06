@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace OddJob
+namespace GlutenFree.OddJob.Interfaces
 {
     public interface IJobQueueManager
     {

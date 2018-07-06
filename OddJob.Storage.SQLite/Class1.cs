@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using OddJob.Storage.SQL.Common;
+﻿using GlutenFree.OddJob.Storage.SQL.Common;
 
-namespace OddJob.Storage.SQLite
+namespace GlutenFree.OddJob.Storage.SQL.SQLite
 {
     public class SqlLiteJobQueueManager : BaseSqlJobQueueManager
     {

@@ -1,7 +1,7 @@
 ﻿using System.Data.SqlClient;
-using OddJob.Storage.SQL.Common;
+using GlutenFree.OddJob.Storage.SQL.Common;
 
-namespace OddJob.Storage.SqlServer.Test
+namespace OddJob.Storage.Sql.SqlServer.Test
 {
     public class TestConnectionFactory : IJobQueueDbConnectionFactory
     {

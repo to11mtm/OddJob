@@ -7,8 +7,8 @@
     <ProjectGuid>{0AE03157-A9B2-4FBD-8DB7-36DC09EE01D3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>OddJob.Execution.Akka</RootNamespace>
-    <AssemblyName>OddJob.Execution.Akka</AssemblyName>
+    <RootNamespace>GlutenFree.OddJob.Execution.Akka</RootNamespace>
+    <AssemblyName>GlutenFree.OddJob.Execution.Akka</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -74,12 +74,13 @@
     <Compile Include="ShutdownPriorityMailbox.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="GlutenFree.OddJob.Execution.Akka.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OddJob\OddJob.csproj">
+    <ProjectReference Include="..\OddJob\GlutenFree.OddJob.csproj">
       <Project>{aa34bea9-12ec-4bf0-a6e0-9c459a4ebae9}</Project>
-      <Name>OddJob</Name>
+      <Name>GlutenFree.OddJob</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

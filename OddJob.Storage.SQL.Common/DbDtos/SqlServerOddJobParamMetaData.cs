@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OddJob.Storage.SQL.Common.DbDtos
+namespace GlutenFree.OddJob.Storage.SQL.Common.DbDtos
 {
     public class SqlCommonOddJobParamMetaData
     {

@@ -4,7 +4,7 @@ using Akka.Dispatch;
 using Akka.DI.Core;
 using Akka.Event;
 
-namespace OddJob.Execution.Akka
+namespace GlutenFree.OddJob.Execution.Akka
 {
     public class DependencyInjectedJobExecutorShell : BaseJobExecutorShell
     {

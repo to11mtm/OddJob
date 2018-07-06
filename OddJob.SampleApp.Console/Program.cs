@@ -5,8 +5,9 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using OddJob.Execution.Akka;
-using OddJob.Execution.Akka.Test;
+using GlutenFree.OddJob;
+using GlutenFree.OddJob.Execution.Akka;
+using GlutenFree.OddJob.Execution.Akka.Test;
 
 namespace OddJob.SampleApp.Console
 {

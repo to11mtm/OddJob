@@ -1,9 +1,11 @@
-﻿using Akka.Actor;
+﻿using System;
+using Akka.Actor;
 using Akka.TestKit.Xunit2;
-using System;
+using GlutenFree.OddJob.Execution.Akka.Messages;
+using GlutenFree.OddJob.Execution.Akka.Test.Mocks;
 using Xunit;
 
-namespace OddJob.Execution.Akka.Test
+namespace GlutenFree.OddJob.Execution.Akka.Test
 {
     public class JobWorkerTests : TestKit
     {

@@ -1,6 +1,7 @@
 ﻿using System;
+using GlutenFree.OddJob.Interfaces;
 
-namespace OddJob
+namespace GlutenFree.OddJob
 {
     public class OddJob : IOddJob
     {

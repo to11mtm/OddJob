@@ -1,6 +1,8 @@
 ﻿using Akka.Actor;
+using GlutenFree.OddJob.Execution.Akka.Messages;
+using GlutenFree.OddJob.Interfaces;
 
-namespace OddJob.Execution.Akka
+namespace GlutenFree.OddJob.Execution.Akka
 {
     public class JobQueueLayerActor : ActorBase
     {
