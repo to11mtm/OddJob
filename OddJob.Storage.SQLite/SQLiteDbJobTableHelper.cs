@@ -10,7 +10,7 @@ namespace GlutenFree.OddJob.Storage.SQL.SQLite
 
 create Table {0}
 (
-JobId INTEGER PRIMARY KEY,
+Id INTEGER PRIMARY KEY,
 QueueName NVarchar(255) not null,
 TypeExecutedOn NVarChar(255) not null,
 MethodName NVarChar(255) not null,
@@ -34,7 +34,7 @@ CreatedDate datetime not null
 Create table {0}
 (
 JobParamId INTEGER PRIMARY KEY,
-JobId varchar(36) not null, 
+Id varchar(36) not null, 
 ParamOrdinal int not null,
 SerializedValue text null,
 SerializedType nvarchar(255) null

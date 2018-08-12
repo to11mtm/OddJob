@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>GlutenFree.OddJob.Storage.Sql.SqlServer</id>
+    <version>0.9.0</version>
+    <title>GlutenFree.OddJob.Storage.SqlServer</title>
+    <authors>Gluten Free Solutions</authors>
+    <owners>Gluten Free Solutions</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://github.com/to11mtm/OddJob/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/to11mtm/OddJob/</projectUrl>
+    <description>OddJob - SqlServer Storage Provider</description>
+    <releaseNotes>First Nuget Release</releaseNotes>
+    <copyright>Copyright 2018</copyright>
+    <tags>job jobs jobscheduler scheduler oddjob task future later sql server sqlserver</tags>
+    <dependencies>
+      <dependency id="Dapper" version="1.50.5" />
+      <dependency id="Newtonsoft.Json" version="6.0.3" />
+      <dependency id="Utf8Json" version="1.3.7" />
+      <dependency id="GlutenFree.OddJob" version="0.9.0" />
+    </dependencies>
+  </metadata>
+</package>

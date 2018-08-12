@@ -1,4 +1,6 @@
-﻿namespace GlutenFree.OddJob.Storage.Sql.SqlServer
+﻿using GlutenFree.OddJob.Storage.SQL.Common;
+
+namespace GlutenFree.OddJob.Storage.Sql.SqlServer
 {
     public class SqlServerJobQueueDefaultTableConfiguration : ISqlServerJobQueueTableConfiguration
     {

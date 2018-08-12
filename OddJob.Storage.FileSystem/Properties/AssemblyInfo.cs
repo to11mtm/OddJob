@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("OddJob.Storage.FileSystem")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("OddJob - File System Storage Provider")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Gluten Free Solutions")]
 [assembly: AssemblyProduct("OddJob.Storage.FileSystem")]
 [assembly: AssemblyCopyright("Copyright ©  2018")]
 [assembly: AssemblyTrademark("")]

@@ -11,6 +11,47 @@ namespace OddJob.Storage.Sql.SqlServer.Test
     {
         public const string DB_DIRECTORY = "Data";
 
+        public static string CheckConnString(string dbName, bool deleteIfExists = false)
+        {
+            try
+            {
+                string outputFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
+                    DB_DIRECTORY);
+                string mdfFilename = dbName + ".mdf";
+                string dbFileName = Path.Combine(outputFolder, mdfFilename);
+                string logFileName = Path.Combine(outputFolder, String.Format("{0}_log.ldf", dbName));
+                // Create Data Directory If It Doesn't Already Exist.
+                if (!Directory.Exists(outputFolder))
+                {
+                    Directory.CreateDirectory(outputFolder);
+                }
+
+                // If the file exists, and we want to delete old data, remove it here and create a new database.
+                if (File.Exists(dbFileName) && deleteIfExists)
+                {
+                    if (File.Exists(logFileName)) File.Delete(logFileName);
+                    File.Delete(dbFileName);
+                    CreateDatabase(dbName, dbFileName);
+                }
+                // If the database does not already exist, create it.
+                else if (!File.Exists(dbFileName))
+                {
+                    CreateDatabase(dbName, dbFileName);
+                }
+
+                // Open newly created, or old database.
+                string connectionString =
+                    String.Format(
+                        @"Data Source=(LocalDB)\mssqllocaldb;AttachDBFileName={1};Initial Catalog={0};Integrated Security=True;",
+                        dbName, dbFileName);
+                return connectionString;
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
         public static SqlConnection GetLocalDB(string dbName, bool deleteIfExists = false)
         {
             try

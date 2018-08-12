@@ -4,6 +4,8 @@ using System.Reflection;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Storage.BaseTests;
 using GlutenFree.OddJob.Storage.Sql.SqlServer;
+using GlutenFree.OddJob.Storage.SQL.Common;
+using LinqToDB;
 
 namespace OddJob.Storage.Sql.SqlServer.Test
 {
@@ -23,8 +25,9 @@ namespace OddJob.Storage.Sql.SqlServer.Test
         {
             get
             {
-                return () => new SqlServerJobQueueAdder(new TestConnectionFactory(),
-                    new SqlServerJobQueueDefaultTableConfiguration());
+                return ()=> new SqlServerJobQueueAdder(new TestConnectionFactory(new JobQueueDbConnectionFactorySettings() { ConnectionString = SqlConnectionHelper.CheckConnString("unittestdb"), ProviderName = ProviderName.SqlServer }),
+                    new SqlServerJobQueueDefaultTableConfiguration());/*() => new SqlServerJobQueueAdder(new TestConnectionFactory(),
+                    new SqlServerJobQueueDefaultTableConfiguration());*/
             }
         }
 
@@ -32,7 +35,7 @@ namespace OddJob.Storage.Sql.SqlServer.Test
         {
             get
             {
-                return () => new SqlServerJobQueueManager(new TestConnectionFactory(),
+                return () => new SqlServerJobQueueManager(new TestConnectionFactory(new JobQueueDbConnectionFactorySettings(){ ConnectionString = SqlConnectionHelper.CheckConnString("unittestdb"), ProviderName = ProviderName.SqlServer}),
                     new SqlServerJobQueueDefaultTableConfiguration());
             }
         }
