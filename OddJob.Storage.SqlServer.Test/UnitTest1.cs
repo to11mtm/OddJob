@@ -21,7 +21,7 @@ namespace GlutenFree.OddJob.Storage.Sql.SqlServer.Test
 
         }
 
-        protected override Func<IJobQueueAdder> jobAddStoreFunc
+        protected override Func<IJobQueueAdder> JobAddStoreFunc
         {
             get
             {
@@ -32,7 +32,7 @@ namespace GlutenFree.OddJob.Storage.Sql.SqlServer.Test
             }
         }
 
-        protected override Func<IJobQueueManager> jobMgrStoreFunc
+        protected override Func<IJobQueueManager> JobMgrStoreFunc
         {
             get
             {

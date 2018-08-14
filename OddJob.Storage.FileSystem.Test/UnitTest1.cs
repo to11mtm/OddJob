@@ -14,7 +14,7 @@ namespace OddJob.Storage.FileSystem.Test
         {
         }
 
-        protected override Func<IJobQueueAdder> jobAddStoreFunc { get{return ()=> new FileSystemJobQueueAdder("test.json"); } }
-        protected override Func<IJobQueueManager> jobMgrStoreFunc { get {return ()=> new FileSystemJobQueueManager("test.json"); } }
+        protected override Func<IJobQueueAdder> JobAddStoreFunc { get{return ()=> new FileSystemJobQueueAdder("test.json"); } }
+        protected override Func<IJobQueueManager> JobMgrStoreFunc { get {return ()=> new FileSystemJobQueueManager("test.json"); } }
     }
 }
