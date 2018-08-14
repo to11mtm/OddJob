@@ -1,8 +1,8 @@
 ﻿using GlutenFree.OddJob.Storage.SQL.Common;
 
-namespace GlutenFree.OddJob.Storage.Sql.SqlServer
+namespace GlutenFree.OddJob.Storage.Sql.SQLite
 {
-    public static class SqlServerDbJobTableHelper
+    public static class SQLiteDbJobTableHelper
     {
         public static string JobTableCreateScript(SqlDbJobQueueDefaultTableConfiguration configuration)
         {
@@ -10,7 +10,7 @@ namespace GlutenFree.OddJob.Storage.Sql.SqlServer
 
 create Table {0}
 (
-Id BIGINT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+Id INTEGER PRIMARY KEY,
 QueueName NVarchar(255) not null,
 TypeExecutedOn NVarChar(255) not null,
 MethodName NVarChar(255) not null,
@@ -32,10 +32,10 @@ CreatedDate datetime not null)
             return string.Format(@"
 Create table {0}
 (
-JobParamId int not null identity(1,1) primary key,
+JobParamId INTEGER PRIMARY KEY,
 Id uniqueidentifier not null, 
 ParamOrdinal int not null,
-SerializedValue nvarchar(max) null,
+SerializedValue text null,
 SerializedType nvarchar(255) null
 )", config.ParamTableName);
         }

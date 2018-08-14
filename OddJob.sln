@@ -49,6 +49,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FileSystem", "FileSystem", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{485C90AE-0202-4A4A-9894-4678926966AB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Storage.Sql.SQLite.Test", "GlutenFree.OddJob.Storage.Sql.SQLite.Test\GlutenFree.OddJob.Storage.Sql.SQLite.Test.csproj", "{D7F1EE7C-7E1B-4C1D-A955-E905590FAE26}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -103,6 +105,10 @@ Global
 		{AFBE476A-4893-4F86-B4C1-91054BEA9B33}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AFBE476A-4893-4F86-B4C1-91054BEA9B33}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AFBE476A-4893-4F86-B4C1-91054BEA9B33}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7F1EE7C-7E1B-4C1D-A955-E905590FAE26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7F1EE7C-7E1B-4C1D-A955-E905590FAE26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7F1EE7C-7E1B-4C1D-A955-E905590FAE26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7F1EE7C-7E1B-4C1D-A955-E905590FAE26}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -124,6 +130,7 @@ Global
 		{4CFC46BD-CA09-4ACC-9CAF-2A4E6B06950F} = {7D6DF53C-4F9A-4498-8C56-C20787417166}
 		{7C879A5D-DDFE-4FAA-A45D-F93673D21142} = {7D6DF53C-4F9A-4498-8C56-C20787417166}
 		{DD4A99A0-F2EE-4F44-9253-F47121D0F53C} = {96997457-A8B5-48B7-BF68-A69EB55B13FC}
+		{D7F1EE7C-7E1B-4C1D-A955-E905590FAE26} = {7C879A5D-DDFE-4FAA-A45D-F93673D21142}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FCDAA670-41E2-41AE-A098-36F68A02ED70}

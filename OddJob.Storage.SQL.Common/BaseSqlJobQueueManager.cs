@@ -17,12 +17,12 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
         public long JobId { get; set; }
         public DateTime? MostRecentDate { get; set; }
     }
-    public abstract class BaseSqlJobQueueManager : IJobQueueManager
+    public abstract class BaseSqlJobQueueManager<TJobQueueDbConnectionFactory> : IJobQueueManager where TJobQueueDbConnectionFactory : IJobQueueDbConnectionFactory
     {
         private readonly ISqlDbJobQueueTableConfiguration _jobQueueTableConfiguration;
         private readonly  MappingSchema _mappingSchema = null;
 
-        protected BaseSqlJobQueueManager(IJobQueueDbConnectionFactory jobQueueConnectionFactory,
+        protected BaseSqlJobQueueManager(TJobQueueDbConnectionFactory jobQueueConnectionFactory,
             ISqlDbJobQueueTableConfiguration jobQueueTableConfiguration)
         {
             _jobQueueConnectionFactory = jobQueueConnectionFactory;
@@ -33,7 +33,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
             _mappingSchema = Mapping.BuildMappingSchema(jobQueueTableConfiguration);
         }
 
-        protected IJobQueueDbConnectionFactory _jobQueueConnectionFactory { get; private set; }
+        protected TJobQueueDbConnectionFactory _jobQueueConnectionFactory { get; private set; }
         
 
         public virtual void MarkJobSuccess(Guid jobGuid)

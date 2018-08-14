@@ -2,14 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using GlutenFree.OddJob;
 using GlutenFree.OddJob.Interfaces;
-using GlutenFree.OddJob.Storage.Sql.SqlServer;
 using GlutenFree.OddJob.Storage.SQL.Common;
-using LinqToDB;
+using OddJob.Storage.Sql.SqlServer.Test;
 using Xunit;
 
-namespace OddJob.Storage.Sql.SqlServer.Test
+namespace GlutenFree.OddJob.Storage.Sql.SqlServer.Test
 {
     public class SqlServerPurgerTest
     {
@@ -37,7 +35,7 @@ namespace OddJob.Storage.Sql.SqlServer.Test
         {
             get
             {
-                return () => new SqlServerJobQueueAdder(new TestConnectionFactory(new JobQueueDbConnectionFactorySettings() { ConnectionString = SqlConnectionHelper.CheckConnString("unittestdb"), ProviderName = ProviderName.SqlServer }),
+                return () => new SqlServerJobQueueAdder(new SqlServerDBConnectionFactory(SqlConnectionHelper.CheckConnString("unittestdb")),
                     new SqlDbJobQueueDefaultTableConfiguration());
             }
         }
@@ -46,7 +44,7 @@ namespace OddJob.Storage.Sql.SqlServer.Test
         {
             get
             {
-                return () => new SqlServerJobQueueManager(new TestConnectionFactory(new JobQueueDbConnectionFactorySettings() { ConnectionString = SqlConnectionHelper.CheckConnString("unittestdb"), ProviderName = ProviderName.SqlServer }),
+                return () => new SqlServerJobQueueManager(new SqlServerDBConnectionFactory(SqlConnectionHelper.CheckConnString("unittestdb")),
                     new SqlDbJobQueueDefaultTableConfiguration());
             }
         }
@@ -55,7 +53,7 @@ namespace OddJob.Storage.Sql.SqlServer.Test
         {
             get
             {
-                return () => new BaseSqlJobQueuePurger(new TestConnectionFactory(new JobQueueDbConnectionFactorySettings(){ConnectionString = SqlConnectionHelper.CheckConnString("unittestdb"), ProviderName = ProviderName.SqlServer}),
+                return () => new BaseSqlJobQueuePurger(new SqlServerDBConnectionFactory(SqlConnectionHelper.CheckConnString("unittestdb")),
                     new SqlDbJobQueueDefaultTableConfiguration());
             }
         }

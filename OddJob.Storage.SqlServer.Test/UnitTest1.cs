@@ -26,11 +26,8 @@ namespace GlutenFree.OddJob.Storage.Sql.SqlServer.Test
             get
             {
                 return () => new SqlServerJobQueueAdder(
-                    new TestConnectionFactory(new JobQueueDbConnectionFactorySettings()
-                    {
-                        ConnectionString = SqlConnectionHelper.CheckConnString("unittestdb"),
-                        ProviderName = ProviderName.SqlServer
-                    }),
+                    new SqlServerDBConnectionFactory(SqlConnectionHelper.CheckConnString("unittestdb"))
+                    ,
                     new SqlDbJobQueueDefaultTableConfiguration());
             }
         }
@@ -40,11 +37,7 @@ namespace GlutenFree.OddJob.Storage.Sql.SqlServer.Test
             get
             {
                 return () => new SqlServerJobQueueManager(
-                    new TestConnectionFactory(new JobQueueDbConnectionFactorySettings()
-                    {
-                        ConnectionString = SqlConnectionHelper.CheckConnString("unittestdb"),
-                        ProviderName = ProviderName.SqlServer
-                    }),
+                    new SqlServerDBConnectionFactory(SqlConnectionHelper.CheckConnString("unittestdb")),
                     new SqlDbJobQueueDefaultTableConfiguration());
             }
         }

@@ -21,12 +21,12 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
             return mapper.MappingSchema;
         }
     }
-    public abstract class BaseSqlJobQueueAdder : IJobQueueAdder
+    public abstract class BaseSqlJobQueueAdder<TJobQueueDbConnectionFactory> : IJobQueueAdder where TJobQueueDbConnectionFactory:IJobQueueDbConnectionFactory
     {
         private readonly ISqlDbJobQueueTableConfiguration _jobQueueTableConfiguration;
         private readonly MappingSchema _mappingSchema;
         
-        protected BaseSqlJobQueueAdder(IJobQueueDbConnectionFactory jobQueueDbConnectionFactory, ISqlDbJobQueueTableConfiguration jobQueueTableConfiguration)
+        protected BaseSqlJobQueueAdder(TJobQueueDbConnectionFactory jobQueueDbConnectionFactory, ISqlDbJobQueueTableConfiguration jobQueueTableConfiguration)
         {
             _jobQueueConnectionFactory = jobQueueDbConnectionFactory;
             
@@ -40,7 +40,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 
         
         
-        private IJobQueueDbConnectionFactory _jobQueueConnectionFactory { get; set; }
+        private TJobQueueDbConnectionFactory _jobQueueConnectionFactory { get; set; }
         public virtual Guid AddJob<TJob>(Expression<Action<TJob>> jobExpression, RetryParameters retryParameters = null,
             DateTimeOffset? executionTime = null, string queueName = "default")
         {

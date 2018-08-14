@@ -16,15 +16,4 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
         public string ConnectionString { get; set; }
         public string ProviderName { get; set; }
     }
-
-    public class JobQueueDbConnectionFactory : IJobQueueDbConnectionFactory
-    {
-
-        private JobQueueDbConnectionFactorySettings _settings;
-        public DataConnection CreateDbConnection(MappingSchema mappingSchema)
-        {
-            return new DataConnection(_settings.ProviderName,_settings.ConnectionString, mappingSchema);
-        }
-
-    }
 }

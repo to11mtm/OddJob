@@ -3,10 +3,10 @@
 namespace GlutenFree.OddJob.Storage.Sql.SqlServer
 {
 
-    public class SqlServerJobQueueManager : BaseSqlJobQueueManager
+    public class SqlServerJobQueueManager : BaseSqlJobQueueManager<SqlServerDBConnectionFactory>
     {
         
-        public SqlServerJobQueueManager(IJobQueueDbConnectionFactory jobQueueConnectionFactory,
+        public SqlServerJobQueueManager(SqlServerDBConnectionFactory jobQueueConnectionFactory,
             ISqlDbJobQueueTableConfiguration tableConfig) : base(jobQueueConnectionFactory,
             tableConfig)
         {
