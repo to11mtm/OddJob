@@ -12,10 +12,9 @@ namespace GlutenFree.OddJob.Storage.Sql.SqlServer
 {
     public class BaseSqlJobQueuePurger : IJobQueuePurger
     {
-        private MappingSchema _mappingSchema = null;
-        private JobQueueDbConnectionFactorySettings _providerSettings = null;
-        private IJobQueueDbConnectionFactory _jobQueueConnectionFactory;
-        private ISqlDbJobQueueTableConfiguration _tableConfig;
+        private readonly MappingSchema _mappingSchema;
+        private readonly IJobQueueDbConnectionFactory _jobQueueConnectionFactory;
+        private readonly ISqlDbJobQueueTableConfiguration _tableConfig;
 
         public string PurgeString { get; private set; }
         public BaseSqlJobQueuePurger(IJobQueueDbConnectionFactory jobQueueConnectionFactory,
