@@ -10,14 +10,19 @@ namespace GlutenFree.OddJob.Storage.Sql.SQLite.Test
 {
     public static class UnitTestTableHelper
     {
-        internal static string connString = "FullUri=file::memory:?cache=shared";
+        internal static readonly string connString = "FullUri=file::memory:?cache=shared";
         /// <summary>
         /// This is here because SQLite will only hold In-memory DBs as long as ONE connection is open. so we just open one here and keep it around for appdomain life.
         /// </summary>
-        public static SQLiteConnection heldConnection;
-        public static void EnsureTablesExist()
+        public static readonly SQLiteConnection heldConnection;
+
+        static UnitTestTableHelper()
         {
             heldConnection = new SQLiteConnection(connString);
+        }
+        public static void EnsureTablesExist()
+        {
+            
             heldConnection.Open();
             using (var db = new SQLiteConnection(connString))
             {

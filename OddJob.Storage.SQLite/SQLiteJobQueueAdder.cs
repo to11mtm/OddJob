@@ -1,9 +1,7 @@
-﻿using GlutenFree.OddJob.Storage.SQL.Common;
-using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
-using LinqToDB.Data;
-using LinqToDB.Mapping;
+﻿using GlutenFree.OddJob.Storage.Sql.SqlServer;
+using GlutenFree.OddJob.Storage.SQL.Common;
 
-namespace GlutenFree.OddJob.Storage.Sql.SqlServer
+namespace GlutenFree.OddJob.Storage.SQL.SQLite
 {
     public class SQLiteJobQueueAdder : BaseSqlJobQueueAdder<SQLiteJobQueueDbConnectionFactory>
     {

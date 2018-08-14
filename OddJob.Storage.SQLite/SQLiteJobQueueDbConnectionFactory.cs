@@ -3,7 +3,7 @@ using LinqToDB;
 using LinqToDB.Data;
 using LinqToDB.Mapping;
 
-namespace GlutenFree.OddJob.Storage.Sql.SqlServer
+namespace GlutenFree.OddJob.Storage.SQL.SQLite
 {
     public class SQLiteJobQueueDbConnectionFactory : IJobQueueDbConnectionFactory
     {
@@ -17,17 +17,5 @@ namespace GlutenFree.OddJob.Storage.Sql.SqlServer
         {
             return new DataConnection(ProviderName.SQLite, _connectionString, mappingSchema);
         }
-    }
-
-    public class SQLiteOddjobQueueManager : BaseSqlJobQueueManager<SQLiteJobQueueDbConnectionFactory>
-    {
-        
-        public SQLiteOddjobQueueManager(SQLiteJobQueueDbConnectionFactory jobQueueConnectionFactory,
-            ISqlDbJobQueueTableConfiguration tableConfig) : base(jobQueueConnectionFactory,
-            tableConfig)
-        {
-
-        }
-        
     }
 }
