@@ -5,15 +5,15 @@ using LinqToDB.Mapping;
 
 namespace GlutenFree.OddJob.Storage.SQL.SQLite
 {
-    public class SQLiteJobQueueDbConnectionFactory : IJobQueueDbConnectionFactory
+    public class SQLiteJobQueueDataConnectionFactory : IJobQueueDataConnectionFactory
     {
         private readonly string _connectionString;
 
-        public SQLiteJobQueueDbConnectionFactory(string connectionString)
+        public SQLiteJobQueueDataConnectionFactory(string connectionString)
         {
             _connectionString = connectionString;
         }
-        public DataConnection CreateDbConnection(MappingSchema mappingSchema)
+        public DataConnection CreateDataConnection(MappingSchema mappingSchema)
         {
             return new DataConnection(ProviderName.SQLite, _connectionString, mappingSchema);
         }

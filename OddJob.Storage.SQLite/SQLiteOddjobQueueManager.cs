@@ -3,9 +3,9 @@ using GlutenFree.OddJob.Storage.SQL.Common;
 
 namespace GlutenFree.OddJob.Storage.SQL.SQLite
 {
-    public class SQLiteJobQueueManager : BaseSqlJobQueueManager<SQLiteJobQueueDbConnectionFactory>
+    public class SQLiteJobQueueManager : BaseSqlJobQueueManager
     {
-        public SQLiteJobQueueManager(SQLiteJobQueueDbConnectionFactory jobQueueConnectionFactory,
+        public SQLiteJobQueueManager(SQLiteJobQueueDataConnectionFactory jobQueueConnectionFactory,
             ISqlDbJobQueueTableConfiguration tableConfiguration) : base(
             jobQueueConnectionFactory, tableConfiguration)
         {

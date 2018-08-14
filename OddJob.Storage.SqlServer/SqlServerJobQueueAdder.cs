@@ -4,11 +4,11 @@ using LinqToDB.DataProvider.SQLite;
 
 namespace GlutenFree.OddJob.Storage.Sql.SqlServer
 {
-    public class SqlServerJobQueueAdder : BaseSqlJobQueueAdder<SqlServerDbConnectionFactory>
+    public class SqlServerJobQueueAdder : BaseSqlJobQueueAdder
     {
       
 
-        public SqlServerJobQueueAdder(SqlServerDbConnectionFactory jobQueueDbConnectionFactory, SQL.Common.ISqlDbJobQueueTableConfiguration jobQueueTableConfiguration) : base(jobQueueDbConnectionFactory, jobQueueTableConfiguration)
+        public SqlServerJobQueueAdder(SqlServerDataConnectionFactory jobQueueDataConnectionFactory, SQL.Common.ISqlDbJobQueueTableConfiguration jobQueueTableConfiguration) : base(jobQueueDataConnectionFactory, jobQueueTableConfiguration)
         {
         }
     }

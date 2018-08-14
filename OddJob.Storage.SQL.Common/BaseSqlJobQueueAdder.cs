@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
-using Dapper;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
 using LinqToDB;
@@ -9,42 +8,24 @@ using LinqToDB.Mapping;
 
 namespace GlutenFree.OddJob.Storage.SQL.Common
 {
-    static class Mapping
+    public abstract class BaseSqlJobQueueAdder : IJobQueueAdder
     {
-        public static MappingSchema BuildMappingSchema(ISqlDbJobQueueTableConfiguration _jobQueueTableConfiguration)
-        {
-            var mapper = new LinqToDB.Mapping.FluentMappingBuilder(MappingSchema.Default);
-            mapper.Entity<SqlCommonDbOddJobMetaData>().HasAttribute(
-                new TableAttribute(_jobQueueTableConfiguration.QueueTableName) { IsColumnAttributeRequired = false, Name = _jobQueueTableConfiguration.QueueTableName});
-            mapper.Entity<SqlCommonOddJobParamMetaData>().HasAttribute(
-                new TableAttribute(_jobQueueTableConfiguration.ParamTableName){IsColumnAttributeRequired = false, Name = _jobQueueTableConfiguration.ParamTableName});
-            return mapper.MappingSchema;
-        }
-    }
-    public abstract class BaseSqlJobQueueAdder<TJobQueueDbConnectionFactory> : IJobQueueAdder where TJobQueueDbConnectionFactory:IJobQueueDbConnectionFactory
-    {
-        private readonly ISqlDbJobQueueTableConfiguration _jobQueueTableConfiguration;
         private readonly MappingSchema _mappingSchema;
         
-        protected BaseSqlJobQueueAdder(TJobQueueDbConnectionFactory jobQueueDbConnectionFactory, ISqlDbJobQueueTableConfiguration jobQueueTableConfiguration)
+        protected BaseSqlJobQueueAdder(IJobQueueDataConnectionFactory jobQueueDataConnectionFactory, ISqlDbJobQueueTableConfiguration jobQueueTableConfiguration)
         {
-            _jobQueueConnectionFactory = jobQueueDbConnectionFactory;
-            
-            _jobQueueTableConfiguration = jobQueueTableConfiguration;
-
+            _jobQueueConnectionFactory = jobQueueDataConnectionFactory;
 
             _mappingSchema = Mapping.BuildMappingSchema(jobQueueTableConfiguration);
-            
-
         }
 
         
         
-        private TJobQueueDbConnectionFactory _jobQueueConnectionFactory { get; set; }
+        private IJobQueueDataConnectionFactory _jobQueueConnectionFactory { get; set; }
         public virtual Guid AddJob<TJob>(Expression<Action<TJob>> jobExpression, RetryParameters retryParameters = null,
             DateTimeOffset? executionTime = null, string queueName = "default")
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDbConnection(_mappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 var ser = JobCreator.Create(jobExpression);
                 
@@ -59,8 +40,8 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                     .Value(q => q.MaxRetries, (retryParameters == null ? 0 : (int?) retryParameters.MaxRetries))
                     .Value(q => q.MinRetryWait,
                         retryParameters == null ? 0 : (double?) retryParameters.MinRetryWait.TotalSeconds)
-                    .Value(q => q.RetryCount, 0)
-                    .InsertWithInt64Identity();
+                    .Value(q => q.RetryCount, 0);
+                    insertedId.InsertWithInt64Identity();
 
                 
                 var toInsert = ser.JobArgs.Select((val, index) => new { val, index }).ToList();

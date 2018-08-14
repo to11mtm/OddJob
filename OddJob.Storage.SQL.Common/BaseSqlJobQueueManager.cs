@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using Dapper;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
 using LinqToDB;
-using LinqToDB.Data;
 using LinqToDB.Mapping;
 
 namespace GlutenFree.OddJob.Storage.SQL.Common
@@ -17,12 +14,12 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
         public long JobId { get; set; }
         public DateTime? MostRecentDate { get; set; }
     }
-    public abstract class BaseSqlJobQueueManager<TJobQueueDbConnectionFactory> : IJobQueueManager where TJobQueueDbConnectionFactory : IJobQueueDbConnectionFactory
+    public abstract class BaseSqlJobQueueManager : IJobQueueManager 
     {
         private readonly ISqlDbJobQueueTableConfiguration _jobQueueTableConfiguration;
         private readonly  MappingSchema _mappingSchema = null;
 
-        protected BaseSqlJobQueueManager(TJobQueueDbConnectionFactory jobQueueConnectionFactory,
+        protected BaseSqlJobQueueManager(IJobQueueDataConnectionFactory jobQueueConnectionFactory,
             ISqlDbJobQueueTableConfiguration jobQueueTableConfiguration)
         {
             _jobQueueConnectionFactory = jobQueueConnectionFactory;
@@ -33,12 +30,12 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
             _mappingSchema = Mapping.BuildMappingSchema(jobQueueTableConfiguration);
         }
 
-        protected TJobQueueDbConnectionFactory _jobQueueConnectionFactory { get; private set; }
+        protected IJobQueueDataConnectionFactory _jobQueueConnectionFactory { get; private set; }
         
 
         public virtual void MarkJobSuccess(Guid jobGuid)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDbConnection(_mappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 
                 conn.GetTable<SqlCommonDbOddJobMetaData>()
@@ -52,7 +49,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 
         public virtual void MarkJobFailed(Guid jobGuid)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDbConnection(_mappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 conn.GetTable<SqlCommonDbOddJobMetaData>()
                     .Where(q => q.JobGuid == jobGuid)
@@ -69,7 +66,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
         {
             var lockGuid = Guid.NewGuid();
             var lockTime = DateTime.Now;
-            using (var conn = _jobQueueConnectionFactory.CreateDbConnection(_mappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 //Because our Lock Update Does the lock, we don't bother with a transaction.
 
@@ -130,7 +127,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 
         public virtual void MarkJobInProgress(Guid jobId)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDbConnection(_mappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 
                 conn.GetTable<SqlCommonDbOddJobMetaData>()
@@ -147,7 +144,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 
         public virtual void MarkJobInRetryAndIncrement(Guid jobId, DateTime lastAttempt)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDbConnection(_mappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 
                 conn.GetTable<SqlCommonDbOddJobMetaData>()
@@ -165,7 +162,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 
         public virtual IOddJobWithMetadata GetJob(Guid jobId)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDbConnection(_mappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 
                 var jobWithParamQuery = conn.GetTable<SqlCommonDbOddJobMetaData>()

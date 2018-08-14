@@ -1,10 +1,19 @@
 ﻿using System;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.IO;
 using System.Reflection;
+using GlutenFree.OddJob.Storage.SQL.Common;
 
 namespace OddJob.Storage.Sql.SqlServer.Test
 {
+    public class TestDbConnectionFactory : IJobQueueDbConnectionFactory
+    {
+        public DbConnection CreateDbConnection()
+        {
+            return SqlConnectionHelper.GetLocalDB("unittestdb");
+        }
+    }
     //Insane Props to :
     //https://social.msdn.microsoft.com/Forums/en-US/268c3411-102a-4272-b305-b14e29604313/localdb-create-amp-connect-to-database-gtgt-programmatically-ltlt?forum=sqlsetupandupgrade
     public static class SqlConnectionHelper
