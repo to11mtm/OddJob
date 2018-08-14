@@ -11,7 +11,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 {
     static class Mapping
     {
-        public static MappingSchema BuildMappingSchema(ISqlServerJobQueueTableConfiguration _jobQueueTableConfiguration)
+        public static MappingSchema BuildMappingSchema(ISqlDbJobQueueTableConfiguration _jobQueueTableConfiguration)
         {
             var mapper = new LinqToDB.Mapping.FluentMappingBuilder(MappingSchema.Default);
             mapper.Entity<SqlCommonDbOddJobMetaData>().HasAttribute(
@@ -23,10 +23,10 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
     }
     public abstract class BaseSqlJobQueueAdder : IJobQueueAdder
     {
-        ISqlServerJobQueueTableConfiguration _jobQueueTableConfiguration;
+        ISqlDbJobQueueTableConfiguration _jobQueueTableConfiguration;
         private readonly MappingSchema _mappingSchema;
         
-        protected BaseSqlJobQueueAdder(IJobQueueDbConnectionFactory jobQueueDbConnectionFactory, ISqlServerJobQueueTableConfiguration jobQueueTableConfiguration)
+        protected BaseSqlJobQueueAdder(IJobQueueDbConnectionFactory jobQueueDbConnectionFactory, ISqlDbJobQueueTableConfiguration jobQueueTableConfiguration)
         {
             _jobQueueConnectionFactory = jobQueueDbConnectionFactory;
             //FormattedMarkNewSql = string.Format(@"update {0} set Status='New' where Id = @jobId", _jobQueueTableConfiguration.QueueTableName);

@@ -61,7 +61,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlServerDbJobTableHelper.cs" />
     <Compile Include="SqlServerJobQueueAdder.cs" />
-    <Compile Include="SqlServerJobQueueDefaultTableConfiguration.cs" />
     <Compile Include="SqlServerJobQueueManager.cs" />
   </ItemGroup>
   <ItemGroup>

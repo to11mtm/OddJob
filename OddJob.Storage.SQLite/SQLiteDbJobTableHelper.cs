@@ -4,7 +4,7 @@ namespace GlutenFree.OddJob.Storage.SQL.SQLite
 {
     public static class SQLiteDbJobTableHelper
     {
-        public static string JobTableCreateScript(ISqlServerJobQueueTableConfiguration configuration)
+        public static string JobTableCreateScript(ISqlDbJobQueueTableConfiguration configuration)
         {
             return string.Format(@"
 
@@ -28,7 +28,7 @@ CreatedDate datetime not null
 ", configuration.QueueTableName);
         }
 
-        public static string JobQueueParamTableCreateScript(ISqlServerJobQueueTableConfiguration config)
+        public static string JobQueueParamTableCreateScript(ISqlDbJobQueueTableConfiguration config)
         {
             return string.Format(@"
 Create table {0}

@@ -38,7 +38,7 @@ namespace OddJob.Storage.Sql.SqlServer.Test
             get
             {
                 return () => new SqlServerJobQueueAdder(new TestConnectionFactory(new JobQueueDbConnectionFactorySettings() { ConnectionString = SqlConnectionHelper.CheckConnString("unittestdb"), ProviderName = ProviderName.SqlServer }),
-                    new SqlServerJobQueueDefaultTableConfiguration());
+                    new SqlDbJobQueueDefaultTableConfiguration());
             }
         }
 
@@ -47,7 +47,7 @@ namespace OddJob.Storage.Sql.SqlServer.Test
             get
             {
                 return () => new SqlServerJobQueueManager(new TestConnectionFactory(new JobQueueDbConnectionFactorySettings() { ConnectionString = SqlConnectionHelper.CheckConnString("unittestdb"), ProviderName = ProviderName.SqlServer }),
-                    new SqlServerJobQueueDefaultTableConfiguration());
+                    new SqlDbJobQueueDefaultTableConfiguration());
             }
         }
 
@@ -56,7 +56,7 @@ namespace OddJob.Storage.Sql.SqlServer.Test
             get
             {
                 return () => new BaseSqlJobQueuePurger(new TestConnectionFactory(new JobQueueDbConnectionFactorySettings(){ConnectionString = SqlConnectionHelper.CheckConnString("unittestdb"), ProviderName = ProviderName.SqlServer}),
-                    new SqlServerJobQueueDefaultTableConfiguration());
+                    new SqlDbJobQueueDefaultTableConfiguration());
             }
         }
     }

@@ -11,7 +11,12 @@ namespace OddJob.Storage.Sql.SqlServer.Test
     {
         public const string DB_DIRECTORY = "Data";
 
-        public static string CheckConnString(string dbName, bool deleteIfExists = false)
+        public static string CheckConnString(string dbName)
+        {
+            return CheckConnString(dbName, false);
+        }
+
+        public static string CheckConnString(string dbName, bool deleteIfExists)
         {
             try
             {

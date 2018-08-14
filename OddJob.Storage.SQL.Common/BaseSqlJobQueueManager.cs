@@ -19,14 +19,14 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
     }
     public abstract class BaseSqlJobQueueManager : IJobQueueManager
     {
-        ISqlServerJobQueueTableConfiguration _jobQueueTableConfiguration;
+        ISqlDbJobQueueTableConfiguration _jobQueueTableConfiguration;
         private MappingSchema _mappingSchema = null;
 
-        public BaseSqlJobQueueManager(IJobQueueDbConnectionFactory jobQueueConnectionFactory,
-            ISqlServerJobQueueTableConfiguration jobQueueTableConfiguration)
+        protected BaseSqlJobQueueManager(IJobQueueDbConnectionFactory jobQueueConnectionFactory,
+            ISqlDbJobQueueTableConfiguration jobQueueTableConfiguration)
         {
             _jobQueueConnectionFactory = jobQueueConnectionFactory;
-            //FormattedMarkNewSql = string.Format(@"update {0} set Status='New' where Id = @jobId", _jobQueueTableConfiguration.QueueTableName);
+            
             _jobQueueTableConfiguration = jobQueueTableConfiguration;
 
 
@@ -40,8 +40,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
         {
             using (var conn = _jobQueueConnectionFactory.CreateDbConnection(_mappingSchema))
             {
-                /*JobSuccessString = string.Format("update {0} set status='{1}', LockClaimTime = null where JobGuid = @jobGuid",
-                _tableConfig.QueueTableName,JobStates.Processed);*/
+                
                 conn.GetTable<SqlCommonDbOddJobMetaData>()
                     .Where(q => q.JobGuid == jobGuid)
                     .Set(q => q.Status, JobStates.Processed)
@@ -72,6 +71,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
             var lockTime = DateTime.Now;
             using (var conn = _jobQueueConnectionFactory.CreateDbConnection(_mappingSchema))
             {
+                //Because our Lock Update Does the lock, we don't bother with a transaction.
 
                 IQueryable<JobLockData> lockingCheckQuery =
                     conn.GetTable<SqlCommonDbOddJobMetaData>()
@@ -104,8 +104,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                     .Update();
                         
                 
-                        //.Set(q => q.LockClaimTime, DateTime.Now)
-                        //.Set(q => q.LockGuid, Guid.NewGuid());
+                        
                 var jobWithParamQuery = conn.GetTable<SqlCommonDbOddJobMetaData>()
                     .Where(q => q.LockGuid == lockGuid)
                     .InnerJoin(conn.GetTable<SqlCommonOddJobParamMetaData>()
@@ -114,7 +113,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                 
                 return jobWithParamQuery.ToList().GroupBy(q=>q.job.JobGuid)
                     .Select(group =>
-                        new SqlServerDbOddJob()
+                        new SqlDbOddJob()
                         {
                             JobId = group.Key,
                             MethodName = group.First().job.MethodName,
@@ -133,16 +132,14 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
         {
             using (var conn = _jobQueueConnectionFactory.CreateDbConnection(_mappingSchema))
             {
-                /*JobInProgressString =
-                string.Format("update {0} set status='{1}', LockClaimTime=null, LastAttempt=getDate() where JobGuid = @jobGuid",
-                    _tableConfig.QueueTableName,JobStates.InProgress);*/
+                
                 conn.GetTable<SqlCommonDbOddJobMetaData>()
                     .Where(q => q.JobGuid == jobId)
                     .Set(q => q.Status, JobStates.InProgress)
                     .Set(q => q.LockClaimTime, (DateTime?) null)
                     .Set(q => q.LastAttempt, DateTime.Now)
                     .Update();
-                //conn.Execute(JobInProgressString, new { jobGuid = jobId });
+                
             }
         }
 
@@ -152,10 +149,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
         {
             using (var conn = _jobQueueConnectionFactory.CreateDbConnection(_mappingSchema))
             {
-                /*JobRetryIncrementString =
-                string.Format(
-                    "update {0} set status='{1}', RetryCount = RetryCount + 1, LastAttempt=getDate(), LockClaimTime=null where JobGuid = @jobGuid",
-                    _tableConfig.QueueTableName, JobStates.Retry);*/
+                
                 conn.GetTable<SqlCommonDbOddJobMetaData>()
                     .Where(q => q.JobGuid == jobId)
                     .Set(q => q.RetryCount, (current) => current.RetryCount + 1)
@@ -183,7 +177,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 
                 return jobWithParamQuery.ToList().GroupBy(q => q.job.JobGuid)
                     .Select(group =>
-                        new SqlServerDbOddJob()
+                        new SqlDbOddJob()
                         {
                             JobId = group.Key,
                             MethodName = group.First().job.MethodName,

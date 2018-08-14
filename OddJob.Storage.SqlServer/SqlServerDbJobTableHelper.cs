@@ -2,7 +2,7 @@
 {
     public static class SqlServerDbJobTableHelper
     {
-        public static string JobTableCreateScript(SqlServerJobQueueDefaultTableConfiguration configuration)
+        public static string JobTableCreateScript(SqlDbJobQueueDefaultTableConfiguration configuration)
         {
             return string.Format(@"
 
@@ -25,7 +25,7 @@ CreatedDate datetime not null)
 ", configuration.QueueTableName);
         }
 
-        public static string JobQueueParamTableCreateScript(SqlServerJobQueueDefaultTableConfiguration config)
+        public static string JobQueueParamTableCreateScript(SqlDbJobQueueDefaultTableConfiguration config)
         {
             return string.Format(@"
 Create table {0}

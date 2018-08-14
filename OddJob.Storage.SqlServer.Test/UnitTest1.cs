@@ -3,13 +3,13 @@ using System.IO;
 using System.Reflection;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Storage.BaseTests;
-using GlutenFree.OddJob.Storage.Sql.SqlServer;
 using GlutenFree.OddJob.Storage.SQL.Common;
 using LinqToDB;
+using OddJob.Storage.Sql.SqlServer.Test;
 
-namespace OddJob.Storage.Sql.SqlServer.Test
+namespace GlutenFree.OddJob.Storage.Sql.SqlServer.Test
 {
-    public class SqlServerStorageTest: StorageTests
+    public class SqlServerStorageTest : StorageTests
     {
         public SqlServerStorageTest()
         {
@@ -18,16 +18,20 @@ namespace OddJob.Storage.Sql.SqlServer.Test
             AppDomain.CurrentDomain.SetData("DataDirectory", new Uri(Path.Combine(execPath, string.Empty)).LocalPath);
             UnitTestTableHelper.EnsureTablesExist();
 
-            
+
         }
 
         protected override Func<IJobQueueAdder> jobAddStoreFunc
         {
             get
             {
-                return ()=> new SqlServerJobQueueAdder(new TestConnectionFactory(new JobQueueDbConnectionFactorySettings() { ConnectionString = SqlConnectionHelper.CheckConnString("unittestdb"), ProviderName = ProviderName.SqlServer }),
-                    new SqlServerJobQueueDefaultTableConfiguration());/*() => new SqlServerJobQueueAdder(new TestConnectionFactory(),
-                    new SqlServerJobQueueDefaultTableConfiguration());*/
+                return () => new SqlServerJobQueueAdder(
+                    new TestConnectionFactory(new JobQueueDbConnectionFactorySettings()
+                    {
+                        ConnectionString = SqlConnectionHelper.CheckConnString("unittestdb"),
+                        ProviderName = ProviderName.SqlServer
+                    }),
+                    new SqlDbJobQueueDefaultTableConfiguration());
             }
         }
 
@@ -35,8 +39,13 @@ namespace OddJob.Storage.Sql.SqlServer.Test
         {
             get
             {
-                return () => new SqlServerJobQueueManager(new TestConnectionFactory(new JobQueueDbConnectionFactorySettings(){ ConnectionString = SqlConnectionHelper.CheckConnString("unittestdb"), ProviderName = ProviderName.SqlServer}),
-                    new SqlServerJobQueueDefaultTableConfiguration());
+                return () => new SqlServerJobQueueManager(
+                    new TestConnectionFactory(new JobQueueDbConnectionFactorySettings()
+                    {
+                        ConnectionString = SqlConnectionHelper.CheckConnString("unittestdb"),
+                        ProviderName = ProviderName.SqlServer
+                    }),
+                    new SqlDbJobQueueDefaultTableConfiguration());
             }
         }
 

@@ -54,10 +54,11 @@
     <Compile Include="IJobQueueDbConnectionFactory.cs" />
     <Compile Include="DbDtos\SqlServerDbOddJobMetaData.cs" />
     <Compile Include="DbDtos\SqlServerOddJobParamMetaData.cs" />
-    <Compile Include="ISqlServerJobQueueTableConfiguration.cs" />
+    <Compile Include="ISqlDbJobQueueTableConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SqlServerDbOddJob.cs" />
-    <Compile Include="SqlServerJobQueuePurger.cs" />
+    <Compile Include="SqlDbJobQueueDefaultTableConfiguration.cs" />
+    <Compile Include="SqlDbOddJob.cs" />
+    <Compile Include="BaseSqlJobQueuePurger.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OddJob\GlutenFree.OddJob.csproj">

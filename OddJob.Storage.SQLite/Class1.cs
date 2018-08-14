@@ -7,7 +7,7 @@ namespace GlutenFree.OddJob.Storage.SQL.SQLite
 
 
         public SqlLiteJobQueueManager(IJobQueueDbConnectionFactory jobQueueConnectionFactory,
-            ISqlServerJobQueueTableConfiguration tableConfiguration) : base(
+            ISqlDbJobQueueTableConfiguration tableConfiguration) : base(
             jobQueueConnectionFactory, tableConfiguration)
         {
 
