@@ -71,7 +71,7 @@ Usage:
 
  - Queue Insertion:
    - Use an Implementation of `IJobQueueAdder`
-    - If Using `SqlServerJobQueueAdder`, you'll also require an implementation of `IJobQueueDbConnectionFactory`
+    - If Using `SqlServerJobQueueAdder`, you'll have to register an `SqlServerDBConnectionFactory`
 
  - Queue Processor:
    - If using 'HardInjectedJobExecutorShell' (Reccomended for most scenarios; lowest friction setup):
@@ -87,7 +87,7 @@ Usage:
       - Make sure you have registered Implementations of the following:
         - `IContainerFactory`
         - `IJobQueueManager`
-	      - If Using `SqlServerJobQueueManager`, you'll also require registering an implementation of `IJobQueueDbConnectionFactory`
+	      - If Using `SqlServerJobQueueManager`, you'll also require registering `SqlServerDBConnectionFactory`
 		- 'IJobQueueExecutor'.
       - Register Dependencies for the jobs you expect the queue to process.
 	  - Install the Akka.DI.%diFlavor% nuget package so that you can provide a Func<ActorSystem,IDependencyResolver> to the constructor
@@ -109,7 +109,7 @@ Unit Test Notes:
   - SqlServer Unit test uses LocalDB. 
     - Please be careful if using this against a non LocalDB instance, as the tests start by dropping and recreating the Queue schema under the default table names.
   - Shutdown Tests are touchy!
-    - Because of the timers used for shutdown and it's testing, you may experience issues if running all of the unit tests in parallel.
+    - Because of the timers used for shutdown and the way it is tested, you may experience issues if running all of the unit tests in parallel.
 
 SQL Server Notes:
 

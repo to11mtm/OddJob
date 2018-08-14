@@ -7,7 +7,7 @@ namespace GlutenFree.OddJob.Storage.SQL.SQLite
 {
     public class SQLiteJobQueueDbConnectionFactory : IJobQueueDbConnectionFactory
     {
-        private string _connectionString;
+        private readonly string _connectionString;
 
         public SQLiteJobQueueDbConnectionFactory(string connectionString)
         {

@@ -83,7 +83,7 @@ namespace GlutenFree.OddJob.Storage.Sql.SQLite.Test
         {
             get
             {
-                return () => new SqlLiteJobQueueManager(
+                return () => new SQLiteJobQueueManager(
                     new SQLiteJobQueueDbConnectionFactory(UnitTestTableHelper.connString),
                     new SqlDbJobQueueDefaultTableConfiguration());
             }
