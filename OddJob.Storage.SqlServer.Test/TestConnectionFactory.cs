@@ -12,7 +12,7 @@ namespace OddJob.Storage.Sql.SqlServer.Test
             return SqlConnectionHelper.GetLocalDB("unittestdb");
         }
 
-        private JobQueueDbConnectionFactorySettings settings;
+        private readonly JobQueueDbConnectionFactorySettings settings;
 
         public TestConnectionFactory(JobQueueDbConnectionFactorySettings settings)
         {

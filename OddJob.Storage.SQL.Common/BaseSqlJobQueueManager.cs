@@ -19,8 +19,8 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
     }
     public abstract class BaseSqlJobQueueManager : IJobQueueManager
     {
-        ISqlDbJobQueueTableConfiguration _jobQueueTableConfiguration;
-        private MappingSchema _mappingSchema = null;
+        private readonly ISqlDbJobQueueTableConfiguration _jobQueueTableConfiguration;
+        private readonly  MappingSchema _mappingSchema = null;
 
         protected BaseSqlJobQueueManager(IJobQueueDbConnectionFactory jobQueueConnectionFactory,
             ISqlDbJobQueueTableConfiguration jobQueueTableConfiguration)

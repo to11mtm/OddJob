@@ -23,13 +23,13 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
     }
     public abstract class BaseSqlJobQueueAdder : IJobQueueAdder
     {
-        ISqlDbJobQueueTableConfiguration _jobQueueTableConfiguration;
+        private readonly ISqlDbJobQueueTableConfiguration _jobQueueTableConfiguration;
         private readonly MappingSchema _mappingSchema;
         
         protected BaseSqlJobQueueAdder(IJobQueueDbConnectionFactory jobQueueDbConnectionFactory, ISqlDbJobQueueTableConfiguration jobQueueTableConfiguration)
         {
             _jobQueueConnectionFactory = jobQueueDbConnectionFactory;
-            //FormattedMarkNewSql = string.Format(@"update {0} set Status='New' where Id = @jobId", _jobQueueTableConfiguration.QueueTableName);
+            
             _jobQueueTableConfiguration = jobQueueTableConfiguration;
 
 
@@ -62,20 +62,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                     .Value(q => q.RetryCount, 0)
                     .InsertWithInt64Identity();
 
-
-                /*var insertedId = conn.ExecuteScalar<int>(FormattedMainInsertSql,
-                    new
-                    {
-                        queueName = queueName,
-                        typeExecutedOn = ser.TypeExecutedOn.AssemblyQualifiedName,
-                        methodName = ser.MethodName,
-                        doNotExecuteBefore = executionTime,
-                        jobGuid = ser.Id,
-                        maxRetries = (retryParameters == null ? 0 : (int?)retryParameters.MaxRetries),
-                        minRetryWait = (retryParameters == null ? 0 : (double?)retryParameters.MinRetryWait.TotalSeconds),
-                        retryCount = 0
-                    }
-                );*/
+                
                 var toInsert = ser.JobArgs.Select((val, index) => new { val, index }).ToList();
                 toInsert.ForEach(i =>
                 {
@@ -87,18 +74,10 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                         .Value(q => q.SerializedType, i.val.GetType().AssemblyQualifiedName)
                         .Insert();
                     
-                    /*   conn.ExecuteScalar<int>(FormattedParamInsertSql,
-                           new
-                           {
-                               jobId = ser.Id,
-                               paramOrdinal = i.index,
-                               serializedValue =
-                                   Newtonsoft.Json.JsonConvert.SerializeObject(i.val),
-                               serializedType = i.val.GetType().AssemblyQualifiedName,
-                           });*/
+                    
                 });
-                //conn.ExecuteScalar(FormattedMarkNewSql, new { jobId = insertedId });
-                return ser.JobId;//*/
+                
+                return ser.JobId;
             }
         }
     }

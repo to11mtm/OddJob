@@ -1,6 +1,6 @@
 ﻿namespace GlutenFree.OddJob.Storage.BaseTests
 {
-    public class TestConstants
+    public static class TestConstants
     {
         public static readonly string SimpleParam = "simple";
         public static readonly string OddParam1 = "odd1";
