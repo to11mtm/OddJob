@@ -29,19 +29,19 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
             {
                 var ser = JobCreator.Create(jobExpression);
                 
-                var insertedId = conn.GetTable<SqlCommonDbOddJobMetaData>()
+                var insertedIdExpr = conn.GetTable<SqlCommonDbOddJobMetaData>()
                     .Value(q => q.QueueName, queueName)
                     .Value(q => q.TypeExecutedOn, ser.TypeExecutedOn.AssemblyQualifiedName)
                     .Value(q => q.MethodName, ser.MethodName)
                     .Value(q => q.DoNotExecuteBefore, executionTime)
                     .Value(q => q.JobGuid, ser.JobId)
-                    .Value(q=>q.Status, JobStates.New)
+                    .Value(q=>q.Status, JobStates.Inserting)
                     .Value(q=>q.CreatedDate, DateTime.Now)
                     .Value(q => q.MaxRetries, (retryParameters == null ? 0 : (int?) retryParameters.MaxRetries))
                     .Value(q => q.MinRetryWait,
                         retryParameters == null ? 0 : (double?) retryParameters.MinRetryWait.TotalSeconds)
                     .Value(q => q.RetryCount, 0);
-                    insertedId.InsertWithInt64Identity();
+                    var insertedId = insertedIdExpr.InsertWithInt64Identity();
 
                 
                 var toInsert = ser.JobArgs.Select((val, index) => new { val, index }).ToList();
@@ -57,6 +57,9 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                     
                     
                 });
+                conn.GetTable<SqlCommonDbOddJobMetaData>().Where(q => q.Id == insertedId)
+                    .Set(q => q.Status, JobStates.New)
+                    .Update();
                 
                 return ser.JobId;
             }

@@ -2,7 +2,7 @@ Oddjob is a Library meant to provide Lightweight Job Workers in a distributed en
 
 The Overall goal is to have a modular architecture for both Job Storage and Execution.
 
-The Basic providers given are SQLServer for Storage, and Akka.NET for Execution.
+The Basic providers given are SQLServer or SQLite for Storage, and Akka.NET for Execution.
 
 Goals:
 
@@ -22,8 +22,10 @@ Non-Goals:
 
   - Perfect Work Distribution
     - Backpressure algorithm will stop when there are more `numWorkers*2` pending jobs in a queue. You could theoretically wind up with up to `(numWorkers*3)-1` queued up before it stops fetching.
+	 - Please note that this does NOT mean you will have more than `numWorkers` jobs executing; the jobs will be 'enqueued' and executed when a given worker is done with the last job they were working on.
     - Jobs are grabbed in batches and distributed in a round-robin fashion. 
 	- However, Coordinators do not keep track of individual worker queue sizes.
+	  - This may change in the future, but for now you can just start different Executors for each queue.
 
   - Fast File System Queues
     - The File System Storage exists for Testing purposes. The way it adds/updates the Queue is absolutely terrifyingly bad in every sense of the word.
@@ -71,7 +73,7 @@ Usage:
 
  - Queue Insertion:
    - Use an Implementation of `IJobQueueAdder`
-    - If Using `SqlServerJobQueueAdder`, you'll have to register an `SqlServerDBConnectionFactory`
+    - If Using `SqlServerJobQueueAdder`, you'll have to register an `IJobQueueDbConnectionFactory` and use it alongside `SqlServerDataConnectionFactory`
 
  - Queue Processor:
    - If using 'HardInjectedJobExecutorShell' (Reccomended for most scenarios; lowest friction setup):
@@ -87,7 +89,7 @@ Usage:
       - Make sure you have registered Implementations of the following:
         - `IContainerFactory`
         - `IJobQueueManager`
-	      - If Using `SqlServerJobQueueManager`, you'll also require registering `SqlServerDBConnectionFactory`
+	      - If Using `SqlServerJobQueueManager`, you'll also require registering `IJobQueueDbConnectionFactory` and use it alongside `SqlServerDataConnectionFactory`
 		- 'IJobQueueExecutor'.
       - Register Dependencies for the jobs you expect the queue to process.
 	  - Install the Akka.DI.%diFlavor% nuget package so that you can provide a Func<ActorSystem,IDependencyResolver> to the constructor
@@ -118,11 +120,9 @@ SQL Server Notes:
 	  - Work with your DBA so they understand your load and can decide what indexes will be most useful to balance storage requirements and performance.
   - Please Note that Jobs are NOT automatically deleted.
 	- `SqlServerJobQueuePurger` exists for you to purge your stale jobs, if you choose to do so that way.
-	  - The SQL used is meant to be easy to implement wherever needed.
 
 Creating your own Modules:
   - Storage Modules benefit from the existence of `OddJob.Storage.BaseTests`
     - Your test harness can implement `StorageTests` and provide functions for the abstract properties `jobAddStoreFunc` and `jobMgrStoreFunc`
 	  - Look at `OddJob.Storage.SqlServer.Tests` and `OddJob.Storage.FileSystem.Test` projects for example.
-  - SQL was written in a manner that tries to be a bit closer to ANSI semantics
-    - This is in the interest of portability.
+  - Adding support for any database supported by Linq2DB is trivial; look at the SQL Server and SQLite implementations to see how simple it can be!
