@@ -29,6 +29,7 @@ Non-Goals:
 
   - Fast File System Queues
     - The File System Storage exists for Testing purposes. The way it adds/updates the Queue is absolutely terrifyingly bad in every sense of the word from a performance perspective.
+	- SQLite is probably a safer option for most scenarios!
 	
 
 Not-Initial-Goals (Will be done when there's a need):
@@ -116,13 +117,21 @@ Unit Test Notes:
   - Shutdown Tests are touchy!
     - Because of the timers used for shutdown and the way it is tested, you may experience issues if running all of the unit tests in parallel.
 
-SQL Server Notes:
+SQL Common Notes:
+  - The Common DB code is based on Linq2Db. This lets us support a variety of databases with minimal effort.
+  - You will need to create your own Tables, using the Data types that 'make the most sense' for the data. 
+    - The unit tests will be very handy here to make sure everything works as expected in your DB.
+  - Please Note that Jobs are NOT automatically deleted.
+	- `BaseSqlJobQueuePurger` exists for you to purge your stale jobs, if you choose to do so that way.
 
+SQL Server Notes:
   - Table create scripts can be made by looking at `SqlServerDbJobTableHelper`.
     - Indexes are at the discretion of your DBA. I'd personally suggest columns `QueueName`, `JobGuid` (Unique on QueueTable, Non-Unique on QueueParamTable), `Status`, and `LockGuid` as minimums.
 	  - Work with your DBA so they understand your load and can decide what indexes will be most useful to balance storage requirements and performance.
-  - Please Note that Jobs are NOT automatically deleted.
-	- `SqlServerJobQueuePurger` exists for you to purge your stale jobs, if you choose to do so that way.
+
+SQLite Notes:
+  - Table create scripts can be made by looking at `SQLiteDbJobTableHelper`
+  - All the normal SQLite rules (i.e. be careful with Network shared DB files) apply. 
 
 Creating your own Modules:
   - Storage Modules benefit from the existence of `OddJob.Storage.BaseTests`
