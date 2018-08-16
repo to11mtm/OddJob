@@ -17,7 +17,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
     public abstract class BaseSqlJobQueueManager : IJobQueueManager 
     {
         private readonly ISqlDbJobQueueTableConfiguration _jobQueueTableConfiguration;
-        private readonly  MappingSchema _mappingSchema = null;
+        private readonly  MappingSchema _mappingSchema;
 
         protected BaseSqlJobQueueManager(IJobQueueDataConnectionFactory jobQueueConnectionFactory,
             ISqlDbJobQueueTableConfiguration jobQueueTableConfiguration)
@@ -94,7 +94,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                                     ? q.CreatedDate
                                     : q.LastAttempt
                         }).OrderBy(q => q.MostRecentDate).Take(fetchSize);
-                var updateQuery = conn.GetTable<SqlCommonDbOddJobMetaData>()
+                conn.GetTable<SqlCommonDbOddJobMetaData>()
                     .Where(q => lockingCheckQuery.Any(r => r.JobId == q.Id))
                     .Set(q => q.LockGuid, lockGuid)
                     .Set(q => q.LockClaimTime, lockTime)
