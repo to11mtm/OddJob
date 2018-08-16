@@ -1,123 +1,193 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Dapper;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
+using LinqToDB;
+using LinqToDB.Mapping;
 
 namespace GlutenFree.OddJob.Storage.SQL.Common
 {
-    public abstract class BaseSqlJobQueueManager : IJobQueueManager
+
+    public class JobLockData
     {
-        public BaseSqlJobQueueManager(IJobQueueDbConnectionFactory jobQueueConnectionFactory)
+        public long JobId { get; set; }
+        public DateTime? MostRecentDate { get; set; }
+    }
+    public abstract class BaseSqlJobQueueManager : IJobQueueManager 
+    {
+        private readonly ISqlDbJobQueueTableConfiguration _jobQueueTableConfiguration;
+        private readonly  MappingSchema _mappingSchema;
+
+        protected BaseSqlJobQueueManager(IJobQueueDataConnectionFactory jobQueueConnectionFactory,
+            ISqlDbJobQueueTableConfiguration jobQueueTableConfiguration)
         {
             _jobQueueConnectionFactory = jobQueueConnectionFactory;
+            
+            _jobQueueTableConfiguration = jobQueueTableConfiguration;
+
+
+            _mappingSchema = Mapping.BuildMappingSchema(jobQueueTableConfiguration);
         }
-        protected IJobQueueDbConnectionFactory _jobQueueConnectionFactory { get; private set; }
-        private Dictionary<int, string> fetchSqlCache = new Dictionary<int, string>();
-        public abstract string GetJobParamSqlString { get; protected set; }
+
+        protected IJobQueueDataConnectionFactory _jobQueueConnectionFactory { get; private set; }
+        
 
         public virtual void MarkJobSuccess(Guid jobGuid)
         {
-            using (var conn = _jobQueueConnectionFactory.GetConnection())
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
-                conn.Execute(JobSuccessString, new { jobGuid = jobGuid });
+                
+                conn.GetTable<SqlCommonDbOddJobMetaData>()
+                    .Where(q => q.JobGuid == jobGuid)
+                    .Set(q => q.Status, JobStates.Processed)
+                    .Set(q => q.LockClaimTime, (DateTime?) null)
+                    .Update();
             }
         }
 
-        public abstract string JobSuccessString { get; protected set; }
 
         public virtual void MarkJobFailed(Guid jobGuid)
         {
-            using (var conn = _jobQueueConnectionFactory.GetConnection())
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
-                conn.Execute(JobFailedString, new { jobGuid = jobGuid });
+                conn.GetTable<SqlCommonDbOddJobMetaData>()
+                    .Where(q => q.JobGuid == jobGuid)
+                    .Set(q => q.Status, JobStates.Failed)
+                    .Set(q => q.LockClaimTime,(DateTime?)null)
+                    .Update();
+
             }
         }
 
-        public abstract string JobFailedString { get; protected set; }
-
-        public abstract string GetJobSqlStringWithLock(int fetchSize);
-
+        
+        
         public virtual IEnumerable<IOddJobWithMetadata> GetJobs(string[] queueNames, int fetchSize)
         {
-            string myFetchString = null;
-            if (fetchSqlCache.ContainsKey(fetchSize) == false)
-            {
-                fetchSqlCache[fetchSize] = GetJobSqlStringWithLock(fetchSize);
-            }
-            myFetchString = fetchSqlCache[fetchSize];
             var lockGuid = Guid.NewGuid();
             var lockTime = DateTime.Now;
-            using (var conn = _jobQueueConnectionFactory.GetConnection())
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
-                var baseJobs = conn.Query<SqlCommonDbOddJobMetaData>(myFetchString, new { queueNames = queueNames, lockGuid = lockGuid, claimTime = lockTime });
+                //Because our Lock Update Does the lock, we don't bother with a transaction.
 
-                var jobMetaData = conn.Query<SqlCommonOddJobParamMetaData>(GetJobParamSqlString, new { jobIds = baseJobs.Select(q => q.JobGuid).ToList() });
-                return baseJobs
-                    .GroupJoin(jobMetaData,
-                        q => q.JobGuid,
-                        r => r.JobId,
-                        (q, r) =>
-                            new SqlServerDbOddJob()
-                            {
-                                JobId = q.JobGuid,
-                                MethodName = q.MethodName,
-                                TypeExecutedOn = Type.GetType(q.TypeExecutedOn),
-                                JobArgs = r.OrderBy(p => p.ParamOrdinal)
-                                    .Select(s =>
-                                        Newtonsoft.Json.JsonConvert.DeserializeObject(s.SerializedValue, Type.GetType(s.SerializedType, false))).ToArray(),
-                                RetryParameters = new RetryParameters(q.MaxRetries, TimeSpan.FromSeconds(q.MinRetryWait), q.RetryCount, q.LastAttempt)
-                            });
+                IQueryable<JobLockData> lockingCheckQuery =
+                    conn.GetTable<SqlCommonDbOddJobMetaData>()
+                        .Where(
+                            q => queueNames.Contains(q.QueueName)
+                                 &&
+                                 (q.DoNotExecuteBefore <= DateTime.Now || q.DoNotExecuteBefore == null)
+                                 &&
+                                 (q.Status == "New" ||
+                                  (q.Status == "Retry" && q.MaxRetries >= q.RetryCount &&
+                                   q.LastAttempt.Value.AddSeconds(q.MinRetryWait) <=DateTime.Now)
+
+                                 )
+                                 && (q.LockClaimTime == null || q.LockClaimTime <
+                                     DateTime.Now.AddSeconds(
+                                         (0) - _jobQueueTableConfiguration.JobClaimLockTimeoutInSeconds))
+                        ).Select(q => new JobLockData
+                        {
+                            JobId = q.Id,
+                            MostRecentDate =
+                                (q.CreatedDate ?? DateTime.MinValue)
+                                > (q.LastAttempt ?? DateTime.MinValue)
+                                    ? q.CreatedDate
+                                    : q.LastAttempt
+                        }).OrderBy(q => q.MostRecentDate).Take(fetchSize);
+                conn.GetTable<SqlCommonDbOddJobMetaData>()
+                    .Where(q => lockingCheckQuery.Any(r => r.JobId == q.Id))
+                    .Set(q => q.LockGuid, lockGuid)
+                    .Set(q => q.LockClaimTime, lockTime)
+                    .Update();
+                        
+                
+                        
+                var jobWithParamQuery = conn.GetTable<SqlCommonDbOddJobMetaData>()
+                    .Where(q => q.LockGuid == lockGuid)
+                    .InnerJoin(conn.GetTable<SqlCommonOddJobParamMetaData>()
+                        , (job, param) => job.JobGuid == param.Id
+                        , (job, param) => new {job, param});
+                
+                return jobWithParamQuery.ToList().GroupBy(q=>q.job.JobGuid)
+                    .Select(group =>
+                        new SqlDbOddJob()
+                        {
+                            JobId = group.Key,
+                            MethodName = group.First().job.MethodName,
+                            TypeExecutedOn = Type.GetType(group.First().job.TypeExecutedOn),
+                            Status = group.First().job.Status,
+                            JobArgs = group.OrderBy(p => p.param.ParamOrdinal)
+                                .Select(s =>
+                                    Newtonsoft.Json.JsonConvert.DeserializeObject(s.param.SerializedValue, Type.GetType(s.param.SerializedType, false))).ToArray(),
+                            RetryParameters = new RetryParameters(group.First().job.MaxRetries, TimeSpan.FromSeconds(group.First().job.MinRetryWait), group.First().job.RetryCount, group.First().job.LastAttempt)
+                        });
+                
             }
         }
 
         public virtual void MarkJobInProgress(Guid jobId)
         {
-            using (var conn = _jobQueueConnectionFactory.GetConnection())
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
-                conn.Execute(JobInProgressString, new { jobGuid = jobId });
+                
+                conn.GetTable<SqlCommonDbOddJobMetaData>()
+                    .Where(q => q.JobGuid == jobId)
+                    .Set(q => q.Status, JobStates.InProgress)
+                    .Set(q => q.LockClaimTime, (DateTime?) null)
+                    .Set(q => q.LastAttempt, DateTime.Now)
+                    .Update();
+                
             }
         }
 
-        public abstract string JobInProgressString { get; protected set; }
+        
 
         public virtual void MarkJobInRetryAndIncrement(Guid jobId, DateTime lastAttempt)
         {
-            using (var conn = _jobQueueConnectionFactory.GetConnection())
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
-                conn.Execute(JobRetryIncrementString, new { jobGuid = jobId });
+                
+                conn.GetTable<SqlCommonDbOddJobMetaData>()
+                    .Where(q => q.JobGuid == jobId)
+                    .Set(q => q.RetryCount, (current) => current.RetryCount + 1)
+                    .Set(q => q.Status, JobStates.Retry)
+                    .Set(q => q.LastAttempt, DateTime.Now)
+                    .Set(q=>q.LockClaimTime, (DateTime?)null)
+                    .Update();
+
             }
         }
 
-        public abstract string JobRetryIncrementString { get; protected set; }
+        
 
         public virtual IOddJobWithMetadata GetJob(Guid jobId)
         {
-            using (var conn = _jobQueueConnectionFactory.GetConnection())
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
-                var jobs = conn.Query<SqlCommonDbOddJobMetaData>(JobByIdString, new { jobGuid = jobId });
-                var jobMetaData = conn.Query<SqlCommonOddJobParamMetaData>(GetJobParamSqlString,
-                    new { jobIds = jobs.Select(q => q.JobGuid).ToList() });
-                return jobs
-                    .GroupJoin(jobMetaData,
-                        q => q.JobGuid,
-                        r => r.JobId,
-                        (q, r) =>
-                            new SqlServerDbOddJob()
-                            {
-                                JobId = q.JobGuid,
-                                MethodName = q.MethodName,
-                                TypeExecutedOn = Type.GetType(q.TypeExecutedOn),
-                                JobArgs = r.OrderBy(p => p.ParamOrdinal)
-                                    .Select(s =>
-                                        Newtonsoft.Json.JsonConvert.DeserializeObject(s.SerializedValue, Type.GetType(s.SerializedType, false))).ToArray(),
-                                RetryParameters = new RetryParameters(q.MaxRetries, TimeSpan.FromSeconds(q.MinRetryWait), q.RetryCount, q.LastAttempt),
-                                Status = q.Status
-                            }).FirstOrDefault();
-            }
+                
+                var jobWithParamQuery = conn.GetTable<SqlCommonDbOddJobMetaData>()
+                    .Where(q => q.JobGuid == jobId)
+                    .InnerJoin(conn.GetTable<SqlCommonOddJobParamMetaData>()
+                        , (job, param) => job.JobGuid == param.Id
+                        , (job, param) => new {job, param}
+                    );
+
+                return jobWithParamQuery.ToList().GroupBy(q => q.job.JobGuid)
+                    .Select(group =>
+                        new SqlDbOddJob()
+                        {
+                            JobId = group.Key,
+                            MethodName = group.First().job.MethodName,
+                            TypeExecutedOn = Type.GetType(group.First().job.TypeExecutedOn),
+                            Status = group.First().job.Status,
+                            JobArgs = group.OrderBy(p => p.param.ParamOrdinal)
+                                .Select(s =>
+                                    Newtonsoft.Json.JsonConvert.DeserializeObject(s.param.SerializedValue, Type.GetType(s.param.SerializedType, false))).ToArray(),
+                            RetryParameters = new RetryParameters(group.First().job.MaxRetries, TimeSpan.FromSeconds(group.First().job.MinRetryWait), group.First().job.RetryCount, group.First().job.LastAttempt)
+                        }).FirstOrDefault();
+                    }
         }
 
-        public abstract string JobByIdString { get; protected set; }
+        
     }
 }

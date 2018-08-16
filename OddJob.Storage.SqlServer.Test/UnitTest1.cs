@@ -3,11 +3,14 @@ using System.IO;
 using System.Reflection;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Storage.BaseTests;
-using GlutenFree.OddJob.Storage.Sql.SqlServer;
+using GlutenFree.OddJob.Storage.SQL.Common;
+using LinqToDB;
+using LinqToDB.DataProvider.SqlServer;
+using OddJob.Storage.Sql.SqlServer.Test;
 
-namespace OddJob.Storage.Sql.SqlServer.Test
+namespace GlutenFree.OddJob.Storage.Sql.SqlServer.Test
 {
-    public class SqlServerStorageTest: StorageTests
+    public class SqlServerStorageTest : StorageTests
     {
         public SqlServerStorageTest()
         {
@@ -16,24 +19,27 @@ namespace OddJob.Storage.Sql.SqlServer.Test
             AppDomain.CurrentDomain.SetData("DataDirectory", new Uri(Path.Combine(execPath, string.Empty)).LocalPath);
             UnitTestTableHelper.EnsureTablesExist();
 
-            
+
         }
 
-        protected override Func<IJobQueueAdder> jobAddStoreFunc
+        protected override Func<IJobQueueAdder> JobAddStoreFunc
         {
             get
             {
-                return () => new SqlServerJobQueueAdder(new TestConnectionFactory(),
-                    new SqlServerJobQueueDefaultTableConfiguration());
+                return () => new SqlServerJobQueueAdder(
+                    new SqlServerDataConnectionFactory(new TestDbConnectionFactory(), SqlServerVersion.v2008)
+                    ,
+                    new SqlDbJobQueueDefaultTableConfiguration());
             }
         }
 
-        protected override Func<IJobQueueManager> jobMgrStoreFunc
+        protected override Func<IJobQueueManager> JobMgrStoreFunc
         {
             get
             {
-                return () => new SqlServerJobQueueManager(new TestConnectionFactory(),
-                    new SqlServerJobQueueDefaultTableConfiguration());
+                return () => new SqlServerJobQueueManager(
+                    new SqlServerDataConnectionFactory(new TestDbConnectionFactory(), SqlServerVersion.v2008),
+                    new SqlDbJobQueueDefaultTableConfiguration());
             }
         }
 

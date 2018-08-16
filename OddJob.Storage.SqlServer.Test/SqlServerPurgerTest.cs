@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using GlutenFree.OddJob;
 using GlutenFree.OddJob.Interfaces;
-using GlutenFree.OddJob.Storage.Sql.SqlServer;
+using GlutenFree.OddJob.Storage.SQL.Common;
+using LinqToDB.DataProvider.SqlServer;
+using OddJob.Storage.Sql.SqlServer.Test;
 using Xunit;
 
-namespace OddJob.Storage.Sql.SqlServer.Test
+namespace GlutenFree.OddJob.Storage.Sql.SqlServer.Test
 {
     public class SqlServerPurgerTest
     {
@@ -35,8 +36,8 @@ namespace OddJob.Storage.Sql.SqlServer.Test
         {
             get
             {
-                return () => new SqlServerJobQueueAdder(new TestConnectionFactory(),
-                    new SqlServerJobQueueDefaultTableConfiguration());
+                return () => new SqlServerJobQueueAdder(new SqlServerDataConnectionFactory(new TestDbConnectionFactory(), SqlServerVersion.v2008),
+                    new SqlDbJobQueueDefaultTableConfiguration());
             }
         }
 
@@ -44,8 +45,8 @@ namespace OddJob.Storage.Sql.SqlServer.Test
         {
             get
             {
-                return () => new SqlServerJobQueueManager(new TestConnectionFactory(),
-                    new SqlServerJobQueueDefaultTableConfiguration());
+                return () => new SqlServerJobQueueManager(new SqlServerDataConnectionFactory(new TestDbConnectionFactory(), SqlServerVersion.v2008),
+                    new SqlDbJobQueueDefaultTableConfiguration());
             }
         }
 
@@ -53,8 +54,8 @@ namespace OddJob.Storage.Sql.SqlServer.Test
         {
             get
             {
-                return () => new SqlServerJobQueuePurger(new TestConnectionFactory(),
-                    new SqlServerJobQueueDefaultTableConfiguration());
+                return () => new BaseSqlJobQueuePurger(new SqlServerDataConnectionFactory(new TestDbConnectionFactory(), SqlServerVersion.v2008),
+                    new SqlDbJobQueueDefaultTableConfiguration());
             }
         }
     }

@@ -1,6 +1,6 @@
-﻿namespace GlutenFree.OddJob.Storage.Sql.SqlServer
+﻿namespace GlutenFree.OddJob.Storage.SQL.Common
 {
-    public class SqlServerJobQueueDefaultTableConfiguration : ISqlServerJobQueueTableConfiguration
+    public class SqlDbJobQueueDefaultTableConfiguration : ISqlDbJobQueueTableConfiguration
     {
         public const string DefaultQueueTableName = "QueueTable";
         public const string DefaultQueueParamTableName = "QueueParamValue";

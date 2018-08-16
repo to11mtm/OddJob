@@ -2,7 +2,7 @@ Oddjob is a Library meant to provide Lightweight Job Workers in a distributed en
 
 The Overall goal is to have a modular architecture for both Job Storage and Execution.
 
-The Basic providers given are SQLServer for Storage, and Akka.NET for Execution.
+The Basic providers given are SQLServer or SQLite for Storage, and Akka.NET for Execution.
 
 Goals:
 
@@ -22,11 +22,14 @@ Non-Goals:
 
   - Perfect Work Distribution
     - Backpressure algorithm will stop when there are more `numWorkers*2` pending jobs in a queue. You could theoretically wind up with up to `(numWorkers*3)-1` queued up before it stops fetching.
+	 - Please note that this does NOT mean you will have more than `numWorkers` jobs executing; the jobs will be 'enqueued' and executed when a given worker is done with the last job they were working on.
     - Jobs are grabbed in batches and distributed in a round-robin fashion. 
-	- However, Coordinators do not keep track of individual worker queue sizes.
+	 - This means that in some very unlucky circumstances, you *could* wind up with a single worker getting saturated with Long-running jobs. Easy Solution? Just put those jobs in their own Queue.
+	  
 
   - Fast File System Queues
-    - The File System Storage exists for Testing purposes. The way it adds/updates the Queue is absolutely terrifyingly bad in every sense of the word.
+    - The File System Storage exists for Testing purposes. The way it adds/updates the Queue is absolutely terrifyingly bad in every sense of the word from a performance perspective.
+	- SQLite is probably a safer option for most scenarios!
 	
 
 Not-Initial-Goals (Will be done when there's a need):
@@ -42,6 +45,7 @@ Not-Initial-Goals (Will be done when there's a need):
    - The Extensible parts of the API are supposed to be clean enough.
      - Shortcuts in cleanliness for the sake of extensibility are present. They will be removed when the need is there.
    - The Private API is subject to changes at any time, including undoing awkward surfaces.
+   - The Public API is fairly stable at this point, although the Storage API **will** be cleaned up (see below.)
    -`DependencyInjectedJobExecutorShell` is messy
    	 - Please note that the `DependencyInjectedJobExecutorShell`, despite it's name, may not be the best choice for many scenarios.
 	    - The way you register DI is clunky at this time
@@ -71,7 +75,7 @@ Usage:
 
  - Queue Insertion:
    - Use an Implementation of `IJobQueueAdder`
-    - If Using `SqlServerJobQueueAdder`, you'll also require an implementation of `IJobQueueDbConnectionFactory`
+    - If Using `SqlServerJobQueueAdder`, you'll have to register an `IJobQueueDbConnectionFactory` and use it alongside `SqlServerDataConnectionFactory`
 
  - Queue Processor:
    - If using 'HardInjectedJobExecutorShell' (Reccomended for most scenarios; lowest friction setup):
@@ -87,7 +91,7 @@ Usage:
       - Make sure you have registered Implementations of the following:
         - `IContainerFactory`
         - `IJobQueueManager`
-	      - If Using `SqlServerJobQueueManager`, you'll also require registering an implementation of `IJobQueueDbConnectionFactory`
+	      - If Using `SqlServerJobQueueManager`, you'll also require registering `IJobQueueDbConnectionFactory` and use it alongside `SqlServerDataConnectionFactory`
 		- 'IJobQueueExecutor'.
       - Register Dependencies for the jobs you expect the queue to process.
 	  - Install the Akka.DI.%diFlavor% nuget package so that you can provide a Func<ActorSystem,IDependencyResolver> to the constructor
@@ -99,30 +103,38 @@ Usage:
 
 Extensibility:
   - Everything except the core Job Creator is an interface.
-  - `JobQueueCoordinator` has Virtual methods for `OnJobSuccess`, `OnJobFailed` and `OnJobRetry`
+  - `JobQueueCoordinator` has Virtual methods for `OnJobSuccess`, `OnJobFailed`, `OnJobRetry`, and `OnQueueTimeout`
     - These methods are called after the Storage layer has been told to mark a given state change.
   - `JobQueueCoordinator` also has a virtual method for `OnQueueSaturation`
     - This method can be used to warn someone when a queue isn't working the way they expect.
+  - `JobQueueLayerActor` has a Virtual Method for `OnQueueFailure`
+    - This method can be used to warn about issues Reading from or Writing to the DB.
 
 
 Unit Test Notes:
   - SqlServer Unit test uses LocalDB. 
     - Please be careful if using this against a non LocalDB instance, as the tests start by dropping and recreating the Queue schema under the default table names.
   - Shutdown Tests are touchy!
-    - Because of the timers used for shutdown and it's testing, you may experience issues if running all of the unit tests in parallel.
+    - Because of the timers used for shutdown and the way it is tested, you may experience issues if running all of the unit tests in parallel.
+
+SQL Common Notes:
+  - The Common DB code is based on Linq2Db. This lets us support a variety of databases with minimal effort.
+  - You will need to create your own Tables, using the Data types that 'make the most sense' for the data. 
+    - The unit tests will be very handy here to make sure everything works as expected in your DB.
+  - Please Note that Jobs are NOT automatically deleted.
+	- `BaseSqlJobQueuePurger` exists for you to purge your stale jobs, if you choose to do so that way.
 
 SQL Server Notes:
-
   - Table create scripts can be made by looking at `SqlServerDbJobTableHelper`.
     - Indexes are at the discretion of your DBA. I'd personally suggest columns `QueueName`, `JobGuid` (Unique on QueueTable, Non-Unique on QueueParamTable), `Status`, and `LockGuid` as minimums.
 	  - Work with your DBA so they understand your load and can decide what indexes will be most useful to balance storage requirements and performance.
-  - Please Note that Jobs are NOT automatically deleted.
-	- `SqlServerJobQueuePurger` exists for you to purge your stale jobs, if you choose to do so that way.
-	  - The SQL used is meant to be easy to implement wherever needed.
+
+SQLite Notes:
+  - Table create scripts can be made by looking at `SQLiteDbJobTableHelper`
+  - All the normal SQLite rules (i.e. be careful with Network shared DB files) apply. 
 
 Creating your own Modules:
   - Storage Modules benefit from the existence of `OddJob.Storage.BaseTests`
     - Your test harness can implement `StorageTests` and provide functions for the abstract properties `jobAddStoreFunc` and `jobMgrStoreFunc`
 	  - Look at `OddJob.Storage.SqlServer.Tests` and `OddJob.Storage.FileSystem.Test` projects for example.
-  - SQL was written in a manner that tries to be a bit closer to ANSI semantics
-    - This is in the interest of portability.
+  - Adding support for any database supported by Linq2DB is trivial; look at the SQL Server and SQLite implementations to see how simple it can be!

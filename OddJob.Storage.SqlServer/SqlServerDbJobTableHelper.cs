@@ -1,14 +1,16 @@
-﻿namespace GlutenFree.OddJob.Storage.Sql.SqlServer
+﻿using GlutenFree.OddJob.Storage.SQL.Common;
+
+namespace GlutenFree.OddJob.Storage.Sql.SqlServer
 {
     public static class SqlServerDbJobTableHelper
     {
-        public static string JobTableCreateScript(ISqlServerJobQueueTableConfiguration configuration)
+        public static string JobTableCreateScript(SqlDbJobQueueDefaultTableConfiguration configuration)
         {
             return string.Format(@"
 
 create Table {0}
 (
-JobId BIGINT NOT NULL IDENTITY(1,1) PRIMARY KEY,
+Id BIGINT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 QueueName NVarchar(255) not null,
 TypeExecutedOn NVarChar(255) not null,
 MethodName NVarChar(255) not null,
@@ -25,13 +27,13 @@ CreatedDate datetime not null)
 ", configuration.QueueTableName);
         }
 
-        public static string JobQueueParamTableCreateScript(ISqlServerJobQueueTableConfiguration config)
+        public static string JobQueueParamTableCreateScript(SqlDbJobQueueDefaultTableConfiguration config)
         {
             return string.Format(@"
 Create table {0}
 (
 JobParamId int not null identity(1,1) primary key,
-JobId uniqueidentifier not null, 
+Id uniqueidentifier not null, 
 ParamOrdinal int not null,
 SerializedValue nvarchar(max) null,
 SerializedType nvarchar(255) null

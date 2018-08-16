@@ -32,6 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="linq2db, Version=2.2.0.0, Culture=neutral, PublicKeyToken=e41013125f9e410a, processorArchitecture=MSIL">
+      <HintPath>..\packages\linq2db.2.2.0\lib\net45\linq2db.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.SQLite, Version=1.0.108.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
@@ -45,11 +48,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SQLiteDbJobTableHelper.cs" />
+    <Compile Include="SQLiteJobQueueDataConnectionFactory.cs" />
+    <Compile Include="SQLiteJobQueueAdder.cs" />
+    <Compile Include="SQLiteOddjobQueueManager.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="GlutenFree.OddJob.Storage.Sql.SQLite.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

@@ -68,7 +68,7 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
                         {
                             item.Status = "Queued";
                             item.QueueTime = DateTime.Now;
-                        };
+                        }
                         results.AddRange(filtered);
                     }
                 }

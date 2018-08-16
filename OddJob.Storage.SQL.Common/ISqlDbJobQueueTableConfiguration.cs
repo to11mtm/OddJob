@@ -1,6 +1,6 @@
-﻿namespace GlutenFree.OddJob.Storage.Sql.SqlServer
+﻿namespace GlutenFree.OddJob.Storage.SQL.Common
 {
-    public interface ISqlServerJobQueueTableConfiguration
+    public interface ISqlDbJobQueueTableConfiguration
     {
         string QueueTableName { get; }
         string ParamTableName { get; }

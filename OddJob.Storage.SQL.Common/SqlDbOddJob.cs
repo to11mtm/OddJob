@@ -4,7 +4,7 @@ using GlutenFree.OddJob.Interfaces;
 namespace GlutenFree.OddJob.Storage.SQL.Common
 {
 
-    public class SqlServerDbOddJob : IOddJobWithMetadata
+    public class SqlDbOddJob : IOddJobWithMetadata
     {
         public Guid JobId { get; set; }
         public object[] JobArgs { get; set; }

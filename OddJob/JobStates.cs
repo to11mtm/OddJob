@@ -7,5 +7,6 @@
         public const string Failed = "Failed";
         public const string Retry = "Retry";
         public const string InProgress = "InProgress";
+        public const string Inserting = "Inserting";
     }
 }
