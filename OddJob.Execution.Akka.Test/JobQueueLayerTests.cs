@@ -58,10 +58,10 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
         {
             var testStore = new InMemoryTestStore();
             var actor = Sys.ActorOf(Props.Create(() => new JobQueueLayerActor(new InMemoryTestStore())));
-            var jobInfo = JobCreator.Create((MockJob m) => m.MockMethod());
+            
             var myGuid = testStore.AddJob((MockJob m) => m.MockMethod(), null, null, "test");
-            var ourJob = InMemoryTestStore.jobPeeker["test"].FirstOrDefault(q => q.JobId == myGuid);
-            var attemptTime = DateTime.Now;
+            InMemoryTestStore.jobPeeker["test"].FirstOrDefault(q => q.JobId == myGuid);
+            
 
             actor.Tell(new GetJobs("test", 10));
 
