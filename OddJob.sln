@@ -12,6 +12,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C890D84B-9DE8-4AFB-AADC-C9B86ADE790C}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		PushNuget.ps1 = PushNuget.ps1
 		Readme.MD = Readme.MD
 	EndProjectSection
 EndProject
@@ -31,7 +32,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Storage.B
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Storage.Sql.SQLite", "OddJob.Storage.SQLite\GlutenFree.OddJob.Storage.Sql.SQLite.csproj", "{29E7E72F-E6C0-41F6-A613-4AFF6C402F14}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Storage.SQL.Common", "OddJob.Storage.SQL.Common\GlutenFree.OddJob.Storage.SQL.Common.csproj", "{AFBE476A-4893-4F86-B4C1-91054BEA9B33}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Storage.Sql.Common", "OddJob.Storage.SQL.Common\GlutenFree.OddJob.Storage.Sql.Common.csproj", "{AFBE476A-4893-4F86-B4C1-91054BEA9B33}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Execution", "Execution", "{816B1219-AC6D-407E-A0C8-82CCDF7E41B3}"
 EndProject

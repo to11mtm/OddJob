@@ -56,9 +56,9 @@
     <Compile Include="SqlServerJobQueueManager.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OddJob.Storage.SQL.Common\GlutenFree.OddJob.Storage.SQL.Common.csproj">
+    <ProjectReference Include="..\OddJob.Storage.SQL.Common\GlutenFree.OddJob.Storage.Sql.Common.csproj">
       <Project>{AFBE476A-4893-4F86-B4C1-91054BEA9B33}</Project>
-      <Name>GlutenFree.OddJob.Storage.SQL.Common</Name>
+      <Name>GlutenFree.OddJob.Storage.Sql.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\OddJob\GlutenFree.OddJob.csproj">
       <Project>{aa34bea9-12ec-4bf0-a6e0-9c459a4ebae9}</Project>

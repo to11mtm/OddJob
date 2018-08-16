@@ -7,8 +7,8 @@
     <ProjectGuid>{AFBE476A-4893-4F86-B4C1-91054BEA9B33}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GlutenFree.OddJob.Storage.SQL.Common</RootNamespace>
-    <AssemblyName>GlutenFree.OddJob.Storage.SQL.Common</AssemblyName>
+    <RootNamespace>GlutenFree.OddJob.Storage.Sql.Common</RootNamespace>
+    <AssemblyName>GlutenFree.OddJob.Storage.Sql.Common</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

@@ -49,7 +49,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                 {
 
                     conn.GetTable<SqlCommonOddJobParamMetaData>()
-                        .Value(q => q.Id, ser.JobId)
+                        .Value(q => q.JobGuid, ser.JobId)
                         .Value(q => q.ParamOrdinal, i.index)
                         .Value(q => q.SerializedValue, Newtonsoft.Json.JsonConvert.SerializeObject(i.val))
                         .Value(q => q.SerializedType, i.val.GetType().AssemblyQualifiedName)

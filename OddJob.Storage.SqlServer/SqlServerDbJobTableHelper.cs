@@ -33,7 +33,7 @@ CreatedDate datetime not null)
 Create table {0}
 (
 JobParamId int not null identity(1,1) primary key,
-Id uniqueidentifier not null, 
+JobGuid uniqueidentifier not null, 
 ParamOrdinal int not null,
 SerializedValue nvarchar(max) null,
 SerializedType nvarchar(255) null

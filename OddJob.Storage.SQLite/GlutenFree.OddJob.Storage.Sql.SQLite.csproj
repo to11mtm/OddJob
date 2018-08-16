@@ -7,8 +7,8 @@
     <ProjectGuid>{29E7E72F-E6C0-41F6-A613-4AFF6C402F14}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GlutenFree.OddJob.Storage.SQL.SQLite</RootNamespace>
-    <AssemblyName>GlutenFree.OddJob.Storage.SQL.SQLite</AssemblyName>
+    <RootNamespace>GlutenFree.OddJob.Storage.Sql.SQLite</RootNamespace>
+    <AssemblyName>GlutenFree.OddJob.Storage.Sql.SQLite</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>
@@ -59,9 +59,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OddJob.Storage.SQL.Common\GlutenFree.OddJob.Storage.SQL.Common.csproj">
+    <ProjectReference Include="..\OddJob.Storage.SQL.Common\GlutenFree.OddJob.Storage.Sql.Common.csproj">
       <Project>{AFBE476A-4893-4F86-B4C1-91054BEA9B33}</Project>
-      <Name>GlutenFree.OddJob.Storage.SQL.Common</Name>
+      <Name>GlutenFree.OddJob.Storage.Sql.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\OddJob\GlutenFree.OddJob.csproj">
       <Project>{AA34BEA9-12EC-4BF0-A6E0-9C459A4EBAE9}</Project>

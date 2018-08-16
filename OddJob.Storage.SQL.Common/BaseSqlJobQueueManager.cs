@@ -105,7 +105,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                 var jobWithParamQuery = conn.GetTable<SqlCommonDbOddJobMetaData>()
                     .Where(q => q.LockGuid == lockGuid)
                     .InnerJoin(conn.GetTable<SqlCommonOddJobParamMetaData>()
-                        , (job, param) => job.JobGuid == param.Id
+                        , (job, param) => job.JobGuid == param.JobGuid
                         , (job, param) => new {job, param});
                 
                 return jobWithParamQuery.ToList().GroupBy(q=>q.job.JobGuid)
@@ -168,7 +168,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                 var jobWithParamQuery = conn.GetTable<SqlCommonDbOddJobMetaData>()
                     .Where(q => q.JobGuid == jobId)
                     .InnerJoin(conn.GetTable<SqlCommonOddJobParamMetaData>()
-                        , (job, param) => job.JobGuid == param.Id
+                        , (job, param) => job.JobGuid == param.JobGuid
                         , (job, param) => new {job, param}
                     );
 

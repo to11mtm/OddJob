@@ -84,9 +84,9 @@
       <Project>{6F6AA4D7-A77C-4C32-8F10-1240AD39FB11}</Project>
       <Name>GlutenFree.OddJob.Storage.BaseTests</Name>
     </ProjectReference>
-    <ProjectReference Include="..\OddJob.Storage.SQL.Common\GlutenFree.OddJob.Storage.SQL.Common.csproj">
+    <ProjectReference Include="..\OddJob.Storage.SQL.Common\GlutenFree.OddJob.Storage.Sql.Common.csproj">
       <Project>{AFBE476A-4893-4F86-B4C1-91054BEA9B33}</Project>
-      <Name>GlutenFree.OddJob.Storage.SQL.Common</Name>
+      <Name>GlutenFree.OddJob.Storage.Sql.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\OddJob.Storage.SqlServer\GlutenFree.OddJob.Storage.Sql.SqlServer.csproj">
       <Project>{033469ed-9c96-4f49-bef8-d373029799b3}</Project>

@@ -27,7 +27,7 @@ namespace GlutenFree.OddJob.Storage.Sql.SqlServer
             using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 conn.GetTable<SqlCommonOddJobParamMetaData>()
-                    .Where(q => q.Id.In(conn.GetTable<SqlCommonDbOddJobMetaData>()
+                    .Where(q => q.JobGuid.In(conn.GetTable<SqlCommonDbOddJobMetaData>()
                         .Where(r => r.Status == stateToPurge && r.CreatedDate < purgeOlderThan && r.QueueName == name).Select(r=>r.JobGuid)))
                     .Delete();
                 conn.GetTable<SqlCommonDbOddJobMetaData>()
