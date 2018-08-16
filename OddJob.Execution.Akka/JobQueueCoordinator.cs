@@ -64,6 +64,14 @@ namespace GlutenFree.OddJob.Execution.Akka
                     catch (Exception ex)
                     {
                         Context.System.Log.Error(ex, "Timeout Retrieving data for Queue {0}", QueueName);
+                        try
+                        {
+                          OnQueueTimeout(ex);
+                        }
+                        catch (Exception)
+                        {
+                         //Intentionally empty.   
+                        }
                     }
                     if (jobsToQueue != null)
                     {
@@ -134,6 +142,15 @@ namespace GlutenFree.OddJob.Execution.Akka
             return true;
         }
 
+        /// <summary>
+        /// Method to handle Queue Read Failures(e.x. Timeouts).
+        /// This can be used to do things like send email, perhaps trigger a Queue shutdown, etc.
+        /// </summary>
+        /// <param name="ex">The Queue Failure recieved.</param>
+        protected virtual void OnQueueTimeout(Exception ex)
+        {
+
+        }
         /// <summary>
         /// Method to handle action taken when a job has suceeded.
         /// This method is called after the success has been marked in storage.

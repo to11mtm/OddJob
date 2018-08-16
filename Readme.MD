@@ -24,9 +24,11 @@ Non-Goals:
     - Backpressure algorithm will stop when there are more `numWorkers*2` pending jobs in a queue. You could theoretically wind up with up to `(numWorkers*3)-1` queued up before it stops fetching.
 	 - Please note that this does NOT mean you will have more than `numWorkers` jobs executing; the jobs will be 'enqueued' and executed when a given worker is done with the last job they were working on.
     - Jobs are grabbed in batches and distributed in a round-robin fashion. 
+	 - This means that in some very unlucky circumstances, you *could* wind up with a single worker getting saturated with Long-running jobs. Easy Solution? Just put those jobs in their own Queue.
+	  
 
   - Fast File System Queues
-    - The File System Storage exists for Testing purposes. The way it adds/updates the Queue is absolutely terrifyingly bad in every sense of the word.
+    - The File System Storage exists for Testing purposes. The way it adds/updates the Queue is absolutely terrifyingly bad in every sense of the word from a performance perspective.
 	
 
 Not-Initial-Goals (Will be done when there's a need):
@@ -42,6 +44,7 @@ Not-Initial-Goals (Will be done when there's a need):
    - The Extensible parts of the API are supposed to be clean enough.
      - Shortcuts in cleanliness for the sake of extensibility are present. They will be removed when the need is there.
    - The Private API is subject to changes at any time, including undoing awkward surfaces.
+   - The Public API is fairly stable at this point, although the Storage API **will** be cleaned up (see below.)
    -`DependencyInjectedJobExecutorShell` is messy
    	 - Please note that the `DependencyInjectedJobExecutorShell`, despite it's name, may not be the best choice for many scenarios.
 	    - The way you register DI is clunky at this time
@@ -99,10 +102,12 @@ Usage:
 
 Extensibility:
   - Everything except the core Job Creator is an interface.
-  - `JobQueueCoordinator` has Virtual methods for `OnJobSuccess`, `OnJobFailed` and `OnJobRetry`
+  - `JobQueueCoordinator` has Virtual methods for `OnJobSuccess`, `OnJobFailed`, `OnJobRetry`, and `OnQueueTimeout`
     - These methods are called after the Storage layer has been told to mark a given state change.
   - `JobQueueCoordinator` also has a virtual method for `OnQueueSaturation`
     - This method can be used to warn someone when a queue isn't working the way they expect.
+  - `JobQueueLayerActor` has a Virtual Method for `OnQueueFailure`
+    - This method can be used to warn about issues Reading from or Writing to the DB.
 
 
 Unit Test Notes:
