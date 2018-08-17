@@ -19,6 +19,7 @@ namespace GlutenFree.OddJob.Execution.Akka
         public int PendingItems { get; protected set; }
         public DateTime? SaturationStartTime { get; protected set; }
         public int SaturationPulseCount { get; protected set; }
+        public long QueueLifeSaturationPulseCount { get; protected set; }
         public JobQueueCoordinator(Props workerProps, Props jobQueueActorProps, string queueName,int workerCount)
         {
             QueueName = queueName;
@@ -27,6 +28,7 @@ namespace GlutenFree.OddJob.Execution.Akka
             ShuttingDown = false;
             WorkerCount = workerCount;
             PendingItems = 0;
+            QueueLifeSaturationPulseCount = 0;
         }
         protected override bool Receive(object message)
         {
@@ -55,6 +57,7 @@ namespace GlutenFree.OddJob.Execution.Akka
                 if (PendingItems < WorkerCount * 2)
                 {
                     SaturationStartTime = null;
+                    SaturationPulseCount = 0;
                     IEnumerable<IOddJobWithMetadata> jobsToQueue = null;
                     try
                     {
@@ -70,7 +73,7 @@ namespace GlutenFree.OddJob.Execution.Akka
                         }
                         catch (Exception)
                         {
-                         //Intentionally empty.   
+                            Context.System.Log.Error(ex, "Error Running OnQueueTimeout Handler for Queue {0}", QueueName);
                         }
                     }
                     if (jobsToQueue != null)
@@ -88,7 +91,19 @@ namespace GlutenFree.OddJob.Execution.Akka
                 {
                     SaturationStartTime = SaturationStartTime ?? DateTime.Now;
                     SaturationPulseCount = SaturationPulseCount + 1;
-                    OnJobQueueSaturated(SaturationStartTime.Value,SaturationPulseCount);
+                    QueueLifeSaturationPulseCount = QueueLifeSaturationPulseCount + 1;
+                    try
+                    {
+                        OnJobQueueSaturated(SaturationStartTime.Value, SaturationPulseCount, QueueLifeSaturationPulseCount);
+                    }
+                    catch (Exception ex)
+                    {
+                        Context.System.Log.Error(ex,
+                            "Error Running OnJobQueueSaturated Handler for Queue {0}, Saturation Start Time : {1}, number of Saturated pulses {2}, Total Saturated Pulses for Life of Queue: {3}",
+                            QueueName, SaturationStartTime.ToString(), SaturationPulseCount, QueueLifeSaturationPulseCount);
+
+                    }
+                    
                 }
             }
             else if (message is JobSuceeded)
@@ -188,7 +203,8 @@ namespace GlutenFree.OddJob.Execution.Akka
         /// </summary>
         /// <param name="saturationTime">The time Saturation initially started</param>
         /// <param name="saturationMissedPulseCount">The number of pulses that have been missed due to saturation.</param>
-        protected virtual void OnJobQueueSaturated(DateTime saturationTime, int saturationMissedPulseCount)
+        /// <param name="queueLifeSaturationPulseCount">The total number of pulses that have been missed over the life of the queue.</param>
+        protected virtual void OnJobQueueSaturated(DateTime saturationTime, int saturationMissedPulseCount, long queueLifeSaturationPulseCount)
         {
 
         }
