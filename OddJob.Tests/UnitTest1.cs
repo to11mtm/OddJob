@@ -41,6 +41,15 @@ namespace GlutenFree.OddJob.Tests
             jobEx.ExecuteJob(next);
         }
 
+        [Fact]
+        public void Can_Run_Jobs_With_No_Params()
+        {
+            var next = JobCreator.Create<SampleJobNoParam>((j) => j.DoThing());
+            var jobEx = new DefaultJobExecutor(new DefaultContainerFactory());
+            jobEx.ExecuteJob(next);
+            Xunit.Assert.True(SampleJobNoParam.Called);
+        }
+
     }
 
     public class ClassTest
@@ -52,6 +61,15 @@ namespace GlutenFree.OddJob.Tests
         public const string derp = "lol";
         public const int herp = 9001;
         public const int classTestValue = 9002;
+    }
+
+    public class SampleJobNoParam
+    {
+        public static bool Called = false;
+        public void DoThing()
+        {
+            Called = true;
+        }
     }
 
     public class SampleJob

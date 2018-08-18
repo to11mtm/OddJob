@@ -4,6 +4,7 @@ using System.Linq;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
 using LinqToDB;
+using LinqToDB.Data;
 using LinqToDB.Mapping;
 
 namespace GlutenFree.OddJob.Storage.SQL.Common
@@ -18,14 +19,20 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
     {
         private readonly ISqlDbJobQueueTableConfiguration _jobQueueTableConfiguration;
         private readonly  MappingSchema _mappingSchema;
+        private readonly IStorageJobTypeResolver _typeResolver;
 
         protected BaseSqlJobQueueManager(IJobQueueDataConnectionFactory jobQueueConnectionFactory,
-            ISqlDbJobQueueTableConfiguration jobQueueTableConfiguration)
+            ISqlDbJobQueueTableConfiguration jobQueueTableConfiguration):this(jobQueueConnectionFactory,jobQueueTableConfiguration, new DefaultStorageJobTypeResolver())
+        {
+
+        }
+        protected BaseSqlJobQueueManager(IJobQueueDataConnectionFactory jobQueueConnectionFactory,
+            ISqlDbJobQueueTableConfiguration jobQueueTableConfiguration, IStorageJobTypeResolver typeResolver)
         {
             _jobQueueConnectionFactory = jobQueueConnectionFactory;
             
             _jobQueueTableConfiguration = jobQueueTableConfiguration;
-
+            _typeResolver = typeResolver;
 
             _mappingSchema = Mapping.BuildMappingSchema(jobQueueTableConfiguration);
         }
@@ -103,25 +110,13 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                 
                         
                 var jobWithParamQuery = conn.GetTable<SqlCommonDbOddJobMetaData>()
-                    .Where(q => q.LockGuid == lockGuid)
-                    .InnerJoin(conn.GetTable<SqlCommonOddJobParamMetaData>()
-                        , (job, param) => job.JobGuid == param.JobGuid
-                        , (job, param) => new {job, param});
-                
-                return jobWithParamQuery.ToList().GroupBy(q=>q.job.JobGuid)
-                    .Select(group =>
-                        new SqlDbOddJob()
-                        {
-                            JobId = group.Key,
-                            MethodName = group.First().job.MethodName,
-                            TypeExecutedOn = Type.GetType(group.First().job.TypeExecutedOn),
-                            Status = group.First().job.Status,
-                            JobArgs = group.OrderBy(p => p.param.ParamOrdinal)
-                                .Select(s =>
-                                    Newtonsoft.Json.JsonConvert.DeserializeObject(s.param.SerializedValue, Type.GetType(s.param.SerializedType, false))).ToArray(),
-                            RetryParameters = new RetryParameters(group.First().job.MaxRetries, TimeSpan.FromSeconds(group.First().job.MinRetryWait), group.First().job.RetryCount, group.First().job.LastAttempt)
-                        });
-                
+                    .Where(q => q.LockGuid == lockGuid);
+
+                var resultSet = ExecuteJoinQuery(jobWithParamQuery, conn);
+
+
+                return resultSet;
+
             }
         }
 
@@ -164,30 +159,45 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
         {
             using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
-                
-                var jobWithParamQuery = conn.GetTable<SqlCommonDbOddJobMetaData>()
-                    .Where(q => q.JobGuid == jobId)
-                    .InnerJoin(conn.GetTable<SqlCommonOddJobParamMetaData>()
-                        , (job, param) => job.JobGuid == param.JobGuid
-                        , (job, param) => new {job, param}
-                    );
 
-                return jobWithParamQuery.ToList().GroupBy(q => q.job.JobGuid)
-                    .Select(group =>
-                        new SqlDbOddJob()
-                        {
-                            JobId = group.Key,
-                            MethodName = group.First().job.MethodName,
-                            TypeExecutedOn = Type.GetType(group.First().job.TypeExecutedOn),
-                            Status = group.First().job.Status,
-                            JobArgs = group.OrderBy(p => p.param.ParamOrdinal)
-                                .Select(s =>
-                                    Newtonsoft.Json.JsonConvert.DeserializeObject(s.param.SerializedValue, Type.GetType(s.param.SerializedType, false))).ToArray(),
-                            RetryParameters = new RetryParameters(group.First().job.MaxRetries, TimeSpan.FromSeconds(group.First().job.MinRetryWait), group.First().job.RetryCount, group.First().job.LastAttempt)
-                        }).FirstOrDefault();
-                    }
+                var jobWithParamQuery = conn.GetTable<SqlCommonDbOddJobMetaData>()
+                    .Where(q => q.JobGuid == jobId);
+
+                var resultSet = ExecuteJoinQuery(jobWithParamQuery, conn);
+                return resultSet.FirstOrDefault();
+            }
         }
 
-        
+        private IEnumerable<SqlDbOddJob> ExecuteJoinQuery(IQueryable<SqlCommonDbOddJobMetaData> jobWithParamQuery, DataConnection conn)
+        {
+            var newQuery = jobWithParamQuery.LeftJoin(conn.GetTable<SqlCommonOddJobParamMetaData>()
+                , (job, param) => job.JobGuid == param.JobGuid
+                , (job, param) => new SqlQueueRowSet() {MetaData = job, ParamData = param}
+            );
+            var resultSet = newQuery.ToList().GroupBy(q => q.MetaData.JobGuid)
+                .Select(group =>
+                    new SqlDbOddJob()
+                    {
+                        JobId = group.Key,
+                        MethodName = group.First().MetaData.MethodName,
+                        TypeExecutedOn = _typeResolver.GetTypeForJob(group.First().MetaData.TypeExecutedOn),
+                        Status = group.First().MetaData.Status,
+                        JobArgs = group.OrderBy(p => p.ParamData.ParamOrdinal)
+                            .Where(s => s.ParamData.SerializedType != null)
+                            .Select(s =>
+                                Newtonsoft.Json.JsonConvert.DeserializeObject(s.ParamData.SerializedValue,
+                                    Type.GetType(s.ParamData.SerializedType, false))).ToArray(),
+                        RetryParameters = new RetryParameters(group.First().MetaData.MaxRetries,
+                            TimeSpan.FromSeconds(group.First().MetaData.MinRetryWait),
+                            group.First().MetaData.RetryCount, group.First().MetaData.LastAttempt)
+                    });
+            return resultSet;
+        }
+    }
+
+    class SqlQueueRowSet
+    {
+        public SqlCommonDbOddJobMetaData MetaData { get; set; }
+        public SqlCommonOddJobParamMetaData ParamData { get; set; }
     }
 }

@@ -48,11 +48,14 @@
   <ItemGroup>
     <Compile Include="BaseSqlJobQueueAdder.cs" />
     <Compile Include="BaseSqlJobQueueManager.cs" />
+    <Compile Include="DefaultStorageJobTypeResolver.cs" />
     <Compile Include="IJobQueueDataConnectionFactory.cs" />
     <Compile Include="DbDtos\SqlServerDbOddJobMetaData.cs" />
     <Compile Include="DbDtos\SqlServerOddJobParamMetaData.cs" />
     <Compile Include="ISqlDbJobQueueTableConfiguration.cs" />
+    <Compile Include="IStorageJobTypeResolver.cs" />
     <Compile Include="Mapping.cs" />
+    <Compile Include="NullOnMissingTypeJobTypeResolver.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SqlDbJobQueueDefaultTableConfiguration.cs" />
     <Compile Include="SqlDbOddJob.cs" />

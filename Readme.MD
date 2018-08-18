@@ -101,6 +101,13 @@ Usage:
       - Start a queue with `StartJobQueue`
       - Stop queues with `StopJobQueue` when shutting down.
 
+Missing Type handling:
+
+  - The SQL Storage has to modes of behavior for Missing types:
+    - First (If no `IStorageJobTypeResolver` is defined, or `DefaltStorageJobTypeResolver` is used) will cause a failure on the storage layer.
+	  - This can eventaully cause the queue to back up!
+	- Second (If `NullOnMissingTypeJobTypeResolver` is used) will cause the job to have a null type; This will cause the Execution layer to mark the job in a failed state and fire the `OnJobTypeMissing` handler.
+
 Extensibility:
   - Everything except the core Job Creator is an interface.
   - `JobQueueCoordinator` has Virtual methods for `OnJobSuccess`, `OnJobFailed`, `OnJobRetry`, and `OnQueueTimeout`

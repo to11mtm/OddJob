@@ -1,10 +1,12 @@
-﻿using GlutenFree.OddJob.Storage.Sql.SqlServer;
+﻿using System.Runtime.CompilerServices;
+using GlutenFree.OddJob.Storage.Sql.SqlServer;
 using GlutenFree.OddJob.Storage.SQL.Common;
 
 namespace OddJob.Storage.Sql.SqlServer.Test
 {
     public static class UnitTestTableHelper
     {
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public static void EnsureTablesExist()
         {
             using (var db = SqlConnectionHelper.GetLocalDB("unittestdb"))

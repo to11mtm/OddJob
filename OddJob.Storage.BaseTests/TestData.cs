@@ -9,6 +9,14 @@
         public static readonly  string NestedOddParam2 = "n2";
     }
 
+    public class MockJobNoParam
+    {
+        public void DoThing()
+        {
+            //Intentionally empty, storage test.
+        }
+    }
+
     public class MockJob
     {
         public void DoThing(string simpleParam, OddParam oddParam)

@@ -1,4 +1,5 @@
-﻿using System.Data.SQLite;
+﻿using System.Data;
+using System.Data.SQLite;
 using GlutenFree.OddJob.Storage.SQL.Common;
 
 namespace GlutenFree.OddJob.Storage.Sql.SQLite.Test
@@ -17,8 +18,12 @@ namespace GlutenFree.OddJob.Storage.Sql.SQLite.Test
         }
         public static void EnsureTablesExist()
         {
-            
-            heldConnection.Open();
+
+            if (heldConnection.State != ConnectionState.Open)
+            {
+                heldConnection.Open();
+            }
+
             using (var db = new SQLiteConnection(connString))
             {
                 db.Open();

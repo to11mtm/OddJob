@@ -10,7 +10,7 @@
     <projectUrl>https://github.com/to11mtm/OddJob/</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <releaseNotes>First Nuget Release</releaseNotes>
+<releaseNotes>Fixed SQL Handling of Jobs without Parameters. Added IStorageJobTypeResolver to allow for custom type loading in complex scenarios</releaseNotes>
     <copyright>Copyright 2018</copyright>
     <tags>job jobs jobscheduler scheduler oddjob task future later sql sqlite</tags>
   </metadata>

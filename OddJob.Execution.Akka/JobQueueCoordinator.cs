@@ -80,10 +80,25 @@ namespace GlutenFree.OddJob.Execution.Akka
                     {
                         foreach (var job in jobsToQueue)
                         {
-
-                            WorkerRouterRef.Tell(new ExecuteJobRequest(job));
-                            JobQueueActor.Tell(new MarkJobInProgress(job.JobId));
-                            PendingItems = PendingItems + 1;
+                            if (job.TypeExecutedOn == null)
+                            {
+                                try
+                                {
+                                    JobQueueActor.Tell(new MarkJobFailed(job.JobId));
+                                    OnJobTypeMissing(job);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Context.System.Log.Error(ex, "Error Running OnQueueTimeout Handler for Queue {0}", QueueName);
+                                }
+                            }
+                            else
+                            {
+                                WorkerRouterRef.Tell(new ExecuteJobRequest(job));
+                                JobQueueActor.Tell(new MarkJobInProgress(job.JobId));
+                                PendingItems = PendingItems + 1;
+                            }
+                            
                         }
                     }
                 }
@@ -158,6 +173,17 @@ namespace GlutenFree.OddJob.Execution.Akka
         }
 
         /// <summary>
+        /// Method to handle Missing Types on a Job.
+        /// If a Job's type is missing, it will be marked in an error state (to prevent queue backup)
+        /// But this method will let you specify a specific sort of warning/handler for the issue.
+        /// </summary>
+        /// <param name="job">The job missing a type.</param>
+        protected virtual void OnJobTypeMissing(IOddJobWithMetadata job)
+        {
+            
+        }
+
+        /// <summary>
         /// Method to handle Queue Read Failures(e.x. Timeouts).
         /// This can be used to do things like send email, perhaps trigger a Queue shutdown, etc.
         /// </summary>
@@ -175,6 +201,7 @@ namespace GlutenFree.OddJob.Execution.Akka
         {
 
         }
+
 
         /// <summary>
         /// Method to handle action taken when a job is put in retry.

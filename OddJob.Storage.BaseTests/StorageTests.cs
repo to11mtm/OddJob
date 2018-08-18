@@ -31,6 +31,43 @@ namespace GlutenFree.OddJob.Storage.BaseTests
 
             var job = jobMgrStore.GetJob(jobGuid);
             Assert.Equal(TestConstants.SimpleParam, job.JobArgs[0]);
+            var paramObj = job.JobArgs[1] as OddParam;
+            Assert.True(paramObj != null);
+            Assert.Equal(TestConstants.OddParam1, paramObj.Param1);
+            Assert.Equal(TestConstants.OddParam2, paramObj.Param2);
+            Assert.True(paramObj.Nested != null);
+            Assert.Equal(TestConstants.NestedOddParam1,paramObj.Nested.NestedParam1);
+            Assert.Equal(TestConstants.NestedOddParam2, paramObj.Nested.NestedParam2);
+        }
+
+        [Fact]
+        public void Job_With_No_Parameters_can_be_Stored()
+        {
+            var jobAddStore = JobAddStoreFunc();
+            var jobMgrStore = JobMgrStoreFunc();
+            var jobGuid = jobAddStore.AddJob(
+                (MockJobNoParam j) => j.DoThing());
+
+            var job = jobMgrStore.GetJob(jobGuid);
+            Assert.NotNull(job);
+            Assert.Equal(typeof(MockJobNoParam), job.TypeExecutedOn);
+
+        }
+
+        [Fact]
+        public void Job_With_No_Params_Can_be_Retrieved_from_Store()
+        {
+            var jobAddStore = JobAddStoreFunc();
+            var jobMgrStore = JobMgrStoreFunc();
+            var unused = jobAddStore.AddJob(
+                (MockJobNoParam j) => j.DoThing(), queueName:"test");
+
+            var jobs = jobMgrStore.GetJobs(new[] { "test" }, 5);
+            
+            Assert.Contains(jobs, q =>q.JobId == unused);
+            var job = jobs.Where(q => q.JobId == unused).FirstOrDefault();
+            Assert.NotNull(job);
+            Assert.Equal(typeof(MockJobNoParam), job.TypeExecutedOn);
         }
 
         [Fact]

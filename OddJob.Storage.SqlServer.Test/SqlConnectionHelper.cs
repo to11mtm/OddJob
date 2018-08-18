@@ -3,6 +3,7 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using System.IO;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using GlutenFree.OddJob.Storage.SQL.Common;
 
 namespace OddJob.Storage.Sql.SqlServer.Test
@@ -24,7 +25,7 @@ namespace OddJob.Storage.Sql.SqlServer.Test
         {
             return CheckConnString(dbName, false);
         }
-
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public static string CheckConnString(string dbName, bool deleteIfExists)
         {
             try
@@ -65,7 +66,7 @@ namespace OddJob.Storage.Sql.SqlServer.Test
                 throw;
             }
         }
-
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public static SqlConnection GetLocalDB(string dbName, bool deleteIfExists = false)
         {
             try
