@@ -4,6 +4,24 @@ The Overall goal is to have a modular architecture for both Job Storage and Exec
 
 The Basic providers given are SQLServer or SQLite for Storage, and Akka.NET for Execution.
 
+Features:
+
+  - Scheduling of Jobs to run on Same or Different process
+
+  - Configurability of Jobs (all optional):
+    - Set a Future time for jobs to execute, seconds or months into the future.
+	- Set Retry Parameters for Jobs:
+	  - Number of retries
+	  - Time to wait for Retry (fixed interval, no backoff yet)
+  
+  - "Sure, Poke if you want" SQL Storage:
+    - Data is stored in Human-Readable Formatting and schema.
+	- Table Creation Script Helpers provided for Sql Providers.
+	  - Indexes not included. Talk to your DBA and/or read notes below!
+
+  - Low Friction API:
+    - API is meant to be easy to stand up, but also easy to *expand into* more advanced use scenarios.
+
 Goals:
 
   - Have a cleaner API surface and easier stand-up than the 'enterprisey' Schedulers
@@ -33,7 +51,7 @@ Non-Goals:
 	
 
 Not-Initial-Goals (Will be done when there's a need):
-
+ 
  - Net Core Support
    - I don't think there's anything being done here that can't be done in core; But it's not at all set up for it, let alone validated.
 
@@ -63,9 +81,15 @@ Not-Initial-Goals (Will be done when there's a need):
    - Due to a semi-questionable design decision we have to:
      - Insert the Job Record in an 'Inserting' state (To prevent it being picked up before we are done)
 	 - Insert each Parameter (And relevant Type Information)
+	 - Insert each Generic Type Information parameter.
 	 - Mark the Job record as 'New'
    - A different design option would be to Organize all parameter data (type included) into it's own serializable object.
      - This was avoided so that large parameter abuse would not cause too much overhead.
+	 - Additionally, A large single Serialized object would be against the core API's 'human-readable' aspect.
+ 
+ - Compact Generic Method Handling:
+   - Generic method type info is stored in another table. We can't just guess based on parameter types, as there are no guarantees about generic/nongeneric parameter ordering.
+   - This may change to a more compact type represenatation on the main table in the future.
 
  - Different Storage Options
    - I'd love to see this work with something like RabbitMQ.
