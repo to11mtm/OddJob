@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using GlutenFree.OddJob.Interfaces;
+using GlutenFree.OddJob.Storage.Sql.Common.DbDtos;
 using GlutenFree.OddJob.Storage.SQL.Common;
 using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
 using LinqToDB;
@@ -29,6 +30,10 @@ namespace GlutenFree.OddJob.Storage.Sql.SqlServer
                 conn.GetTable<SqlCommonOddJobParamMetaData>()
                     .Where(q => q.JobGuid.In(conn.GetTable<SqlCommonDbOddJobMetaData>()
                         .Where(r => r.Status == stateToPurge && r.CreatedDate < purgeOlderThan && r.QueueName == name).Select(r=>r.JobGuid)))
+                    .Delete();
+                conn.GetTable<SqlDbOddJobMethodGenericInfo>()
+                    .Where(q => q.JobGuid.In(conn.GetTable<SqlCommonDbOddJobMetaData>()
+                        .Where(r => r.Status == stateToPurge && r.CreatedDate < purgeOlderThan && r.QueueName == name).Select(r => r.JobGuid)))
                     .Delete();
                 conn.GetTable<SqlCommonDbOddJobMetaData>()
                     .Where(r => r.Status == stateToPurge && r.CreatedDate < purgeOlderThan && r.QueueName == name)

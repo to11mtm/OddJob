@@ -1,6 +1,7 @@
 ﻿using System;
 using Akka.Actor;
 using GlutenFree.OddJob.Execution.Akka.Messages;
+using GlutenFree.OddJob.Execution.BaseTests;
 
 namespace GlutenFree.OddJob.Execution.Akka.Test
 {

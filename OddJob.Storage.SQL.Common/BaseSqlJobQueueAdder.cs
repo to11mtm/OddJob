@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Linq.Expressions;
 using GlutenFree.OddJob.Interfaces;
+using GlutenFree.OddJob.Storage.Sql.Common.DbDtos;
 using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
 using LinqToDB;
 using LinqToDB.Mapping;
@@ -57,6 +58,17 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                     
                     
                 });
+
+                var genMethodArgs = ser.MethodGenericTypes.Select((val, index) => new {val, index}).ToList();
+                genMethodArgs.ForEach(i =>
+                {
+                    conn.GetTable<SqlDbOddJobMethodGenericInfo>()
+                        .Value(q => q.JobGuid, ser.JobId)
+                        .Value(q => q.ParamOrder, i.index)
+                        .Value(q => q.ParamTypeName, i.val.AssemblyQualifiedName)
+                        .Insert();
+                });
+
                 conn.GetTable<SqlCommonDbOddJobMetaData>().Where(q => q.Id == insertedId)
                     .Set(q => q.Status, JobStates.New)
                     .Update();

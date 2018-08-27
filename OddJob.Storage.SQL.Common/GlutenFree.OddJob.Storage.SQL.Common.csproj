@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="BaseSqlJobQueueAdder.cs" />
     <Compile Include="BaseSqlJobQueueManager.cs" />
+    <Compile Include="DbDtos\SqlDbOddJobMethodGenericInfo.cs" />
     <Compile Include="DefaultStorageJobTypeResolver.cs" />
     <Compile Include="IJobQueueDataConnectionFactory.cs" />
     <Compile Include="DbDtos\SqlServerDbOddJobMetaData.cs" />

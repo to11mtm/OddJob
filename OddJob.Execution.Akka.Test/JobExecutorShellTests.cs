@@ -2,6 +2,7 @@
 using System.Threading;
 using Akka.DI.SimpleInjector;
 using GlutenFree.OddJob.Execution.Akka.Test.Mocks;
+using GlutenFree.OddJob.Execution.BaseTests;
 using GlutenFree.OddJob.Interfaces;
 using SimpleInjector;
 using Xunit;

@@ -3,6 +3,7 @@ using Akka.Actor;
 using Akka.TestKit.Xunit2;
 using GlutenFree.OddJob.Execution.Akka.Messages;
 using GlutenFree.OddJob.Execution.Akka.Test.Mocks;
+using GlutenFree.OddJob.Execution.BaseTests;
 using Xunit;
 
 namespace GlutenFree.OddJob.Execution.Akka.Test

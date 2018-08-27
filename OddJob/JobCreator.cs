@@ -54,9 +54,9 @@ namespace GlutenFree.OddJob
 
             }
 
-            var moarInfo = ((MethodCallExpression)_jobExpr.Body).Method.Name;
-            var methodName = typeof(T).GetMethod(moarInfo, _jobArgs.Select(q=>q.GetType()).ToArray());
-            return new OddJob(methodName.Name, _jobArgs, TypeExecutedOn);
+            var methodInfo = ((MethodCallExpression) _jobExpr.Body).Method;
+            var args = methodInfo.GetGenericArguments();
+            return new OddJob(methodInfo.Name, _jobArgs, TypeExecutedOn, args);
         }
     }
 }

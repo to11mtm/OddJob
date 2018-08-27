@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Cryptography.X509Certificates;
 using Xunit;
 
 namespace GlutenFree.OddJob.Tests
@@ -6,6 +7,24 @@ namespace GlutenFree.OddJob.Tests
     public class UnitTest1
     {
 
+        [Fact]
+        public void Can_Run_Job_With_Arity_in_class_With_Arity()
+        {
+            var myvalue = new ClassTest() { classTestValue = TestConstants.classTestValue };
+            var next = JobCreator.Create<SampleJobInGenericClass<string>>(j =>
+                j.DoThing(TestConstants.derp, TestConstants.herp, myvalue));
+            var jobEx = new OldDefaultJobExecutor(new DefaultContainerFactory());
+            jobEx.ExecuteJob(next);
+        }
+        [Fact]
+        public void Can_Run_Job_With_Arity()
+        {
+            var myvalue = new ClassTest() {classTestValue = TestConstants.classTestValue};
+            var next = JobCreator.Create<SampleJobWithGenericType>(j =>
+                j.DoThing(TestConstants.derp, TestConstants.herp, myvalue));
+            var jobEx = new OldDefaultJobExecutor(new DefaultContainerFactory());
+            jobEx.ExecuteJob(next);
+        }
         [Fact]
         public void Can_Run_Job_And_pass_parameters()
         {
@@ -80,6 +99,28 @@ namespace GlutenFree.OddJob.Tests
             Xunit.Assert.Equal(herp, TestConstants.herp);
             Xunit.Assert.Equal(aClass.classTestValue, TestConstants.classTestValue);
             System.Console.WriteLine("derp");
+        }
+    }
+
+    public class SampleJobInGenericClass<TString>
+    {
+        public void DoThing<TLong, TClass>(TString derp, TLong herp, TClass aClass)
+        {
+            Xunit.Assert.Equal(TestConstants.derp, derp as string);
+            Xunit.Assert.Equal(TestConstants.herp, Convert.ToInt64(herp));
+            Xunit.Assert.Equal(TestConstants.classTestValue, (aClass as ClassTest).classTestValue);
+        }
+    }
+
+    public class SampleJobWithGenericType
+    {
+        public void DoThing<TString, TLong, TClass>(TString derp, TLong herp, TClass aClass)
+        {
+            Xunit.Assert.Equal(TestConstants.derp, derp as string);
+            Xunit.Assert.Equal(TestConstants.herp, Convert.ToInt64(herp));
+            Xunit.Assert.Equal(TestConstants.classTestValue, (aClass as ClassTest).classTestValue);
+
+
         }
     }
 

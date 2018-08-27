@@ -39,5 +39,17 @@ SerializedValue text null,
 SerializedType nvarchar(255) null
 )", config.ParamTableName);
         }
+
+        public static string JobQueueJobMethodGenericParamTableCreateScript(ISqlDbJobQueueTableConfiguration config)
+        {
+            return string.Format(@"
+create table {0}
+(
+Id INTEGER primary key,
+JobGuid UniqueIdentifier not null,
+ParamOrder int not null,
+ParamTypeName text not null
+)", config.JobMethodGenericParamTableName);
+        }
     }
 }

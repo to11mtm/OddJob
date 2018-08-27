@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Threading;
+using GlutenFree.OddJob.Execution.BaseTests;
 using Xunit;
 
 namespace GlutenFree.OddJob.Execution.Akka.Test

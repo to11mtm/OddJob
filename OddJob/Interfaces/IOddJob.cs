@@ -11,5 +11,6 @@ namespace GlutenFree.OddJob.Interfaces
         Type TypeExecutedOn { get; }
         string MethodName { get; }
         string Status { get; }
+        Type[] MethodGenericTypes { get; }
     }
 }

@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("GlutenFree.OddJob.Execution.Akka")]
-[assembly: AssemblyDescription("OddJob - Akka Execution Engine (Default)")]
+[assembly: AssemblyTitle("GlutenFree.OddJob.Execution.ThreadPool")]
+[assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Gluten Free Solutions")]
-[assembly: AssemblyProduct("OddJob.Execution.Akka")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("GlutenFree.OddJob.Execution.ThreadPool")]
 [assembly: AssemblyCopyright("Copyright ©  2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("0ae03157-a9b2-4fbd-8db7-36dc09ee01d3")]
+[assembly: Guid("8f4d96a6-f2f7-4307-9729-088c3869787a")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.9.8.0")]
-[assembly: AssemblyFileVersion("0.9.8.0")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]

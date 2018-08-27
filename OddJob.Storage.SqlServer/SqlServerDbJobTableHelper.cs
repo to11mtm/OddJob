@@ -4,7 +4,7 @@ namespace GlutenFree.OddJob.Storage.Sql.SqlServer
 {
     public static class SqlServerDbJobTableHelper
     {
-        public static string JobTableCreateScript(SqlDbJobQueueDefaultTableConfiguration configuration)
+        public static string JobTableCreateScript(ISqlDbJobQueueTableConfiguration configuration)
         {
             return string.Format(@"
 
@@ -27,17 +27,29 @@ CreatedDate datetime not null)
 ", configuration.QueueTableName);
         }
 
-        public static string JobQueueParamTableCreateScript(SqlDbJobQueueDefaultTableConfiguration config)
+        public static string JobQueueParamTableCreateScript(ISqlDbJobQueueTableConfiguration config)
         {
             return string.Format(@"
 Create table {0}
 (
-JobParamId int not null identity(1,1) primary key,
+JobParamId bigint not null identity(1,1) primary key,
 JobGuid uniqueidentifier not null, 
 ParamOrdinal int not null,
 SerializedValue nvarchar(max) null,
 SerializedType nvarchar(255) null
 )", config.ParamTableName);
+        }
+
+        public static string JobQueueJobMethodGenericParamTableCreateScript(ISqlDbJobQueueTableConfiguration config)
+        {
+            return string.Format(@"
+create table {0}
+(
+Id bigint not null identity(1,1) primary key,
+JobGuid UniqueIdentifier not null,
+ParamOrder int not null,
+ParamTypeName nvarchar(255) not null,
+)", config.JobMethodGenericParamTableName);
         }
     }
 }

@@ -17,6 +17,7 @@ namespace GlutenFree.OddJob.Storage.FileSystem
         public string QueueName { get; set; }
         public DateTime CreatedOn { get; set; }
         public string Status { get; set; }
+        public Type[] MethodGenericTypes { get; set; }
         public DateTime QueueTime { get; internal set; }
         public DateTime FailureTime { get; internal set; }
         public DateTime LastAttemptTime { get; internal set; }

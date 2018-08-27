@@ -5,5 +5,6 @@
         string QueueTableName { get; }
         string ParamTableName { get; }
         int JobClaimLockTimeoutInSeconds { get; }
+        string JobMethodGenericParamTableName { get; }
     }
 }

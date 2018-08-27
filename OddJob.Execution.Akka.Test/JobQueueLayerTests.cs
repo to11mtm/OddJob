@@ -4,6 +4,7 @@ using System.Linq;
 using Akka.Actor;
 using Akka.TestKit.Xunit2;
 using GlutenFree.OddJob.Execution.Akka.Messages;
+using GlutenFree.OddJob.Execution.BaseTests;
 using GlutenFree.OddJob.Interfaces;
 using Xunit;
 

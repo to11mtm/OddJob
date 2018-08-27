@@ -1,7 +1,7 @@
 ﻿using System;
 using GlutenFree.OddJob.Interfaces;
 
-namespace GlutenFree.OddJob.Execution.Akka.Test
+namespace GlutenFree.OddJob.Execution.BaseTests
 {
     public class OddJobWithMetaData : IOddJobWithMetadata
     {
@@ -15,6 +15,7 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
 
         public string MethodName { get; set; }
         public string Status { get; set; }
+        public Type[] MethodGenericTypes { get; set; }
         public DateTime CreatedOn { get; set; }
         public DateTime QueueTime { get; set; }
         public DateTime? LastAttemptTime { get; set; }

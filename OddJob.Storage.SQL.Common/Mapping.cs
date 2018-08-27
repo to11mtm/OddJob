@@ -1,4 +1,5 @@
 ﻿using System.Reflection.Emit;
+using GlutenFree.OddJob.Storage.Sql.Common.DbDtos;
 using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
 using LinqToDB.Mapping;
 
@@ -13,6 +14,12 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                 new TableAttribute(_jobQueueTableConfiguration.QueueTableName) { IsColumnAttributeRequired = false, Name = _jobQueueTableConfiguration.QueueTableName});
             mapper.Entity<SqlCommonOddJobParamMetaData>().HasAttribute(
                 new TableAttribute(_jobQueueTableConfiguration.ParamTableName){IsColumnAttributeRequired = false, Name = _jobQueueTableConfiguration.ParamTableName});
+            mapper.Entity<SqlDbOddJobMethodGenericInfo>().HasAttribute(
+                new TableAttribute(_jobQueueTableConfiguration.JobMethodGenericParamTableName)
+                {
+                    IsColumnAttributeRequired = false,
+                    Name = _jobQueueTableConfiguration.JobMethodGenericParamTableName
+                });
             return mapper.MappingSchema;
         }
     }

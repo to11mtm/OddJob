@@ -1,15 +1,16 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using GlutenFree.OddJob.Interfaces;
 
-namespace GlutenFree.OddJob.Execution.Akka.Test
+namespace GlutenFree.OddJob.Execution.BaseTests
 {
     public class InMemoryTestStore : IJobQueueAdder, IJobQueueManager
     {
-        internal static Dictionary<string, List<OddJobWithMetaData>> jobPeeker {get {return jobStore; } }
-        private static Dictionary<string, List<OddJobWithMetaData>> jobStore = new Dictionary<string, List<OddJobWithMetaData>>();
+        public static ConcurrentDictionary<string, List<OddJobWithMetaData>> jobPeeker {get {return jobStore; } }
+        private static ConcurrentDictionary<string, List<OddJobWithMetaData>> jobStore = new ConcurrentDictionary<string, List<OddJobWithMetaData>>();
         private static object jobLock = new object();
         private static object dictionaryLock = new object();
         public Guid AddJob<TJob>(Expression<Action<TJob>> jobExpression, RetryParameters retryParameters = null, DateTimeOffset? executionTime = null, string queueName = "default")
@@ -27,12 +28,10 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             };
             if (jobStore.ContainsKey(queueName) == false)
             {
+                
                 lock (dictionaryLock)
                 {
-                    if (jobStore.ContainsKey(queueName) == false)
-                    {
-                        jobStore.Add(queueName, new List<OddJobWithMetaData>());
-                    }
+                    jobStore.GetOrAdd(queueName, new List<OddJobWithMetaData>());
                 }
             }
             lock (jobLock)

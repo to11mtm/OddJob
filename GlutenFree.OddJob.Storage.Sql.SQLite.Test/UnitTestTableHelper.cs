@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Data.SQLite;
+using System.Runtime.CompilerServices;
 using GlutenFree.OddJob.Storage.SQL.Common;
 
 namespace GlutenFree.OddJob.Storage.Sql.SQLite.Test
@@ -12,13 +13,19 @@ namespace GlutenFree.OddJob.Storage.Sql.SQLite.Test
         /// </summary>
         public static readonly SQLiteConnection heldConnection;
 
+        public static bool TablesCreated = false;
         static UnitTestTableHelper()
         {
             heldConnection = new SQLiteConnection(connString);
         }
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public static void EnsureTablesExist()
         {
-
+            if (TablesCreated)
+            {
+                return;
+                ;
+            }
             if (heldConnection.State != ConnectionState.Open)
             {
                 heldConnection.Open();
@@ -38,6 +45,12 @@ namespace GlutenFree.OddJob.Storage.Sql.SQLite.Test
                     cmd.CommandText = string.Format(@"DROP TABLE IF EXISTS {0}; ", SqlDbJobQueueDefaultTableConfiguration.DefaultQueueParamTableName);
                     cmd.ExecuteNonQuery();
                 }
+
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandText = string.Format(@"DROP TABLE IF EXISTS {0}; ",
+                        SqlDbJobQueueDefaultTableConfiguration.DefaultJobMethodGenericParamTableName);
+                }
                 using (var cmd = db.CreateCommand())
                 {
                     cmd.CommandText = SQLiteDbJobTableHelper.JobQueueParamTableCreateScript(
@@ -50,7 +63,17 @@ namespace GlutenFree.OddJob.Storage.Sql.SQLite.Test
                         new SqlDbJobQueueDefaultTableConfiguration());
                     cmd.ExecuteNonQuery();
                 }
+
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandText =
+                        SQLiteDbJobTableHelper.JobQueueJobMethodGenericParamTableCreateScript(
+                            new SqlDbJobQueueDefaultTableConfiguration());
+                    cmd.ExecuteNonQuery();
+                }
             }
+
+            TablesCreated = true;
 
 
 

@@ -80,7 +80,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="InMemoryTestStore.cs" />
     <Compile Include="JobCoordinatorTests.cs" />
     <Compile Include="JobExecutorShellTests.cs" />
     <Compile Include="JobExecutorShutdownTests.cs" />
@@ -90,11 +89,14 @@
     <Compile Include="MockJobWorker.cs" />
     <Compile Include="Mocks\MockJobFailureExecutor.cs" />
     <Compile Include="Mocks\MockJobSuccessExecutor.cs" />
-    <Compile Include="OddJobWithMetaData.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueueLayerMock.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\GlutenFree.OddJob.Execution.BaseTests\GlutenFree.OddJob.Execution.BaseTests.csproj">
+      <Project>{902A85A5-7CC6-44DC-AD84-AD92B264D424}</Project>
+      <Name>GlutenFree.OddJob.Execution.BaseTests</Name>
+    </ProjectReference>
     <ProjectReference Include="..\OddJob.Execution.Akka\GlutenFree.OddJob.Execution.Akka.csproj">
       <Project>{0ae03157-a9b2-4fbd-8db7-36dc09ee01d3}</Project>
       <Name>GlutenFree.OddJob.Execution.Akka</Name>

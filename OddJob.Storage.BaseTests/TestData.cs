@@ -17,6 +17,22 @@
         }
     }
 
+    public class MockJobInClassWithArity<TString>
+    {
+        public void DoThing(TString simpleParam, OddParam oddParam)
+        {
+            //Intentionally Empty since this is testing storage.
+        }
+    }
+
+    public class MockJobWithArity
+    {
+        public void DoThing<TString, TOddParam>(TString simpleParam, TOddParam oddParam)
+        {
+            //Intentionally empty since this is testing storage.
+        }
+    }
+
     public class MockJob
     {
         public void DoThing(string simpleParam, OddParam oddParam)

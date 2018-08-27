@@ -81,7 +81,8 @@ namespace GlutenFree.OddJob.Storage.FileSystem
                 TypeExecutedOn = jobData.TypeExecutedOn,
                 QueueName = queueName,
                 CreatedOn = DateTime.Now,
-                Status = JobStates.New
+                Status = JobStates.New,
+                MethodGenericTypes = jobData.MethodGenericTypes
             };
             WriteJobToQueue(toSer);
             return toSer.JobId;

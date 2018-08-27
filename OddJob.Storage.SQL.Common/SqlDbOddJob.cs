@@ -13,6 +13,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 
         public string MethodName { get; set; }
         public string Status { get; set; }
+        public Type[] MethodGenericTypes { get; set; }
 
         public IRetryParameters RetryParameters { get; set; }
     }

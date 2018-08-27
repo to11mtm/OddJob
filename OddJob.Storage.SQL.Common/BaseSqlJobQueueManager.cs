@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using GlutenFree.OddJob.Interfaces;
+using GlutenFree.OddJob.Storage.Sql.Common.DbDtos;
 using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
 using LinqToDB;
 using LinqToDB.Data;
@@ -173,8 +174,11 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
             var newQuery = jobWithParamQuery.LeftJoin(conn.GetTable<SqlCommonOddJobParamMetaData>()
                 , (job, param) => job.JobGuid == param.JobGuid
                 , (job, param) => new SqlQueueRowSet() {MetaData = job, ParamData = param}
-            );
-            var resultSet = newQuery.ToList().GroupBy(q => q.MetaData.JobGuid)
+            ).LeftJoin(conn.GetTable<SqlDbOddJobMethodGenericInfo>()
+            , (job_param,jobGeneric)=> job_param.MetaData.JobGuid == jobGeneric.JobGuid
+            , (job_param,jobGeneric)=> new{MetaData = job_param.MetaData, ParamData = job_param.ParamData, JobMethodGenericData = jobGeneric});
+            var resultSet = newQuery.ToList();
+            var finalSet =  resultSet.GroupBy(q => q.MetaData.JobGuid)
                 .Select(group =>
                     new SqlDbOddJob()
                     {
@@ -182,16 +186,20 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                         MethodName = group.First().MetaData.MethodName,
                         TypeExecutedOn = _typeResolver.GetTypeForJob(group.First().MetaData.TypeExecutedOn),
                         Status = group.First().MetaData.Status,
-                        JobArgs = group.OrderBy(p => p.ParamData.ParamOrdinal)
-                            .Where(s => s.ParamData.SerializedType != null)
+                        JobArgs = group.OrderBy(p => p.ParamData.ParamOrdinal).Select(q=>q.ParamData).Where(s => s.SerializedType != null).GroupBy(q=>q.ParamOrdinal)
                             .Select(s =>
-                                Newtonsoft.Json.JsonConvert.DeserializeObject(s.ParamData.SerializedValue,
-                                    Type.GetType(s.ParamData.SerializedType, false))).ToArray(),
+                                Newtonsoft.Json.JsonConvert.DeserializeObject(s.FirstOrDefault().SerializedValue,
+                                    Type.GetType(s.FirstOrDefault().SerializedType, false))).ToArray(),
                         RetryParameters = new RetryParameters(group.First().MetaData.MaxRetries,
                             TimeSpan.FromSeconds(group.First().MetaData.MinRetryWait),
-                            group.First().MetaData.RetryCount, group.First().MetaData.LastAttempt)
+                            group.First().MetaData.RetryCount, group.First().MetaData.LastAttempt),
+                        MethodGenericTypes = group.OrderBy(q=>q.JobMethodGenericData.ParamOrder).Where(t=>t.JobMethodGenericData!= null && t.JobMethodGenericData.ParamTypeName != null)
+                            .Select(q=>q.JobMethodGenericData)
+                            .GroupBy(q=>q.ParamOrder)
+                            .Select(t=> Type.GetType(t.FirstOrDefault().ParamTypeName)).ToArray()
+                        
                     });
-            return resultSet;
+            return finalSet;
         }
     }
 

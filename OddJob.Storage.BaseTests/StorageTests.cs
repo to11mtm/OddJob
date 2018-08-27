@@ -41,6 +41,67 @@ namespace GlutenFree.OddJob.Storage.BaseTests
         }
 
         [Fact]
+        public void Job_With_Arity_can_be_Stored()
+        {
+            var jobAddStore = JobAddStoreFunc();
+            var jobMgrStore = JobMgrStoreFunc();
+            var jobGuid = jobAddStore.AddJob(
+                (MockJobWithArity j) => j.DoThing(TestConstants.SimpleParam,
+                    new OddParam
+                    {
+                        Param1 = TestConstants.OddParam1,
+                        Param2 = TestConstants.OddParam2,
+                        Nested = new NestedOddParam
+                        {
+                            NestedParam1 = TestConstants.NestedOddParam1,
+                            NestedParam2 = TestConstants.NestedOddParam2
+                        }
+                    }), null, null, "test");
+
+            var job = jobMgrStore.GetJob(jobGuid);
+            Assert.Equal(TestConstants.SimpleParam, job.JobArgs[0]);
+            var paramObj = job.JobArgs[1] as OddParam;
+            Assert.True(paramObj != null);
+            Assert.Equal(TestConstants.OddParam1, paramObj.Param1);
+            Assert.Equal(TestConstants.OddParam2, paramObj.Param2);
+            Assert.True(paramObj.Nested != null);
+            Assert.Equal(TestConstants.NestedOddParam1, paramObj.Nested.NestedParam1);
+            Assert.Equal(TestConstants.NestedOddParam2, paramObj.Nested.NestedParam2);
+            Assert.Equal(typeof(string), job.MethodGenericTypes[0]);
+            Assert.Equal(typeof(OddParam),job.MethodGenericTypes[1]);
+        }
+
+        [Fact]
+        public void Job_In_class_with_Arity_can_be_Stored()
+        {
+            var jobAddStore = JobAddStoreFunc();
+            var jobMgrStore = JobMgrStoreFunc();
+            var jobGuid = jobAddStore.AddJob(
+                (MockJobInClassWithArity<string> j) => j.DoThing(TestConstants.SimpleParam,
+                    new OddParam
+                    {
+                        Param1 = TestConstants.OddParam1,
+                        Param2 = TestConstants.OddParam2,
+                        Nested = new NestedOddParam
+                        {
+                            NestedParam1 = TestConstants.NestedOddParam1,
+                            NestedParam2 = TestConstants.NestedOddParam2
+                        }
+                    }), null, null, "test");
+
+            var job = jobMgrStore.GetJob(jobGuid);
+            Assert.Equal(TestConstants.SimpleParam, job.JobArgs[0]);
+            var paramObj = job.JobArgs[1] as OddParam;
+            Assert.True(paramObj != null);
+            Assert.Equal(TestConstants.OddParam1, paramObj.Param1);
+            Assert.Equal(TestConstants.OddParam2, paramObj.Param2);
+            Assert.True(paramObj.Nested != null);
+            Assert.Equal(TestConstants.NestedOddParam1, paramObj.Nested.NestedParam1);
+            Assert.Equal(TestConstants.NestedOddParam2, paramObj.Nested.NestedParam2);
+            Assert.Equal(typeof(MockJobInClassWithArity<string>),job.TypeExecutedOn);
+        }
+
+        [Fact]
         public void Job_With_No_Parameters_can_be_Stored()
         {
             var jobAddStore = JobAddStoreFunc();

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using GlutenFree.OddJob;
 using GlutenFree.OddJob.Execution.Akka;
 using GlutenFree.OddJob.Execution.Akka.Test;
+using GlutenFree.OddJob.Execution.BaseTests;
 
 namespace OddJob.SampleApp.Console
 {
