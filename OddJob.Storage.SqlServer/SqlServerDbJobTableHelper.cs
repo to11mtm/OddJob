@@ -12,7 +12,7 @@ create Table {0}
 (
 Id BIGINT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 QueueName NVarchar(255) not null,
-TypeExecutedOn NVarChar(255) not null,
+TypeExecutedOn NVarChar(512) not null,
 MethodName NVarChar(255) not null,
 DoNotExecuteBefore datetime null,
 JobGuid uniqueidentifier not null,

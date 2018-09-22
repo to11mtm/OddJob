@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+
+    <IsPackable>false</IsPackable>
+
+    <AssemblyName>GlutenFree.OddJob.Execution.Akka.Test</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Akka.DI.SimpleInjector" Version="1.3.0" />
+    <PackageReference Include="Akka.TestKit.Xunit2" Version="1.3.9" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.8.0" />
+    <PackageReference Include="SimpleInjector" Version="4.3.0" />
+    <PackageReference Include="xunit" Version="2.3.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
+  </ItemGroup>
+  <PropertyGroup>
+   <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+</PropertyGroup> 
+  
+        <ItemGroup>
+    <Compile Include="..\OddJob.Execution.Akka.Test\**\*.cs" />
+  </ItemGroup>
+  
+        <ItemGroup>
+          <ProjectReference Include="..\GlutenFree.OddJob.Execution.Akka.NetStandard\GlutenFree.OddJob.Execution.Akka.NetStandard.csproj" />
+          <ProjectReference Include="..\GlutenFree.OddJob.Execution.BaseTests.NetStandard\GlutenFree.OddJob.Execution.BaseTests.NetStandard.csproj" />
+        </ItemGroup>
+
+</Project>

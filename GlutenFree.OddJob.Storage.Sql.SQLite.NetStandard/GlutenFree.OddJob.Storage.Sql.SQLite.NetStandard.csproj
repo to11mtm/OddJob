@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+      <PropertyGroup>
+   <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+   <AssemblyName>GlutenFree.OddJob.Storage.Sql.SQLite</AssemblyName>
+</PropertyGroup> 
+    <ItemGroup>
+    <Compile Include="..\OddJob.Storage.SQLite\**\*.cs" />
+  </ItemGroup> 
+    <ItemGroup>
+      <ProjectReference Include="..\OddJob.Storage.Sql.Common.NetStandard\GlutenFree.OddJob.Storage.Sql.Common.NetStandard.csproj" />
+    </ItemGroup> 
+</Project>

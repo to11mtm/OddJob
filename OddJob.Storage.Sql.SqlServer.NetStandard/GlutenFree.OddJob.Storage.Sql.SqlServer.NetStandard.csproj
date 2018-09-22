@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+   <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+   <AssemblyName>GlutenFree.OddJob.Storage.Sql.SqlServer</AssemblyName>
+   <RootNamespace>GlutenFree.OddJob.Storage.Sql.SqlServer</RootNamespace>
+</PropertyGroup> 
+      <ItemGroup>
+    <Compile Include="..\OddJob.Storage.SqlServer\**\*.cs" />
+  </ItemGroup> 
+      <ItemGroup>
+        <ProjectReference Include="..\OddJob.Storage.Sql.Common.NetStandard\GlutenFree.OddJob.Storage.Sql.Common.NetStandard.csproj" />
+      </ItemGroup>
+
+</Project>

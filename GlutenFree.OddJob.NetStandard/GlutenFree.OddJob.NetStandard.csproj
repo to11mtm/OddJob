@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>GlutenFree.OddJob</AssemblyName>
+    <RootNamespace>GlutenFree.OddJob</RootNamespace>
+  </PropertyGroup>
+<PropertyGroup>
+   <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+</PropertyGroup> 
+  <ItemGroup>
+    <Compile Include="..\OddJob\**\*.cs" />
+  </ItemGroup>
+</Project>

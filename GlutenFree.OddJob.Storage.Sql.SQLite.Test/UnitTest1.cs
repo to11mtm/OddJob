@@ -1,7 +1,6 @@
 ﻿using System;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Storage.BaseTests;
-using GlutenFree.OddJob.Storage.Sql.SqlServer;
 using GlutenFree.OddJob.Storage.SQL.Common;
 using GlutenFree.OddJob.Storage.SQL.SQLite;
 
