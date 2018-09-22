@@ -23,15 +23,29 @@ namespace GlutenFree.OddJob
         {
         }
     }
+
+    /// <summary>
+    /// Optional way to pass Jobs that are Static method calls (i.e. calls in a Static Class)
+    /// </summary>
+    public class StaticClassJob
+    {
+
+    }
     public static class JobCreator
     {
         public static OddJob Create<T>(Expression<Action<T>> jobExpr)
         {
             var _jobExpr = jobExpr;
             var TypeExecutedOn = typeof(T);//jobExpr.Parameters[0].Type;
-
-            var argProv = (_jobExpr.Body as MethodCallExpression).Arguments;
-
+            
+            var methodCall = (_jobExpr.Body as MethodCallExpression);
+            var argProv = methodCall.Arguments;
+            //Kinda Hacky: If the Caller uses OBJECT as the type OR our special StaticJob Class,
+            //we get the type from the expression methodcall itself
+            if (TypeExecutedOn==typeof(StaticClassJob) ||TypeExecutedOn == typeof(object))
+            {
+                TypeExecutedOn = methodCall.Method.DeclaringType;
+            }
             var argCount = argProv.Count;
             object[] _jobArgs = new object[argCount];
             for (int i = 0; i < argCount; i++)

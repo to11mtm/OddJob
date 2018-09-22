@@ -23,7 +23,11 @@ namespace GlutenFree.OddJob
 
         public void ExecuteJob(IOddJob expr)
         {
-            var instance = _containerFactory.CreateInstance(expr.TypeExecutedOn);
+            //IsAbstract and IsSealed means we are dealing with a static class invocation and want NULL.
+            var instance = (expr.TypeExecutedOn.IsAbstract && expr.TypeExecutedOn.IsSealed)
+                    ? null
+                    : _containerFactory.CreateInstance(expr.TypeExecutedOn)
+                ;
             var method = expr.TypeExecutedOn.GetMethod(expr.MethodName, expr.JobArgs.Select(q=>q.GetType()).ToArray());
             method.Invoke(instance, expr.JobArgs);
         }
