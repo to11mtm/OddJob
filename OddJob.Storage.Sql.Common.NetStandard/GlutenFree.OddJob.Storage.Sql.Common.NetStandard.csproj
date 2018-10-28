@@ -6,6 +6,7 @@
 <PropertyGroup>
    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
    <AssemblyName>GlutenFree.OddJob.Storage.Sql.Common</AssemblyName>
+   <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
 </PropertyGroup> 
     <ItemGroup>
     <Compile Include="..\OddJob.Storage.SQL.Common\**\*.cs" />

@@ -12,7 +12,30 @@ using GlutenFree.OddJob.Execution.Akka.Messages;
 [assembly: InternalsVisibleTo("GlutenFree.OddJob.Execution.Akka.Test")]
 namespace GlutenFree.OddJob.Execution.Akka
 {
-    
+    public class Configured
+    {
+
+    }
+    public class SetJobQueueConfiguration
+    {
+        public string QueueName { get; protected set; }
+        public int NumWorkers { get; protected set; }
+        public int PulseDelayInSeconds { get; protected set; }
+        public int FirstPulseDelayInSeconds { get; protected set; }
+        public Props WorkerProps { get; protected set; }
+        public Props QueueProps { get; protected set; }
+
+        public SetJobQueueConfiguration(Props workerProps, Props queueProps, string queueName, int numWorkers,
+            int pulseDelayInSeconds, int firstPulseDelayInSeconds = 5)
+        {
+            QueueName = queueName;
+            NumWorkers = numWorkers;
+            PulseDelayInSeconds = pulseDelayInSeconds;
+            FirstPulseDelayInSeconds = firstPulseDelayInSeconds;
+            WorkerProps = workerProps;
+            QueueProps = queueProps;
+        }
+    }
     public abstract class BaseJobExecutorShell : IDisposable
     {
         protected ActorSystem _actorSystem { get; private set; }
@@ -59,17 +82,29 @@ namespace GlutenFree.OddJob.Execution.Akka
         {
             if (coordinatorPool.ContainsKey(queueName) == false)
             {
-                var workerProps = WorkerProps.WithRouter(new RoundRobinPool(numWorkers));
-                var jobQueueProps = JobQueueProps;
-                var jobCoordinator = _actorSystem.ActorOf(Props.Create(() => new JobQueueCoordinator(workerProps, jobQueueProps, queueName, numWorkers)).WithMailbox("shutdown-priority-mailbox"), queueName);
-                coordinatorPool.Add(queueName, jobCoordinator);
-                var cancelToken = _actorSystem.Scheduler.ScheduleTellRepeatedlyCancelable((int)TimeSpan.FromSeconds(firstPulseDelayInSeconds).TotalMilliseconds, (int)TimeSpan.FromSeconds(pulseDelayInSeconds).TotalMilliseconds, jobCoordinator, new JobSweep(), null);
-                cancelPulsePool.Add(queueName, cancelToken);
+                var jobCoordinator = _actorSystem.ActorOf(CoordinatorProps.WithMailbox("shutdown-priority-mailbox"), queueName);
+                var result = jobCoordinator.Ask(new SetJobQueueConfiguration(WorkerProps, JobQueueProps, queueName, numWorkers,
+                    pulseDelayInSeconds, firstPulseDelayInSeconds), TimeSpan.FromSeconds(10)).Result;
+                if (result is Configured)
+                {
+                    coordinatorPool.Add(queueName, jobCoordinator);
+                    var cancelToken = _actorSystem.Scheduler.ScheduleTellRepeatedlyCancelable(
+                        (int) TimeSpan.FromSeconds(firstPulseDelayInSeconds).TotalMilliseconds,
+                        (int) TimeSpan.FromSeconds(pulseDelayInSeconds).TotalMilliseconds, jobCoordinator,
+                        new JobSweep(), null);
+                    cancelPulsePool.Add(queueName, cancelToken);
+                }
+                else
+                {
+                    throw new InvalidOperationException("Unexpected Result from Configuration Set!");
+                }
+
             }
         }
 
         protected abstract Props WorkerProps { get; }
         protected abstract Props JobQueueProps { get; }
+        protected abstract Props CoordinatorProps { get; }
         /// <summary>
         /// Shuts down a Queue.
         /// </summary>

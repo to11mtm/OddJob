@@ -61,7 +61,14 @@ namespace GlutenFree.OddJob.Execution.Akka
             }
             catch (Exception ex)
             {
-                OnQueueFailure(message, ex);
+                try
+                {
+                    OnQueueFailure(message, ex);
+                }
+                finally
+                {
+
+                }
             }
 
             return true;

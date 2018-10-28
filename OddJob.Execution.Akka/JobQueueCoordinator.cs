@@ -23,26 +23,33 @@ namespace GlutenFree.OddJob.Execution.Akka
         public DateTime? SaturationStartTime { get; protected set; }
         public int SaturationPulseCount { get; protected set; }
         public long QueueLifeSaturationPulseCount { get; protected set; }
-        public JobQueueCoordinator(Props workerProps, Props jobQueueActorProps, string queueName,int workerCount)
+        public Props WorkerProps { get; protected set; }
+        public JobQueueCoordinator()
         {
-            QueueName = queueName;
-            JobQueueActor = Context.ActorOf(jobQueueActorProps,"jobQueue");
-            WorkerRouterRef = Context.ActorOf(workerProps,"workerPool");
             ShuttingDown = false;
-            WorkerCount = workerCount;
             PendingItems = 0;
             QueueLifeSaturationPulseCount = 0;
         }
         protected override bool Receive(object message)
         {
-            if (message is ShutDownQueues)
+            if (message is SetJobQueueConfiguration)
+            {
+                var config = message as SetJobQueueConfiguration;
+                WorkerCount = config.NumWorkers;
+                QueueName = config.QueueName;
+                JobQueueActor = Context.ActorOf(config.QueueProps, "jobQueue");
+                WorkerProps = config.WorkerProps;
+                WorkerRouterRef = Context.ActorOf(WorkerProps.WithRouter(new RoundRobinPool(WorkerCount)), "workerPool");
+                Context.Sender.Tell(new Configured());
+            }
+            else if (message is ShutDownQueues)
             {
                 ShutdownRequester = Context.Sender;
                 ShuttingDown = true;
                 //Tell all of the children to stop what they're doing.
                 WorkerRouterRef.Tell(new Broadcast(new ShutDownQueues()));
             }
-            if (message is QueueShutDown)
+            else if (message is QueueShutDown)
             {
                 ShutdownCount = ShutdownCount + 1;
                 SaturationPulseCount = 0;
@@ -56,7 +63,7 @@ namespace GlutenFree.OddJob.Execution.Akka
             }
             else if (message is JobSweep && !ShuttingDown)
             {
-                //Naieve Backpressure
+                //Naieve Backpressure:
                 if (PendingItems < WorkerCount * 2)
                 {
                     SaturationStartTime = null;
@@ -64,7 +71,9 @@ namespace GlutenFree.OddJob.Execution.Akka
                     IEnumerable<IOddJobWithMetadata> jobsToQueue = null;
                     try
                     {
-                        jobsToQueue = JobQueueActor.Ask(new GetJobs(QueueName,WorkerCount), TimeSpan.FromSeconds(30)).Result as IEnumerable<IOddJobWithMetadata>;
+                        jobsToQueue =
+                            JobQueueActor.Ask(new GetJobs(QueueName, WorkerCount), TimeSpan.FromSeconds(30)).Result as
+                                IEnumerable<IOddJobWithMetadata>;
 
                     }
                     catch (Exception ex)
@@ -72,13 +81,15 @@ namespace GlutenFree.OddJob.Execution.Akka
                         Context.System.Log.Error(ex, "Timeout Retrieving data for Queue {0}", QueueName);
                         try
                         {
-                          OnQueueTimeout(ex);
+                            OnQueueTimeout(ex);
                         }
                         catch (Exception)
                         {
-                            Context.System.Log.Error(ex, "Error Running OnQueueTimeout Handler for Queue {0}", QueueName);
+                            Context.System.Log.Error(ex, "Error Running OnQueueTimeout Handler for Queue {0}",
+                                QueueName);
                         }
                     }
+
                     if (jobsToQueue != null)
                     {
                         foreach (var job in jobsToQueue)
@@ -207,7 +218,7 @@ namespace GlutenFree.OddJob.Execution.Akka
 
 
         /// <summary>
-        /// Method to handle action taken when a job is put in retry.
+        /// Method to handle action taken when a job is put in a Failed state.
         /// This method is called after the retry has been marked in storage.
         /// </summary>
         /// <param name="msg">the Job failure message</param>

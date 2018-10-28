@@ -19,7 +19,8 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             var executor = new MockJobSuccessExecutor();
             var queueLayerProps = Props.Create(() => new JobQueueLayerActor(jobStore));
             var workerProps = Props.Create(() => new JobWorkerActor(executor)).WithRouter(new RoundRobinPool(workerCount));
-            var coordinator = Sys.ActorOf(Props.Create(() => new JobQueueCoordinator(workerProps, queueLayerProps, "test", workerCount)));
+            var coordinator = Sys.ActorOf(Props.Create(() => new JobQueueCoordinator()));
+            var set = coordinator.Ask(new SetJobQueueConfiguration(workerProps, queueLayerProps,"test",1,1,1)).Result;
             coordinator.Tell(new ShutDownQueues());
             ExpectMsgFrom<QueueShutDown>(coordinator);
 
@@ -34,7 +35,8 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             var probe = CreateTestProbe("queue");
             var queueLayerProps = Props.Create(() => new QueueLayerMock(probe,JobStates.New));
             var workerProps = Props.Create(() => new JobWorkerActor(executor)).WithRouter(new RoundRobinPool(workerCount));
-            var coordinator = Sys.ActorOf(Props.Create(() => new JobQueueCoordinator(workerProps, queueLayerProps, "test", workerCount)));
+            var coordinator = Sys.ActorOf(Props.Create(() => new JobQueueCoordinator()));
+            coordinator.Tell(new SetJobQueueConfiguration(workerProps,queueLayerProps, "test",1,1,1));
             coordinator.Tell(new JobSweep());
             probe.ExpectMsg<GetJobs>();
         }
@@ -47,7 +49,8 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             var queueLayerProps = Props.Create(() => new QueueLayerMock(probe, "Success"));
             var workerProbe = CreateTestProbe("worker");
             var workerProps = Props.Create(() => new MockJobWorker(workerProbe)).WithRouter(new RoundRobinPool(workerCount));
-            var coordinator = Sys.ActorOf(Props.Create(() => new JobQueueCoordinator(workerProps, queueLayerProps, "test", workerCount)));
+            var coordinator = Sys.ActorOf(Props.Create(() => new JobQueueCoordinator()));
+            coordinator.Tell(new SetJobQueueConfiguration(workerProps,queueLayerProps, "queue",1,0,5));
             coordinator.Tell(new JobSweep());
             workerProbe.ExpectMsg<ExecuteJobRequest>(TimeSpan.FromSeconds(5));
         }
@@ -61,7 +64,8 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             var queueLayerProps = Props.Create(() => new QueueLayerMock(probe, "WhoCares"));
             var workerProbe = CreateTestProbe("worker");
             var workerProps = Props.Create(() => new MockJobWorker(workerProbe)).WithRouter(new RoundRobinPool(workerCount));
-            var coordinator = Sys.ActorOf(Props.Create(() => new JobQueueCoordinator(workerProps, queueLayerProps, "test", workerCount)));
+            var coordinator = Sys.ActorOf(Props.Create(() => new JobQueueCoordinator()));
+            coordinator.Tell(new SetJobQueueConfiguration(workerProps, queueLayerProps, "WhoCares", 5,1,1));
             coordinator.Tell(new JobFailed(new OddJobWithMetaData(), new Exception("derp")));
             probe.ExpectMsg<MarkJobFailed>(TimeSpan.FromSeconds(5));
         }
@@ -75,7 +79,8 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             var queueLayerProps = Props.Create(() => new QueueLayerMock(probe, "WhoCares"));
             var workerProbe = CreateTestProbe("worker");
             var workerProps = Props.Create(() => new MockJobWorker(workerProbe)).WithRouter(new RoundRobinPool(workerCount));
-            var coordinator = Sys.ActorOf(Props.Create(() => new JobQueueCoordinator(workerProps, queueLayerProps, "test", workerCount)));
+            var coordinator = Sys.ActorOf(Props.Create(() => new JobQueueCoordinator()));
+            coordinator.Tell(new SetJobQueueConfiguration(workerProps,queueLayerProps,"WhoCares",5,1,1));
             coordinator.Tell(new JobFailed(new OddJobWithMetaData() { RetryParameters = new RetryParameters(5, TimeSpan.FromSeconds(10)) }, new Exception("derp")));
             probe.ExpectMsg<MarkJobInRetryAndIncrement>(TimeSpan.FromSeconds(5));
         }
@@ -88,7 +93,8 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             var queueLayerProps = Props.Create(() => new QueueLayerMock(probe, "WhoCares"));
             var workerProbe = CreateTestProbe("worker");
             var workerProps = Props.Create(() => new MockJobWorker(workerProbe)).WithRouter(new RoundRobinPool(workerCount));
-            var coordinator = Sys.ActorOf(Props.Create(() => new JobQueueCoordinator(workerProps, queueLayerProps, "test", workerCount)));
+            var coordinator = Sys.ActorOf(Props.Create(() => new JobQueueCoordinator()));
+            coordinator.Tell(new SetJobQueueConfiguration(workerProps,queueLayerProps, "WhoCares",5,1,1));
             coordinator.Tell(new JobFailed(new OddJobWithMetaData() { RetryParameters = new RetryParameters(5, TimeSpan.FromSeconds(10)) { RetryCount = 5 } }, new Exception("derp")));
             probe.ExpectMsg<MarkJobFailed>(TimeSpan.FromSeconds(5));
         }

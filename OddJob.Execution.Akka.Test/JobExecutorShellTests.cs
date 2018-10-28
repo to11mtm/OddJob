@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using Akka.DI.SimpleInjector;
+using GlutenFree.OddJob.Execution.Akka.Messages;
 using GlutenFree.OddJob.Execution.Akka.Test.Mocks;
 using GlutenFree.OddJob.Execution.BaseTests;
 using GlutenFree.OddJob.Interfaces;
@@ -22,6 +23,17 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             return _container.GetInstance(typeToCreate);
         }
     }
+
+    public class OverriddenJobCoordinator : JobQueueCoordinator
+    {
+        protected override void OnJobSuccess(JobSuceeded msg)
+        {
+            Succeeded = Succeeded + 1;
+        }
+
+        public static int Succeeded;
+    }
+
     public class DependencyInjectedJobExecutorShellTests
     {
         
@@ -55,18 +67,42 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             container.Register<IJobExecutor, DefaultJobExecutor>();
             container.Register<JobQueueLayerActor>();
             container.Register<JobWorkerActor>();
+            container.Register<JobQueueCoordinator>();
             var jobStore = (InMemoryTestStore)container.GetInstance(typeof(InMemoryTestStore));
             var executor = new DependencyInjectedJobExecutorShell(
                 (system) => new SimpleInjectorDependencyResolver(container, system),
                 null);
             /*var executor = new HardInjectedJobExecutorShell(() => new JobQueueLayerActor(jobStore),
                 () => new JobWorkerActor(new DefaultJobExecutor(new DefaultContainerFactory())), null);*/
-            executor.StartJobQueue("test", 5, 1);
+            executor.StartJobQueue("test", 5, 1,1);
             jobStore.AddJob((DIShellMockJob m) => m.DoThing(0), null, null, "test");
             SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(8));
             Xunit.Assert.Equal(1, DIShellMockJob.MyCounter);
         }
 
+        [Fact]
+        public void DI_Semantics_Allow_Overridden_Coordinator()
+        {
+            var container = new SimpleInjector.Container();
+            container.Register<IContainerFactory, TestSimpleInjectorContainerFactory>();
+            container.Register<IJobQueueManager, InMemoryTestStore>();
+            container.Register<IJobQueueAdder, InMemoryTestStore>();
+            container.Register<IJobExecutor, DefaultJobExecutor>();
+            container.Register<JobQueueLayerActor>();
+            container.Register<JobWorkerActor>();
+            container.Register<JobQueueCoordinator,OverriddenJobCoordinator>();
+            var jobStore = (InMemoryTestStore)container.GetInstance(typeof(InMemoryTestStore));
+            var executor = new DependencyInjectedJobExecutorShell(
+                (system) => new SimpleInjectorDependencyResolver(container, system),
+                null);
+            /*var executor = new HardInjectedJobExecutorShell(() => new JobQueueLayerActor(jobStore),
+                () => new JobWorkerActor(new DefaultJobExecutor(new DefaultContainerFactory())), null);*/
+            executor.StartJobQueue("test", 5, 1, 1);
+            jobStore.AddJob((DIShellMockJob m) => m.DoThing(0), null, null, "test");
+            SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(8));
+            Xunit.Assert.Equal(1, DIShellMockJob.MyCounter);
+            Xunit.Assert.Equal(1, OverriddenJobCoordinator.Succeeded);
+        }
 
     }
 
@@ -87,7 +123,8 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
         {
             var jobStore = new InMemoryTestStore();
             var executor = new HardInjectedJobExecutorShell(() => new JobQueueLayerActor(jobStore),
-                () => new JobWorkerActor(new MockJobSuccessExecutor()), null);
+                () => new JobWorkerActor(new MockJobSuccessExecutor()),
+                ()=> new JobQueueCoordinator(), null);
             executor.StartJobQueue("test",5,1);
         }
 
@@ -96,8 +133,9 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
         {
             var jobStore = new InMemoryTestStore();
             var executor = new HardInjectedJobExecutorShell(() => new JobQueueLayerActor(jobStore),
-                () => new JobWorkerActor(new DefaultJobExecutor(new DefaultContainerFactory())),null);
-            executor.StartJobQueue("test",5,3);
+                () => new JobWorkerActor(new DefaultJobExecutor(new DefaultContainerFactory())),
+                () => new JobQueueCoordinator(), null);
+            executor.StartJobQueue("test",5,1,1);
             jobStore.AddJob((ShellMockJob m) => m.DoThing(0),null,null,"test");
             SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(8));
             Xunit.Assert.Equal(1,ShellMockJob.MyCounter);

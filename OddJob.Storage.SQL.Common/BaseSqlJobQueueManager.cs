@@ -23,7 +23,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
         private readonly IStorageJobTypeResolver _typeResolver;
 
         protected BaseSqlJobQueueManager(IJobQueueDataConnectionFactory jobQueueConnectionFactory,
-            ISqlDbJobQueueTableConfiguration jobQueueTableConfiguration):this(jobQueueConnectionFactory,jobQueueTableConfiguration, new DefaultStorageJobTypeResolver())
+            ISqlDbJobQueueTableConfiguration jobQueueTableConfiguration):this(jobQueueConnectionFactory,jobQueueTableConfiguration, new NullOnMissingTypeJobTypeResolver())
         {
 
         }
@@ -74,6 +74,8 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
         {
             var lockGuid = Guid.NewGuid();
             var lockTime = DateTime.Now;
+            var lockClaimTimeoutThreshold = DateTime.Now.AddSeconds(
+                (0) - _jobQueueTableConfiguration.JobClaimLockTimeoutInSeconds);
             using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 //Because our Lock Update Does the lock, we don't bother with a transaction.
@@ -83,16 +85,15 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                         .Where(
                             q => queueNames.Contains(q.QueueName)
                                  &&
-                                 (q.DoNotExecuteBefore <= DateTime.Now || q.DoNotExecuteBefore == null)
+                                 (q.DoNotExecuteBefore <= lockTime || q.DoNotExecuteBefore == null)
                                  &&
                                  (q.Status == "New" ||
                                   (q.Status == "Retry" && q.MaxRetries >= q.RetryCount &&
-                                   q.LastAttempt.Value.AddSeconds(q.MinRetryWait) <=DateTime.Now)
+                                   q.LastAttempt.Value.AddSeconds(q.MinRetryWait) <=lockTime)
 
                                  )
                                  && (q.LockClaimTime == null || q.LockClaimTime <
-                                     DateTime.Now.AddSeconds(
-                                         (0) - _jobQueueTableConfiguration.JobClaimLockTimeoutInSeconds))
+                                    lockClaimTimeoutThreshold)
                         ).Select(q => new JobLockData
                         {
                             JobId = q.Id,
@@ -102,11 +103,11 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                                     ? q.CreatedDate
                                     : q.LastAttempt
                         }).OrderBy(q => q.MostRecentDate).Take(fetchSize);
-                conn.GetTable<SqlCommonDbOddJobMetaData>()
-                    .Where(q => lockingCheckQuery.Any(r => r.JobId == q.Id))
-                    .Set(q => q.LockGuid, lockGuid)
-                    .Set(q => q.LockClaimTime, lockTime)
-                    .Update();
+                var updateWhere = conn.GetTable<SqlCommonDbOddJobMetaData>()
+                    .Where(q => lockingCheckQuery.Any(r => r.JobId == q.Id));
+                    var updateCmd = updateWhere.Set(q => q.LockGuid, lockGuid)
+                    .Set(q => q.LockClaimTime, lockTime);
+                    updateCmd.Update();
                         
                 
                         

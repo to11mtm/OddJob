@@ -52,10 +52,21 @@ namespace GlutenFree.OddJob
             {
 
                 var theArg = argProv[i];
-
+                
                 try
                 {
-                    _jobArgs[i] = Expression.Lambda(theArg).Compile().DynamicInvoke();
+                    if (theArg is ConstantExpression)
+                    {
+                        _jobArgs[i] =  ((ConstantExpression) theArg).Value;
+                    }
+                    else if (theArg is MemberExpression)
+                    {
+                        _jobArgs[i] = GetMemberValue((MemberExpression)theArg);
+                    }
+                    else
+                    {
+                        _jobArgs[i] = Expression.Lambda(theArg).Compile().DynamicInvoke();
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -69,8 +80,18 @@ namespace GlutenFree.OddJob
             }
 
             var methodInfo = ((MethodCallExpression) _jobExpr.Body).Method;
-            var args = methodInfo.GetGenericArguments();
-            return new OddJob(methodInfo.Name, _jobArgs, TypeExecutedOn, args);
+            var genericArgs = methodInfo.GetGenericArguments();
+            return new OddJob(methodInfo.Name, _jobArgs, TypeExecutedOn, genericArgs);
+        }
+        private static object GetMemberValue(MemberExpression member)
+        {
+            var objectMember = Expression.Convert(member, typeof(object));
+
+            var getterLambda = Expression.Lambda<Func<object>>(objectMember);
+
+            var getter = getterLambda.Compile();
+
+            return getter();
         }
     }
 }
