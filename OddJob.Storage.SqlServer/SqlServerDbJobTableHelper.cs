@@ -36,7 +36,8 @@ JobParamId bigint not null identity(1,1) primary key,
 JobGuid uniqueidentifier not null, 
 ParamOrdinal int not null,
 SerializedValue nvarchar(max) null,
-SerializedType nvarchar(255) null
+SerializedType nvarchar(255) null,
+ParameterName nvarchar(255) null
 )", config.ParamTableName);
         }
 

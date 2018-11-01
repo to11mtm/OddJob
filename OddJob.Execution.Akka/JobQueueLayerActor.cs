@@ -35,7 +35,7 @@ namespace GlutenFree.OddJob.Execution.Akka
                 else if (message is GetJobs)
                 {
                     var msg = (GetJobs) message;
-                    Context.Sender.Tell(jobQueue.GetJobs(new[] {msg.QueueName}, msg.FetchSize));
+                    Context.Sender.Tell(jobQueue.GetJobs(new[] {msg.QueueName}, msg.FetchSize, (q)=>q.MostRecentDate));
                 }
                 else if (message is MarkJobInProgress)
                 {

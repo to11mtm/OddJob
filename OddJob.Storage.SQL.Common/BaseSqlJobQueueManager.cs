@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Storage.Sql.Common.DbDtos;
 using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
@@ -10,12 +11,8 @@ using LinqToDB.Mapping;
 
 namespace GlutenFree.OddJob.Storage.SQL.Common
 {
+    
 
-    public class JobLockData
-    {
-        public long JobId { get; set; }
-        public DateTime? MostRecentDate { get; set; }
-    }
     public abstract class BaseSqlJobQueueManager : IJobQueueManager 
     {
         private readonly ISqlDbJobQueueTableConfiguration _jobQueueTableConfiguration;
@@ -70,12 +67,13 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 
         
         
-        public virtual IEnumerable<IOddJobWithMetadata> GetJobs(string[] queueNames, int fetchSize)
+        public virtual IEnumerable<IOddJobWithMetadata> GetJobs(string[] queueNames, int fetchSize, Expression<Func<JobLockData, object>> orderPredicate)
         {
             var lockGuid = Guid.NewGuid();
             var lockTime = DateTime.Now;
             var lockClaimTimeoutThreshold = DateTime.Now.AddSeconds(
                 (0) - _jobQueueTableConfiguration.JobClaimLockTimeoutInSeconds);
+            var defaultMinCoalesce = DateTime.MinValue;
             using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 //Because our Lock Update Does the lock, we don't bother with a transaction.
@@ -98,11 +96,16 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                         {
                             JobId = q.Id,
                             MostRecentDate =
-                                (q.CreatedDate ?? DateTime.MinValue)
-                                > (q.LastAttempt ?? DateTime.MinValue)
+                                (q.CreatedDate ?? defaultMinCoalesce)
+                                > (q.LastAttempt ?? defaultMinCoalesce)
                                     ? q.CreatedDate
-                                    : q.LastAttempt
-                        }).OrderBy(q => q.MostRecentDate).Take(fetchSize);
+                                    : q.LastAttempt,
+                            CreatedDate = q.CreatedDate,
+                            LastAttempt = q.LastAttempt,
+                            Retries = q.RetryCount,
+                            DoNotExecuteBefore = q.DoNotExecuteBefore,
+                            Status = q.Status
+                        }).OrderBy(orderPredicate).Take(fetchSize);
                 var updateWhere = conn.GetTable<SqlCommonDbOddJobMetaData>()
                     .Where(q => lockingCheckQuery.Any(r => r.JobId == q.Id));
                     var updateCmd = updateWhere.Set(q => q.LockGuid, lockGuid)
@@ -188,9 +191,9 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                         TypeExecutedOn = _typeResolver.GetTypeForJob(group.First().MetaData.TypeExecutedOn),
                         Status = group.First().MetaData.Status,
                         JobArgs = group.OrderBy(p => p.ParamData.ParamOrdinal).Select(q=>q.ParamData).Where(s => s.SerializedType != null).GroupBy(q=>q.ParamOrdinal)
-                            .Select(s =>
+                            .Select(s => new OddJobParameter() { Name = s.FirstOrDefault().ParameterName, Value = 
                                 Newtonsoft.Json.JsonConvert.DeserializeObject(s.FirstOrDefault().SerializedValue,
-                                    Type.GetType(s.FirstOrDefault().SerializedType, false))).ToArray(),
+                                    Type.GetType(s.FirstOrDefault().SerializedType, false))}).ToArray(),
                         RetryParameters = new RetryParameters(group.First().MetaData.MaxRetries,
                             TimeSpan.FromSeconds(group.First().MetaData.MinRetryWait),
                             group.First().MetaData.RetryCount, group.First().MetaData.LastAttempt),

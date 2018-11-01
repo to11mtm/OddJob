@@ -13,7 +13,7 @@ namespace GlutenFree.OddJob.Tests
             var myvalue = new ClassTest() { classTestValue = TestConstants.classTestValue };
             var next = JobCreator.Create<SampleJobInGenericClass<string>>(j =>
                 j.DoThing(TestConstants.derp, TestConstants.herp, myvalue));
-            var jobEx = new OldDefaultJobExecutor(new DefaultContainerFactory());
+            var jobEx = new DefaultJobExecutor(new DefaultContainerFactory());
             jobEx.ExecuteJob(next);
         }
         [Fact]
@@ -22,7 +22,7 @@ namespace GlutenFree.OddJob.Tests
             var myvalue = new ClassTest() {classTestValue = TestConstants.classTestValue};
             var next = JobCreator.Create<SampleJobWithGenericType>(j =>
                 j.DoThing(TestConstants.derp, TestConstants.herp, myvalue));
-            var jobEx = new OldDefaultJobExecutor(new DefaultContainerFactory());
+            var jobEx = new DefaultJobExecutor(new DefaultContainerFactory());
             jobEx.ExecuteJob(next);
         }
         [Fact]
@@ -30,7 +30,7 @@ namespace GlutenFree.OddJob.Tests
         {
             var myValue = new ClassTest() { classTestValue = TestConstants.classTestValue };
             var next = JobCreator.Create<SampleJob>((j) => j.DoThing(TestConstants.derp, TestConstants.herp, myValue));
-            var jobEx = new OldDefaultJobExecutor(new DefaultContainerFactory());
+            var jobEx = new DefaultJobExecutor(new DefaultContainerFactory());
             jobEx.ExecuteJob(next);
         }
 
@@ -39,7 +39,7 @@ namespace GlutenFree.OddJob.Tests
         {
             var myValue = new ClassTest() { classTestValue = TestConstants.classTestValue };
             var next = JobCreator.Create<SampleJob>((j) => j.DoThing(TestConstants.derp, int.Parse(TestConstants.herp.ToString()), myValue));
-            var jobEx = new OldDefaultJobExecutor(new DefaultContainerFactory());
+            var jobEx = new DefaultJobExecutor(new DefaultContainerFactory());
             jobEx.ExecuteJob(next);
         }
         [Fact]

@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.Serialization;
 
 namespace GlutenFree.OddJob
@@ -31,8 +33,13 @@ namespace GlutenFree.OddJob
     {
 
     }
+
+    
+
     public static class JobCreator
     {
+        public static Dictionary<MethodInfo, string[]> paramNameDictionary =
+            new Dictionary<MethodInfo, string[]>();
         public static OddJob Create<T>(Expression<Action<T>> jobExpr)
         {
             var _jobExpr = jobExpr;
@@ -47,7 +54,18 @@ namespace GlutenFree.OddJob
                 TypeExecutedOn = methodCall.Method.DeclaringType;
             }
             var argCount = argProv.Count;
-            object[] _jobArgs = new object[argCount];
+            var methodInfo = ((MethodCallExpression)_jobExpr.Body).Method;
+            string[] paramNames;
+            if (paramNameDictionary.ContainsKey(methodInfo) == false)
+            {
+                paramNames = paramNameDictionary[methodInfo] = methodInfo.GetParameters().Select(q=>q.Name).ToArray();
+            }
+            else
+            {
+                paramNames = paramNameDictionary[methodInfo];
+            }
+            
+            OddJobParameter[] _jobArgs = new OddJobParameter[argCount];
             for (int i = 0; i < argCount; i++)
             {
 
@@ -57,15 +75,24 @@ namespace GlutenFree.OddJob
                 {
                     if (theArg is ConstantExpression)
                     {
-                        _jobArgs[i] =  ((ConstantExpression) theArg).Value;
+                        _jobArgs[i] = new OddJobParameter()
+                        {
+                            Name = paramNames[i], Value = ((ConstantExpression) theArg).Value
+                        };
                     }
                     else if (theArg is MemberExpression)
                     {
-                        _jobArgs[i] = GetMemberValue((MemberExpression)theArg);
+                        _jobArgs[i] = new OddJobParameter()
+                        {
+                            Name = paramNames[i], Value = GetMemberValue((MemberExpression) theArg)
+                        };
                     }
                     else
                     {
-                        _jobArgs[i] = Expression.Lambda(theArg).Compile().DynamicInvoke();
+                        _jobArgs[i] = new OddJobParameter()
+                        {
+                            Name = paramNames[i], Value = Expression.Lambda(theArg).Compile().DynamicInvoke()
+                        };
                     }
                 }
                 catch (Exception ex)
@@ -78,8 +105,9 @@ namespace GlutenFree.OddJob
 
 
             }
-
-            var methodInfo = ((MethodCallExpression) _jobExpr.Body).Method;
+            
+            
+            
             var genericArgs = methodInfo.GetGenericArguments();
             return new OddJob(methodInfo.Name, _jobArgs, TypeExecutedOn, genericArgs);
         }

@@ -41,7 +41,7 @@ namespace GlutenFree.OddJob.Execution.BaseTests
             return newJob.JobId;
         }
 
-        public IEnumerable<IOddJobWithMetadata> GetJobs(string[] queueNames, int fetchSize)
+        public IEnumerable<IOddJobWithMetadata> GetJobs(string[] queueNames, int fetchSize, Expression<Func<JobLockData,object>> orderPredicate)
         {
             List<IOddJobWithMetadata> results = new List<IOddJobWithMetadata>();
             lock (jobLock)

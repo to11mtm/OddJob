@@ -55,10 +55,9 @@ Non-Goals:
 
 Not-Initial-Goals (Will be done when there's a need):
  
- - Net Core Support
-   - I don't think there's anything being done here that can't be done in core; But it's not at all set up for it, let alone validated.
-
  - Repeated Scheduling
+   - By this We are referring to Jobs that run Every Sunday, every 3rd of the month, etc.
+   - You can get around this with Scheduled tasks in windows, Cronjobs in *nix environments.
 
  - Perfect API Surface
    - By this we are referring to the total API space. 
@@ -78,7 +77,7 @@ Not-Initial-Goals (Will be done when there's a need):
  - Robust Ability to run without DI
    - Jobs themselves essentially require DI to run.
      -To be clear; There is a `DefaultContainerFactory` that will work as long as your job type has a public, paramterless constructor. It will not work if your type has any constructor dependencies, or expects properties to be injected after the fact. This is used primarily for test scenarios as well as for if you are really DI averse.
-	   - If you're in that camp, you'll want to use the `HardInjectedJobExecutorShell`. This shell will require you to provide creator functions for the `JobQueueLayerActor` and `JobWorkerActor`.
+	   - If you're in that camp, you'll want to use the `HardInjectedJobExecutorShell`. This shell will require you to provide creator functions for the `JobQueueCoordinator`, `JobQueueLayerActor` and `JobWorkerActor`
 
  - Minimal DB Round-Trips
    - Due to a semi-questionable design decision we have to:

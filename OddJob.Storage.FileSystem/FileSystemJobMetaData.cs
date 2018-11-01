@@ -9,7 +9,7 @@ namespace GlutenFree.OddJob.Storage.FileSystem
 
         public Guid JobId {get;set;}
 
-        public object[] JobArgs {get;set;}
+        public OddJobParameter[] JobArgs {get;set;}
 
         public Type TypeExecutedOn {get;set;}
 

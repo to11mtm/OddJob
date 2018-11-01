@@ -28,8 +28,20 @@ namespace GlutenFree.OddJob
                     ? null
                     : _containerFactory.CreateInstance(expr.TypeExecutedOn)
                 ;
-            var method = expr.TypeExecutedOn.GetMethod(expr.MethodName, expr.JobArgs.Select(q=>q.GetType()).ToArray());
-            method.Invoke(instance, expr.JobArgs);
+            MethodInfo method = null;
+            if (expr.MethodGenericTypes != null && expr.MethodGenericTypes.Length > 0)
+            {
+                method = expr.TypeExecutedOn.GetMethods().Where(q =>
+                        q.IsGenericMethod && q.GetGenericArguments().Length == expr.MethodGenericTypes.Length &&
+                        q.GetParameters().Length == expr.JobArgs.Length)
+                    .FirstOrDefault().MakeGenericMethod(expr.MethodGenericTypes);
+            }
+            else
+            {
+                method = expr.TypeExecutedOn.GetMethod(expr.MethodName, expr.JobArgs.Select(q => q.Value.GetType()).ToArray());
+            }
+            //var method = expr.TypeExecutedOn.GetMethod(expr.MethodName, expr.JobArgs.Select(q=>q.Value.GetType()).ToArray());
+            method.Invoke(instance, expr.JobArgs.Select(q=>q.Value).ToArray());
         }
     }
     public class OldDefaultJobExecutor : IJobExecutor
@@ -53,7 +65,7 @@ namespace GlutenFree.OddJob
                 method = expr.TypeExecutedOn.GetMethod(expr.MethodName);
             }
             
-            method.Invoke(instance, expr.JobArgs);
+            method.Invoke(instance, expr.JobArgs.Select(q=>q.Value).ToArray());
         }
     }
 }

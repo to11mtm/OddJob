@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using Akka.Actor;
 using Akka.Configuration;
@@ -24,9 +25,9 @@ namespace GlutenFree.OddJob.Execution.Akka
         public int FirstPulseDelayInSeconds { get; protected set; }
         public Props WorkerProps { get; protected set; }
         public Props QueueProps { get; protected set; }
-
+        public Expression<Func<JobLockData, object>> PriorityExpression { get; protected set; }
         public SetJobQueueConfiguration(Props workerProps, Props queueProps, string queueName, int numWorkers,
-            int pulseDelayInSeconds, int firstPulseDelayInSeconds = 5)
+            int pulseDelayInSeconds, int firstPulseDelayInSeconds = 5, Expression<Func<JobLockData, object>> priorityExpression = null)
         {
             QueueName = queueName;
             NumWorkers = numWorkers;
@@ -34,6 +35,7 @@ namespace GlutenFree.OddJob.Execution.Akka
             FirstPulseDelayInSeconds = firstPulseDelayInSeconds;
             WorkerProps = workerProps;
             QueueProps = queueProps;
+            PriorityExpression = priorityExpression ?? ((JobLockData p)=> p.MostRecentDate);
         }
     }
     public abstract class BaseJobExecutorShell : IDisposable
@@ -78,13 +80,24 @@ namespace GlutenFree.OddJob.Execution.Akka
         /// <param name="numWorkers">The number of Workers for the Queue</param>
         /// <param name="pulseDelayInSeconds">The Delay in seconds between 'pulses'.</param>
         /// <param name="firstPulseDelayInSeconds">The time to wait before the first pulse delay. Default is 5. Can use any value greater than 0</param>
-        public void StartJobQueue(string queueName, int numWorkers, int pulseDelayInSeconds, int firstPulseDelayInSeconds = 5)
+        public void StartJobQueue(string queueName, int numWorkers, int pulseDelayInSeconds, int firstPulseDelayInSeconds = 5, Expression<Func<JobLockData,object>> priorityExpresssion = null)
         {
             if (coordinatorPool.ContainsKey(queueName) == false)
             {
-                var jobCoordinator = _actorSystem.ActorOf(CoordinatorProps.WithMailbox("shutdown-priority-mailbox"), queueName);
-                var result = jobCoordinator.Ask(new SetJobQueueConfiguration(WorkerProps, JobQueueProps, queueName, numWorkers,
-                    pulseDelayInSeconds, firstPulseDelayInSeconds), TimeSpan.FromSeconds(10)).Result;
+
+                var priExpr = priorityExpresssion;
+                if (priExpr == null)
+                {
+                    priExpr = (p) => p.MostRecentDate;
+                }
+
+                var jobCoordinator = _actorSystem.ActorOf(CoordinatorProps.WithMailbox("shutdown-priority-mailbox"),
+                    queueName);
+                var result = jobCoordinator.Ask(new SetJobQueueConfiguration(WorkerProps, JobQueueProps, queueName,
+                            numWorkers,
+                            pulseDelayInSeconds, firstPulseDelayInSeconds, priExpr),
+                        TimeSpan.FromSeconds(10))
+                    .Result;
                 if (result is Configured)
                 {
                     coordinatorPool.Add(queueName, jobCoordinator);

@@ -58,7 +58,7 @@ namespace GlutenFree.OddJob.Execution.ThreadPool
                         {
                             SaturationStartTime = null;
                             SaturationPulseCount = 0;
-                            var jobs = _queueManager.GetJobs(new[] {_queueName}, _fetchSize);
+                            var jobs = _queueManager.GetJobs(new[] {_queueName}, _fetchSize, q=>q.MostRecentDate);
                             foreach (var oddJobWithMetadata in jobs)
                             {
                                 _queue.Enqueue(oddJobWithMetadata);

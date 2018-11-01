@@ -5,6 +5,8 @@ namespace GlutenFree.OddJob
 {
     public class OddJob : IOddJob
     {
+
+
         /// <summary>
         /// The Job ID. Uniquely generated when the job is created.
         /// </summary>
@@ -12,7 +14,7 @@ namespace GlutenFree.OddJob
         /// <summary>
         /// Array of Job arguments.
         /// </summary>
-        public object[] JobArgs { get; protected set; }
+        public OddJobParameter[] JobArgs { get; protected set; }
         /// <summary>
         /// Gets the Type the Job is Executed on.
         /// This will include any Generic parameters on the type (not method) in question
@@ -30,7 +32,7 @@ namespace GlutenFree.OddJob
         /// Contains the Generic Types used by the method.
         /// </summary>
         public Type[] MethodGenericTypes { get; protected set; }
-        public OddJob(string methodName, object[] jobArgs, Type typeExecutedOn, Type[] methodGenericTypes, string status=JobStates.New)
+        public OddJob(string methodName, OddJobParameter[] jobArgs, Type typeExecutedOn, Type[] methodGenericTypes, string status=JobStates.New)
         {
             JobId = Guid.NewGuid();
             MethodName = methodName;

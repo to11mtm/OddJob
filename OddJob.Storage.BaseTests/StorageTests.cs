@@ -30,8 +30,8 @@ namespace GlutenFree.OddJob.Storage.BaseTests
                     }), null, null, "test");
 
             var job = jobMgrStore.GetJob(jobGuid);
-            Assert.Equal(TestConstants.SimpleParam, job.JobArgs[0]);
-            var paramObj = job.JobArgs[1] as OddParam;
+            Assert.Equal(TestConstants.SimpleParam, job.JobArgs[0].Value);
+            var paramObj = job.JobArgs[1].Value as OddParam;
             Assert.True(paramObj != null);
             Assert.Equal(TestConstants.OddParam1, paramObj.Param1);
             Assert.Equal(TestConstants.OddParam2, paramObj.Param2);
@@ -59,8 +59,8 @@ namespace GlutenFree.OddJob.Storage.BaseTests
                     }), null, null, "test");
 
             var job = jobMgrStore.GetJob(jobGuid);
-            Assert.Equal(TestConstants.SimpleParam, job.JobArgs[0]);
-            var paramObj = job.JobArgs[1] as OddParam;
+            Assert.Equal(TestConstants.SimpleParam, job.JobArgs[0].Value);
+            var paramObj = job.JobArgs[1].Value as OddParam;
             Assert.True(paramObj != null);
             Assert.Equal(TestConstants.OddParam1, paramObj.Param1);
             Assert.Equal(TestConstants.OddParam2, paramObj.Param2);
@@ -90,8 +90,8 @@ namespace GlutenFree.OddJob.Storage.BaseTests
                     }), null, null, "test");
 
             var job = jobMgrStore.GetJob(jobGuid);
-            Assert.Equal(TestConstants.SimpleParam, job.JobArgs[0]);
-            var paramObj = job.JobArgs[1] as OddParam;
+            Assert.Equal(TestConstants.SimpleParam, job.JobArgs[0].Value);
+            var paramObj = job.JobArgs[1].Value as OddParam;
             Assert.True(paramObj != null);
             Assert.Equal(TestConstants.OddParam1, paramObj.Param1);
             Assert.Equal(TestConstants.OddParam2, paramObj.Param2);
@@ -123,7 +123,7 @@ namespace GlutenFree.OddJob.Storage.BaseTests
             var unused = jobAddStore.AddJob(
                 (MockJobNoParam j) => j.DoThing(), queueName:"test");
 
-            var jobs = jobMgrStore.GetJobs(new[] { "test" }, 5);
+            var jobs = jobMgrStore.GetJobs(new[] { "test" }, 5, q=>q.MostRecentDate);
             
             Assert.Contains(jobs, q =>q.JobId == unused);
             var job = jobs.Where(q => q.JobId == unused).FirstOrDefault();
@@ -149,7 +149,7 @@ namespace GlutenFree.OddJob.Storage.BaseTests
                         }
                     }), null, null, "test");
 
-            var job = jobMgrStore.GetJobs(new[] { "test" }, 5);
+            var job = jobMgrStore.GetJobs(new[] { "test" }, 5, q=>q.MostRecentDate);
             Assert.True(job.Any());
         }
 
@@ -171,9 +171,9 @@ namespace GlutenFree.OddJob.Storage.BaseTests
                         }
                     }), null, null, "test");
 
-            var job = jobMgrStore.GetJobs(new[] { "test" }, 5);
+            var job = jobMgrStore.GetJobs(new[] { "test" }, 5, q=>q.MostRecentDate);
             SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(3));
-            var job2 = jobMgrStore.GetJobs(new[] { "test" }, 5);
+            var job2 = jobMgrStore.GetJobs(new[] { "test" }, 5, q=>q.MostRecentDate);
             Assert.True(job.Count() != job2.Count());
         }
 
@@ -297,13 +297,13 @@ namespace GlutenFree.OddJob.Storage.BaseTests
             var jobAfterFirstIncrement = jobMgrStore.GetJob(jobGuid);
             Assert.Equal(1, jobAfterFirstIncrement.RetryParameters.RetryCount);
             SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(1));
-            var jobsAfterFirstRetry = jobMgrStore.GetJobs(new[] { "test" }, 5);
+            var jobsAfterFirstRetry = jobMgrStore.GetJobs(new[] { "test" }, 5, q=>q.MostRecentDate);
             Assert.Contains(jobsAfterFirstRetry, q => q.JobId == jobGuid);
             jobMgrStore.MarkJobInRetryAndIncrement(jobGuid, DateTime.Now);
             var jobAfterSecondIncrement = jobMgrStore.GetJob(jobGuid);
             Assert.Equal(2, jobAfterSecondIncrement.RetryParameters.RetryCount);
             SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(1));
-            var jobsAfterSecondRetry = jobMgrStore.GetJobs(new[] { "test" }, 5);
+            var jobsAfterSecondRetry = jobMgrStore.GetJobs(new[] { "test" }, 5, q=>q.MostRecentDate);
             Assert.True(jobsAfterSecondRetry.All(q => q.JobId != jobGuid));
         }
     }

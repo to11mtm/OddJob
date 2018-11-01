@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="DefaultContainerFactory.cs" />
     <Compile Include="Interfaces\IContainerFactory.cs" />
+    <Compile Include="Interfaces\IJobFilterMetadata.cs" />
     <Compile Include="Interfaces\IJobQueueAdder.cs" />
     <Compile Include="Interfaces\IJobQueueManager.cs" />
     <Compile Include="Interfaces\IOddJob.cs" />
@@ -49,6 +50,7 @@
     <Compile Include="Interfaces\IRetryParameters.cs" />
     <Compile Include="JobCreator.cs" />
     <Compile Include="JobExecutor.cs" />
+    <Compile Include="JobLockData.cs" />
     <Compile Include="JobStates.cs" />
     <Compile Include="OddJob.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
