@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DefaultContainerFactory.cs" />
+    <Compile Include="DefaultJobQueueManagerPriority.cs" />
     <Compile Include="Interfaces\IContainerFactory.cs" />
     <Compile Include="Interfaces\IJobFilterMetadata.cs" />
     <Compile Include="Interfaces\IJobQueueAdder.cs" />
@@ -53,6 +54,7 @@
     <Compile Include="JobLockData.cs" />
     <Compile Include="JobStates.cs" />
     <Compile Include="OddJob.cs" />
+    <Compile Include="OddJobParameter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RetryParameters.cs" />
   </ItemGroup>
