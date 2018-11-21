@@ -3,17 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using GlutenFree.OddJob.Interfaces;
+using GlutenFree.OddJob.Storage.Sql.Common;
 using GlutenFree.OddJob.Storage.Sql.Common.DbDtos;
 using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
 using LinqToDB;
 using LinqToDB.Data;
+using LinqToDB.Linq;
 using LinqToDB.Mapping;
+using LinqToDB.Tools;
 
 namespace GlutenFree.OddJob.Storage.SQL.Common
 {
     
 
-    public abstract class BaseSqlJobQueueManager : IJobQueueManager 
+    public abstract class BaseSqlJobQueueManager : IJobQueueManager , IJobSearchProvider
     {
         private readonly ISqlDbJobQueueTableConfiguration _jobQueueTableConfiguration;
         private readonly  MappingSchema _mappingSchema;
@@ -65,8 +68,126 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
             }
         }
 
+        public IEnumerable<IOddJobWithMetadata> GetJobsByCriteria(Expression<Func<SqlCommonDbOddJobMetaData, bool>> criteria)
+        {
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
+            {
+                var criteriaQuery = conn.GetTable<SqlCommonDbOddJobMetaData>().Where(criteria);
+                var resultSet = ExecuteJoinQuery(criteriaQuery, conn);
+                return resultSet;
+            }
+
+        }
+
+        public IEnumerable<IOddJobWithMetadata> GetJobsByParameterAndMainCriteria(
+            Expression<Func<SqlCommonDbOddJobMetaData, bool>> jobQueryable, Expression<Func<SqlCommonOddJobParamMetaData, bool>> paramQueryable)
+        {
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
+            {
+
+                var criteria = conn.GetTable<SqlCommonDbOddJobMetaData>()
+                    .Where(q => q.JobGuid.In(
+                        conn.GetTable<SqlCommonOddJobParamMetaData>().Where(paramQueryable)
+                            .Select(r => r.JobGuid)))
+                    .Where(jobQueryable);
+                var resultSet = ExecuteJoinQuery(criteria, conn);
+                return resultSet;
+            }
+        }
+
+        public IEnumerable<T> GetJobCriteriaValues<T>(Expression<Func<SqlCommonDbOddJobMetaData, T>> selector)
+        {
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
+            {
+                return conn.GetTable<SqlCommonDbOddJobMetaData>()
+                    .Select(selector).Distinct();
+            }
+        }
         
+        public IEnumerable<T> GetJobParamCriteriaValues<T>(Expression<Func<SqlCommonOddJobParamMetaData, T>> selector)
+        {
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
+            {
+                return conn.GetTable<SqlCommonOddJobParamMetaData>()
+                    .Select(selector).Distinct();
+            }
+        }
         
+        public bool UpdateJobParameterValues(IEnumerable<SqlCommonOddJobParamMetaData> metaDatas)
+        {
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
+            {
+                foreach (var metaData in metaDatas)
+                {
+                    conn.GetTable<SqlCommonOddJobParamMetaData>()
+                        .Where(q => q.JobGuid == metaData.JobGuid && q.ParamOrdinal == metaData.ParamOrdinal)
+                        .Set(q => q.SerializedType, metaData.SerializedType)
+                        .Set(q => q.SerializedValue, metaData.SerializedValue)
+                        .Update();
+                }
+            }
+
+            return true;
+        }
+
+        public bool UpdateJobMetadataValues(
+            IDictionary<Expression<Func<SqlCommonDbOddJobMetaData, object>>, object> setters, Guid jobGuid,
+            string oldStatusIfRequired)
+        {
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
+            {
+                var updatable = conn.GetTable<SqlCommonDbOddJobMetaData>()
+                    .Where(q => q.JobGuid == jobGuid);
+                if (String.IsNullOrWhiteSpace(oldStatusIfRequired) == false)
+                {
+                    updatable = updatable.Where(q => q.Status == oldStatusIfRequired);
+                }
+
+                IUpdatable<SqlCommonDbOddJobMetaData> updateCommand = null;
+                foreach (var set in setters)
+                {
+                    updateCommand = (updateCommand == null)
+                        ? updatable.Set(set.Key, set.Value)
+                        : updateCommand.Set(set.Key, set.Value);
+                }
+                if (updateCommand != null)
+                {
+                    return updateCommand.Update() > 0;
+                }
+
+                return false;
+            }
+        }
+
+        public bool UpdateJobMetadataFull(SqlCommonDbOddJobMetaData metaDataToUpdate, string oldStatusIfRequired)
+        {
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
+            {
+                var updatable = conn.GetTable<SqlCommonDbOddJobMetaData>()
+                    .Where(q => q.JobGuid == metaDataToUpdate.JobGuid);
+                if (String.IsNullOrWhiteSpace(oldStatusIfRequired) == false)
+                {
+                    updatable = updatable.Where(q => q.Status == oldStatusIfRequired);
+                }
+                
+                updatable.Set(q => q.Status, metaDataToUpdate.Status)
+                .Set(q => q.DoNotExecuteBefore, metaDataToUpdate.DoNotExecuteBefore)
+                .Set(q => q.LockGuid, metaDataToUpdate.LockGuid)
+                .Set(q => q.LockClaimTime, metaDataToUpdate.LockClaimTime)
+                .Set(q => q.MinRetryWait, metaDataToUpdate.MinRetryWait)
+                .Set(q => q.MethodName, metaDataToUpdate.MethodName)
+                .Set(q => q.TypeExecutedOn, metaDataToUpdate.TypeExecutedOn)
+                .Set(q => q.RetryCount, metaDataToUpdate.RetryCount)
+                .Set(q => q.MaxRetries, metaDataToUpdate.MaxRetries)
+                .Update();
+            }
+
+            return true;
+        }
+
+
+
+
         public virtual IEnumerable<IOddJobWithMetadata> GetJobs(string[] queueNames, int fetchSize, Expression<Func<JobLockData, object>> orderPredicate)
         {
             var lockGuid = Guid.NewGuid();

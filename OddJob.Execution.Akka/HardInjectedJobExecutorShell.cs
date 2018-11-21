@@ -12,7 +12,7 @@ namespace GlutenFree.OddJob.Execution.Akka
         public HardInjectedJobExecutorShell(Expression<Func<JobQueueLayerActor>> jobQueueFunc,
             Expression<Func<JobWorkerActor>> workerFunc,
             Expression<Func<JobQueueCoordinator>> coordinatorFunc,
-            Func<IRequiresMessageQueue<ILoggerMessageQueueSemantics>> loggerTypeFactory) : base(loggerTypeFactory)
+            IExecutionEngineLoggerConfig loggerConfig) : base(loggerConfig)
         {
             JobQueueProps = Props.Create(jobQueueFunc);
             WorkerProps = Props.Create(workerFunc);

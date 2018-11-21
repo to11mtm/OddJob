@@ -20,7 +20,7 @@ namespace OddJob.SampleApp.Console
             var jobQueue = new HardInjectedJobExecutorShell(() => new JobQueueLayerActor(store),
                 () => new JobWorkerActor(new DefaultJobExecutor(new DefaultContainerFactory())),
                 () => new JobQueueCoordinator(),
-                loggerTypeFactory: null);
+                loggerConfig: new StandardConsoleEngineLoggerConfig("DEBUG"));
             jobQueue.StartJobQueue("sample",5,5);
 
 

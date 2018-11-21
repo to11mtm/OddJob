@@ -10,7 +10,7 @@ namespace GlutenFree.OddJob.Execution.Akka
     public class DependencyInjectedJobExecutorShell : BaseJobExecutorShell
     {
         IDependencyResolver _dependencyResolver;
-        public DependencyInjectedJobExecutorShell(Func<ActorSystem, IDependencyResolver> dependencyResolverCreator, Func<IRequiresMessageQueue<ILoggerMessageQueueSemantics>> loggerTypeFactory) :base(loggerTypeFactory)
+        public DependencyInjectedJobExecutorShell(Func<ActorSystem, IDependencyResolver> dependencyResolverCreator, IExecutionEngineLoggerConfig loggerConfig) :base(loggerConfig)
         {
             _dependencyResolver = dependencyResolverCreator(_actorSystem);
         }

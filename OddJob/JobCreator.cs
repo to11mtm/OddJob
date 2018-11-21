@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -38,8 +40,9 @@ namespace GlutenFree.OddJob
 
     public static class JobCreator
     {
-        public static Dictionary<MethodInfo, string[]> paramNameDictionary =
-            new Dictionary<MethodInfo, string[]>();
+
+        private static ConcurrentDictionary<MethodInfo, string[]> paramNameDictionary = new ConcurrentDictionary<MethodInfo, string[]>();
+
         public static OddJob Create<T>(Expression<Action<T>> jobExpr)
         {
             var _jobExpr = jobExpr;
@@ -54,18 +57,19 @@ namespace GlutenFree.OddJob
                 TypeExecutedOn = methodCall.Method.DeclaringType;
             }
             var argCount = argProv.Count;
-            var methodInfo = ((MethodCallExpression)_jobExpr.Body).Method;
+            OddJobParameter[] _jobArgs = new OddJobParameter[argCount];
             string[] paramNames;
+
+            var methodInfo = ((MethodCallExpression)_jobExpr.Body).Method;
             if (paramNameDictionary.ContainsKey(methodInfo) == false)
             {
-                paramNames = paramNameDictionary[methodInfo] = methodInfo.GetParameters().Select(q=>q.Name).ToArray();
+                        var methodParams = methodInfo.GetParameters().Select(q => q.Name).ToArray();
+                        paramNames = paramNameDictionary[methodInfo] = methodParams;
             }
-            else
+            else 
             {
                 paramNames = paramNameDictionary[methodInfo];
             }
-            
-            OddJobParameter[] _jobArgs = new OddJobParameter[argCount];
             for (int i = 0; i < argCount; i++)
             {
 

@@ -5,46 +5,20 @@ using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using Akka.Actor;
 using Akka.Configuration;
-using Akka.Dispatch;
-using Akka.Event;
 using Akka.Routing;
 using GlutenFree.OddJob.Execution.Akka.Messages;
+using GlutenFree.OddJob.Interfaces;
 
 [assembly: InternalsVisibleTo("GlutenFree.OddJob.Execution.Akka.Test")]
 namespace GlutenFree.OddJob.Execution.Akka
 {
-    public class Configured
-    {
-
-    }
-    public class SetJobQueueConfiguration
-    {
-        public string QueueName { get; protected set; }
-        public int NumWorkers { get; protected set; }
-        public int PulseDelayInSeconds { get; protected set; }
-        public int FirstPulseDelayInSeconds { get; protected set; }
-        public Props WorkerProps { get; protected set; }
-        public Props QueueProps { get; protected set; }
-        public Expression<Func<JobLockData, object>> PriorityExpression { get; protected set; }
-        public SetJobQueueConfiguration(Props workerProps, Props queueProps, string queueName, int numWorkers,
-            int pulseDelayInSeconds, int firstPulseDelayInSeconds = 5, Expression<Func<JobLockData, object>> priorityExpression = null)
-        {
-            QueueName = queueName;
-            NumWorkers = numWorkers;
-            PulseDelayInSeconds = pulseDelayInSeconds;
-            FirstPulseDelayInSeconds = firstPulseDelayInSeconds;
-            WorkerProps = workerProps;
-            QueueProps = queueProps;
-            PriorityExpression = priorityExpression ?? ((JobLockData p)=> p.MostRecentDate);
-        }
-    }
     public abstract class BaseJobExecutorShell : IDisposable
     {
         protected ActorSystem _actorSystem { get; private set; }
         
         internal  Dictionary<string, IActorRef> coordinatorPool = new Dictionary<string, IActorRef>();
         internal  Dictionary<string, ICancelable> cancelPulsePool = new Dictionary<string, ICancelable>();
-        string hoconString
+        string mailboxString
         {
             get
             {
@@ -54,20 +28,34 @@ namespace GlutenFree.OddJob.Execution.Akka
 ", typeof(ShutdownPriorityMailbox).AssemblyQualifiedName);
             }
         }
-        protected BaseJobExecutorShell(Func<IRequiresMessageQueue<ILoggerMessageQueueSemantics>> loggerTypeFactory)
+
+        protected string CustomHoconString
+        {
+            get { return ""; }
+        }
+        protected BaseJobExecutorShell(IExecutionEngineLoggerConfig loggerConfig)
         {
             string loggerConfigString = string.Empty;
-            if (loggerTypeFactory != null)
+            if (loggerConfig != null)
             {
-                    loggerConfigString = loggerTypeFactory == null
-                        ? ""
-                        : string.Format(@"akka.loglevel = DEBUG
-                    akka.loggers=[""{0}.{1}, {2}""]", loggerTypeFactory.Method.ReturnType.Namespace, loggerTypeFactory.Method.ReturnType.Name,
-                            loggerTypeFactory.Method.ReturnType.Assembly.GetName().Name);
+                if (loggerConfig.LogLevel != null)
+                {
+                    loggerConfigString = loggerConfigString +
+                                         string.Format("akka.loglevel = {0}", loggerConfig.LogLevel.ToUpper());
+                }
+                if (loggerConfig.LoggerTypeFactory != null)
+                {
+                    loggerConfigString = loggerConfigString + string.Format(@"
+                    akka.loggers=[""{0}.{1}, {2}""]", loggerConfig.LoggerTypeFactory.Method.ReturnType.Namespace,
+                                             loggerConfig.LoggerTypeFactory.Method.ReturnType.Name,
+                                             loggerConfig.LoggerTypeFactory.Method.ReturnType.Assembly.GetName().Name);
+                }
+                
+                    
             }
 
-            var hocon = global::Akka.Configuration.ConfigurationFactory.Default().ToString() +
-                        hoconString + Environment.NewLine + loggerConfigString;
+            var hocon = CustomHoconString + Environment.NewLine + 
+                        mailboxString + Environment.NewLine + loggerConfigString;
             _actorSystem = ActorSystem.Create("Oddjob-Akka", ConfigurationFactory.ParseString(hocon));
             
         }
@@ -80,6 +68,7 @@ namespace GlutenFree.OddJob.Execution.Akka
         /// <param name="numWorkers">The number of Workers for the Queue</param>
         /// <param name="pulseDelayInSeconds">The Delay in seconds between 'pulses'.</param>
         /// <param name="firstPulseDelayInSeconds">The time to wait before the first pulse delay. Default is 5. Can use any value greater than 0</param>
+        /// <param name="priorityExpresssion">An expression to use for setting retrieval priority. Default is most recent Attempt/Creation</param>
         public void StartJobQueue(string queueName, int numWorkers, int pulseDelayInSeconds, int firstPulseDelayInSeconds = 5, Expression<Func<JobLockData,object>> priorityExpresssion = null)
         {
             if (coordinatorPool.ContainsKey(queueName) == false)
@@ -88,7 +77,7 @@ namespace GlutenFree.OddJob.Execution.Akka
                 var priExpr = priorityExpresssion;
                 if (priExpr == null)
                 {
-                    priExpr = (p) => p.MostRecentDate;
+                    priExpr = DefaultJobQueueManagerPriority.Expression;
                 }
 
                 var jobCoordinator = _actorSystem.ActorOf(CoordinatorProps.WithMailbox("shutdown-priority-mailbox"),

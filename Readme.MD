@@ -19,6 +19,10 @@ Features:
 	- Table Creation Script Helpers provided for Sql Providers.
 	  - Indexes not included. Talk to your DBA and/or read notes below!
 
+  - Serializable Job API:
+    - Get Jobs as a pre-serialized definition to use over the wire. Consider the use case of a reactive system; parts of the pipeline may add jobs that are queued upon completion of an events processing. This can be very useful in microservice scenarios where a series of actions must still be coordinated in an atomic fashion.
+
+
   - Low Friction API:
     - API is meant to be easy to stand up, but also easy to *expand into* more advanced use scenarios.
 

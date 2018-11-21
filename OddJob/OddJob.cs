@@ -1,12 +1,11 @@
 ﻿using System;
+using System.Linq;
 using GlutenFree.OddJob.Interfaces;
 
 namespace GlutenFree.OddJob
 {
     public class OddJob : IOddJob
     {
-
-
         /// <summary>
         /// The Job ID. Uniquely generated when the job is created.
         /// </summary>
@@ -42,4 +41,8 @@ namespace GlutenFree.OddJob
             MethodGenericTypes = methodGenericTypes;
         }
     }
+
+    
+
+
 }

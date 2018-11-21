@@ -8,6 +8,5 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
         {
             return Type.GetType(assemblyQualifiedTypeName);
         }
-
     }
 }
