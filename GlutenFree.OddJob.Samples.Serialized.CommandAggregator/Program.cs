@@ -24,16 +24,34 @@ namespace GlutenFree.OddJob.Samples.Serialized.CommandAggregator
         {
             SampleTableHelper.EnsureTablesExist();
             WriteInstructions();
+
+            /*
+             * Execution Engine:
+             * Normally this would be it's own process, separate from your WebAPI or Akka or MQ Layer.
+             * For ease of demonstration, this is rolled up into a single program.
+             */
             var engine = new GlutenFree.OddJob.Execution.Akka.HardInjectedJobExecutorShell(
                 () => new JobQueueLayerActor(new SQLiteJobQueueManager(ConnFactoryFunc(),
                     new SqlDbJobQueueDefaultTableConfiguration())),
                 () => new JobWorkerActor(new DefaultJobExecutor(new DefaultContainerFactory())),
                 () => new JobQueueCoordinator(), new StandardConsoleEngineLoggerConfig("DEBUG"));
             engine.StartJobQueue("default", 5,5);
+
+            /*
+             * Service Layer:
+             * Normally this would be it's own process, WebAPI, Akka, MQ, or similar layer.
+             * For ease of demonstration, this is rolled up into a single program.
+             */
             var actorsystem = ActorSystem.Create("sampleAgg");
             var aggRef = actorsystem.ActorOf(Props.Create(() => new Aggregator()),"aggregator");
+
+            /*
+             * This is to simulate activity. Consider it a message/request to your service layer.
+             */
             actorsystem.Scheduler.ScheduleTellRepeatedly(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(3), aggRef,
                 new MyCommand(), null);
+
+            //Quit code.
             while (System.Console.ReadLine().ToLower() != "end")
             {
                 WriteInstructions();
@@ -258,6 +276,17 @@ namespace GlutenFree.OddJob.Samples.Serialized.CommandAggregator
             if (message is AggregatedCommand)
             {
                 var msg = message as AggregatedCommand;
+                /*
+                 * This pattern is Safe.
+                 * If you follow the rules in this example,
+                 * Treating your messages as immutable and assembling an aggregated command,
+                 * Either every Job is queued, or none are.
+                 * Your workers can have their own rules about idempotent processing.
+                 *
+                 * If you were to use Guaranteed Delivery in something like Akka,
+                 * You would want CommandsWritten to send back a sequence number (Sent by AggregatedCommand)
+                 * You could also have this pattern writer as part of a WebAPI or MQ solution.
+                 */
                 using (var scope = new TransactionScope(TransactionScopeOption.Required))
                 {
                     _jobQueueAdder.AddJobs(msg.ResultingCommands);
