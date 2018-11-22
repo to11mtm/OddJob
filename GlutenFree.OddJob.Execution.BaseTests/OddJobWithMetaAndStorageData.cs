@@ -3,7 +3,7 @@ using GlutenFree.OddJob.Interfaces;
 
 namespace GlutenFree.OddJob.Execution.BaseTests
 {
-    public class OddJobWithMetaData : IOddJobWithMetadata
+    public class OddJobWithMetaAndStorageData : IOddJobWithMetadata
     {
         public RetryParameters RetryParameters { get; set; }
 
@@ -21,5 +21,7 @@ namespace GlutenFree.OddJob.Execution.BaseTests
         public DateTime? LastAttemptTime { get; set; }
         public DateTime? FailureTime { get; set; }
         IRetryParameters IOddJobWithMetadata.RetryParameters { get { return RetryParameters; } }
+        public DateTimeOffset? ExecutionTime { get; set; }
+        public string Queue { get; set; }
     }
 }

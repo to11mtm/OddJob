@@ -1,5 +1,6 @@
 ﻿using System;
 using Akka.Actor;
+using Akka.Event;
 using GlutenFree.OddJob.Execution.Akka.Messages;
 using GlutenFree.OddJob.Interfaces;
 
@@ -20,7 +21,7 @@ namespace GlutenFree.OddJob.Execution.Akka
         /// <param name="ex">The Exception relating to Queue Failure.</param>
         protected virtual void OnQueueFailure(object failedCommand, Exception ex)
         {
-
+            Context.GetLogger().Error(ex,"Error On command {0}", failedCommand.GetType().ToString());
         }
         protected override bool Receive(object message)
         {

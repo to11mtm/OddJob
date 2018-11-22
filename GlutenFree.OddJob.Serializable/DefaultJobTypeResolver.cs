@@ -2,7 +2,7 @@
 
 namespace GlutenFree.OddJob.Storage.SQL.Common
 {
-    public class DefaultStorageJobTypeResolver : IStorageJobTypeResolver
+    public class DefaultJobTypeResolver : IJobTypeResolver
     {
         public Type GetTypeForJob(string assemblyQualifiedTypeName)
         {

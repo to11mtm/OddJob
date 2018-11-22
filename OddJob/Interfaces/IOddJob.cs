@@ -13,4 +13,11 @@ namespace GlutenFree.OddJob.Interfaces
         string Status { get; }
         Type[] MethodGenericTypes { get; }
     }
+
+    public interface IConfiguredOddJob : IOddJob
+    {
+        RetryParameters RetryParameters { get; }
+        string Queue { get; }
+        DateTime? ExecutionTime { get; }
+    }
 }

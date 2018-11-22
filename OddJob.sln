@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob", "OddJob\GlutenFree.OddJob.csproj", "{AA34BEA9-12EC-4BF0-A6E0-9C459A4EBAE9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GlutenFree.OddJob", "OddJob\GlutenFree.OddJob.csproj", "{AA34BEA9-12EC-4BF0-A6E0-9C459A4EBAE9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Storage.Sql.SqlServer", "OddJob.Storage.SqlServer\GlutenFree.OddJob.Storage.Sql.SqlServer.csproj", "{033469ED-9C96-4F49-BEF8-D373029799B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GlutenFree.OddJob.Storage.Sql.SqlServer", "OddJob.Storage.SqlServer\GlutenFree.OddJob.Storage.Sql.SqlServer.csproj", "{033469ED-9C96-4F49-BEF8-D373029799B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Execution.Akka", "OddJob.Execution.Akka\GlutenFree.OddJob.Execution.Akka.csproj", "{0AE03157-A9B2-4FBD-8DB7-36DC09EE01D3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GlutenFree.OddJob.Execution.Akka", "OddJob.Execution.Akka\GlutenFree.OddJob.Execution.Akka.csproj", "{0AE03157-A9B2-4FBD-8DB7-36DC09EE01D3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C890D84B-9DE8-4AFB-AADC-C9B86ADE790C}"
 	ProjectSection(SolutionItems) = preProject
@@ -16,23 +16,23 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Readme.MD = Readme.MD
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Tests", "OddJob.Tests\GlutenFree.OddJob.Tests.csproj", "{FC326F53-373D-4C40-B5F5-C307A96B49A3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GlutenFree.OddJob.Tests", "OddJob.Tests\GlutenFree.OddJob.Tests.csproj", "{FC326F53-373D-4C40-B5F5-C307A96B49A3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Storage.FileSystem", "OddJob.Storage.FileSystem\GlutenFree.OddJob.Storage.FileSystem.csproj", "{55035D4F-B1DB-4DFD-BB92-33BB1C96183A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Execution.Akka.Test", "OddJob.Execution.Akka.Test\GlutenFree.OddJob.Execution.Akka.Test.csproj", "{D5D7AA25-80C6-4556-BD44-0E3DA3123E3E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GlutenFree.OddJob.Execution.Akka.Test", "OddJob.Execution.Akka.Test\GlutenFree.OddJob.Execution.Akka.Test.csproj", "{D5D7AA25-80C6-4556-BD44-0E3DA3123E3E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.SampleApp.Console", "OddJob.SampleApp.Console\GlutenFree.OddJob.SampleApp.Console.csproj", "{E8BD023A-4BEC-40B9-8FCA-FEB200922DCD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Storage.Sql.SqlServer.Test", "OddJob.Storage.SqlServer.Test\GlutenFree.OddJob.Storage.Sql.SqlServer.Test.csproj", "{9DB8AC09-E124-4133-97BC-6A13F1BB0B2A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GlutenFree.OddJob.Storage.Sql.SqlServer.Test", "OddJob.Storage.SqlServer.Test\GlutenFree.OddJob.Storage.Sql.SqlServer.Test.csproj", "{9DB8AC09-E124-4133-97BC-6A13F1BB0B2A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Storage.FileSystem.Test", "OddJob.Storage.FileSystem.Test\GlutenFree.OddJob.Storage.FileSystem.Test.csproj", "{9E9CB318-9CBE-409B-9E4C-6B2EFAB570B9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Storage.BaseTests", "OddJob.Storage.BaseTests\GlutenFree.OddJob.Storage.BaseTests.csproj", "{6F6AA4D7-A77C-4C32-8F10-1240AD39FB11}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GlutenFree.OddJob.Storage.BaseTests", "OddJob.Storage.BaseTests\GlutenFree.OddJob.Storage.BaseTests.csproj", "{6F6AA4D7-A77C-4C32-8F10-1240AD39FB11}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Storage.Sql.SQLite", "OddJob.Storage.SQLite\GlutenFree.OddJob.Storage.Sql.SQLite.csproj", "{29E7E72F-E6C0-41F6-A613-4AFF6C402F14}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GlutenFree.OddJob.Storage.Sql.SQLite", "OddJob.Storage.SQLite\GlutenFree.OddJob.Storage.Sql.SQLite.csproj", "{29E7E72F-E6C0-41F6-A613-4AFF6C402F14}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Storage.Sql.Common", "OddJob.Storage.SQL.Common\GlutenFree.OddJob.Storage.Sql.Common.csproj", "{AFBE476A-4893-4F86-B4C1-91054BEA9B33}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GlutenFree.OddJob.Storage.Sql.Common", "OddJob.Storage.SQL.Common\GlutenFree.OddJob.Storage.Sql.Common.csproj", "{AFBE476A-4893-4F86-B4C1-91054BEA9B33}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Execution", "Execution", "{816B1219-AC6D-407E-A0C8-82CCDF7E41B3}"
 EndProject
@@ -50,15 +50,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FileSystem", "FileSystem", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{485C90AE-0202-4A4A-9894-4678926966AB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Storage.Sql.SQLite.Test", "GlutenFree.OddJob.Storage.Sql.SQLite.Test\GlutenFree.OddJob.Storage.Sql.SQLite.Test.csproj", "{D7F1EE7C-7E1B-4C1D-A955-E905590FAE26}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GlutenFree.OddJob.Storage.Sql.SQLite.Test", "GlutenFree.OddJob.Storage.Sql.SQLite.Test\GlutenFree.OddJob.Storage.Sql.SQLite.Test.csproj", "{D7F1EE7C-7E1B-4C1D-A955-E905590FAE26}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Execution.ThreadPool", "GlutenFree.OddJob.Execution.ThreadPool\GlutenFree.OddJob.Execution.ThreadPool.csproj", "{8F4D96A6-F2F7-4307-9729-088C3869787A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Execution.ThreadPool.Test", "GlutenFree.OddJob.Execution.ThreadPool.Test\GlutenFree.OddJob.Execution.ThreadPool.Test.csproj", "{3242458B-9ACB-4BA4-8E62-CDA9462A806E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Execution.BaseTests", "GlutenFree.OddJob.Execution.BaseTests\GlutenFree.OddJob.Execution.BaseTests.csproj", "{902A85A5-7CC6-44DC-AD84-AD92B264D424}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GlutenFree.OddJob.Execution.BaseTests", "GlutenFree.OddJob.Execution.BaseTests\GlutenFree.OddJob.Execution.BaseTests.csproj", "{902A85A5-7CC6-44DC-AD84-AD92B264D424}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Serializable", "GlutenFree.OddJob.Serializable\GlutenFree.OddJob.Serializable.csproj", "{31542FC2-91FF-46D7-B779-75FE0BC6D694}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GlutenFree.OddJob.Serializable", "GlutenFree.OddJob.Serializable\GlutenFree.OddJob.Serializable.csproj", "{31542FC2-91FF-46D7-B779-75FE0BC6D694}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Serializable.Tests", "GlutenFree.OddJob.Serializable.Tests\GlutenFree.OddJob.Serializable.Tests.csproj", "{E19C0B99-011B-49F3-B7DC-C3BC7D3EF4FF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Samples.Serialized.CommandAggregator", "GlutenFree.OddJob.Samples.Serialized.CommandAggregator\GlutenFree.OddJob.Samples.Serialized.CommandAggregator.csproj", "{501CD55E-49FF-47BD-B355-19EEE25FD110}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -344,6 +348,38 @@ Global
 		{31542FC2-91FF-46D7-B779-75FE0BC6D694}.Release|x64.Build.0 = Release|Any CPU
 		{31542FC2-91FF-46D7-B779-75FE0BC6D694}.Release|x86.ActiveCfg = Release|Any CPU
 		{31542FC2-91FF-46D7-B779-75FE0BC6D694}.Release|x86.Build.0 = Release|Any CPU
+		{E19C0B99-011B-49F3-B7DC-C3BC7D3EF4FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E19C0B99-011B-49F3-B7DC-C3BC7D3EF4FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E19C0B99-011B-49F3-B7DC-C3BC7D3EF4FF}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{E19C0B99-011B-49F3-B7DC-C3BC7D3EF4FF}.Debug|ARM.Build.0 = Debug|Any CPU
+		{E19C0B99-011B-49F3-B7DC-C3BC7D3EF4FF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E19C0B99-011B-49F3-B7DC-C3BC7D3EF4FF}.Debug|x64.Build.0 = Debug|Any CPU
+		{E19C0B99-011B-49F3-B7DC-C3BC7D3EF4FF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E19C0B99-011B-49F3-B7DC-C3BC7D3EF4FF}.Debug|x86.Build.0 = Debug|Any CPU
+		{E19C0B99-011B-49F3-B7DC-C3BC7D3EF4FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E19C0B99-011B-49F3-B7DC-C3BC7D3EF4FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E19C0B99-011B-49F3-B7DC-C3BC7D3EF4FF}.Release|ARM.ActiveCfg = Release|Any CPU
+		{E19C0B99-011B-49F3-B7DC-C3BC7D3EF4FF}.Release|ARM.Build.0 = Release|Any CPU
+		{E19C0B99-011B-49F3-B7DC-C3BC7D3EF4FF}.Release|x64.ActiveCfg = Release|Any CPU
+		{E19C0B99-011B-49F3-B7DC-C3BC7D3EF4FF}.Release|x64.Build.0 = Release|Any CPU
+		{E19C0B99-011B-49F3-B7DC-C3BC7D3EF4FF}.Release|x86.ActiveCfg = Release|Any CPU
+		{E19C0B99-011B-49F3-B7DC-C3BC7D3EF4FF}.Release|x86.Build.0 = Release|Any CPU
+		{501CD55E-49FF-47BD-B355-19EEE25FD110}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{501CD55E-49FF-47BD-B355-19EEE25FD110}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{501CD55E-49FF-47BD-B355-19EEE25FD110}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{501CD55E-49FF-47BD-B355-19EEE25FD110}.Debug|ARM.Build.0 = Debug|Any CPU
+		{501CD55E-49FF-47BD-B355-19EEE25FD110}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{501CD55E-49FF-47BD-B355-19EEE25FD110}.Debug|x64.Build.0 = Debug|Any CPU
+		{501CD55E-49FF-47BD-B355-19EEE25FD110}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{501CD55E-49FF-47BD-B355-19EEE25FD110}.Debug|x86.Build.0 = Debug|Any CPU
+		{501CD55E-49FF-47BD-B355-19EEE25FD110}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{501CD55E-49FF-47BD-B355-19EEE25FD110}.Release|Any CPU.Build.0 = Release|Any CPU
+		{501CD55E-49FF-47BD-B355-19EEE25FD110}.Release|ARM.ActiveCfg = Release|Any CPU
+		{501CD55E-49FF-47BD-B355-19EEE25FD110}.Release|ARM.Build.0 = Release|Any CPU
+		{501CD55E-49FF-47BD-B355-19EEE25FD110}.Release|x64.ActiveCfg = Release|Any CPU
+		{501CD55E-49FF-47BD-B355-19EEE25FD110}.Release|x64.Build.0 = Release|Any CPU
+		{501CD55E-49FF-47BD-B355-19EEE25FD110}.Release|x86.ActiveCfg = Release|Any CPU
+		{501CD55E-49FF-47BD-B355-19EEE25FD110}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -370,6 +406,8 @@ Global
 		{3242458B-9ACB-4BA4-8E62-CDA9462A806E} = {816B1219-AC6D-407E-A0C8-82CCDF7E41B3}
 		{902A85A5-7CC6-44DC-AD84-AD92B264D424} = {816B1219-AC6D-407E-A0C8-82CCDF7E41B3}
 		{31542FC2-91FF-46D7-B779-75FE0BC6D694} = {485C90AE-0202-4A4A-9894-4678926966AB}
+		{E19C0B99-011B-49F3-B7DC-C3BC7D3EF4FF} = {485C90AE-0202-4A4A-9894-4678926966AB}
+		{501CD55E-49FF-47BD-B355-19EEE25FD110} = {A66DC2B1-1CB9-4B98-A141-C684CFF20B89}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FCDAA670-41E2-41AE-A098-36F68A02ED70}

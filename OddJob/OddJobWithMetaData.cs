@@ -1,12 +1,14 @@
 ﻿using System;
 using GlutenFree.OddJob.Interfaces;
 
-namespace GlutenFree.OddJob.Storage.SQL.Common
+namespace GlutenFree.OddJob
 {
-
-    public class SqlDbOddJob : IOddJobWithMetadata
+    public class OddJobWithMetaData : IOddJobWithMetadata
     {
+        public RetryParameters RetryParameters { get; set; }
+
         public Guid JobId { get; set; }
+
         public OddJobParameter[] JobArgs { get; set; }
 
         public Type TypeExecutedOn { get; set; }
@@ -14,8 +16,8 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
         public string MethodName { get; set; }
         public string Status { get; set; }
         public Type[] MethodGenericTypes { get; set; }
-        public IRetryParameters RetryParameters { get; set; }
-        public string Queue { get; set; }
+        IRetryParameters IOddJobWithMetadata.RetryParameters { get { return RetryParameters; } }
         public DateTimeOffset? ExecutionTime { get; set; }
+        public string Queue { get; set; }
     }
 }

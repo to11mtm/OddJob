@@ -9,14 +9,14 @@ namespace GlutenFree.OddJob.Execution.BaseTests
 {
     public class InMemoryTestStore : IJobQueueAdder, IJobQueueManager
     {
-        public static ConcurrentDictionary<string, List<OddJobWithMetaData>> jobPeeker {get {return jobStore; } }
-        private static ConcurrentDictionary<string, List<OddJobWithMetaData>> jobStore = new ConcurrentDictionary<string, List<OddJobWithMetaData>>();
+        public static ConcurrentDictionary<string, List<OddJobWithMetaAndStorageData>> jobPeeker {get {return jobStore; } }
+        private static ConcurrentDictionary<string, List<OddJobWithMetaAndStorageData>> jobStore = new ConcurrentDictionary<string, List<OddJobWithMetaAndStorageData>>();
         private static object jobLock = new object();
         private static object dictionaryLock = new object();
         public Guid AddJob<TJob>(Expression<Action<TJob>> jobExpression, RetryParameters retryParameters = null, DateTimeOffset? executionTime = null, string queueName = "default")
         {
             var jobInfo = JobCreator.Create<TJob>(jobExpression);
-            var newJob = new OddJobWithMetaData()
+            var newJob = new OddJobWithMetaAndStorageData()
             {
                 JobId = Guid.NewGuid(),
                 JobArgs = jobInfo.JobArgs,
@@ -31,7 +31,7 @@ namespace GlutenFree.OddJob.Execution.BaseTests
                 
                 lock (dictionaryLock)
                 {
-                    jobStore.GetOrAdd(queueName, new List<OddJobWithMetaData>());
+                    jobStore.GetOrAdd(queueName, new List<OddJobWithMetaAndStorageData>());
                 }
             }
             lock (jobLock)
@@ -74,7 +74,7 @@ namespace GlutenFree.OddJob.Execution.BaseTests
             }
             return results;
         }
-        public void WriteJobState(Guid jobId, Action<OddJobWithMetaData> transformFunc)
+        public void WriteJobState(Guid jobId, Action<OddJobWithMetaAndStorageData> transformFunc)
         {
             lock (jobLock)
             {

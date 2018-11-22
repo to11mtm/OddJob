@@ -21,7 +21,7 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             {
                 Context.Sender.Tell(new[]
                 {
-                    new OddJobWithMetaData()
+                    new OddJobWithMetaAndStorageData()
                     {
                         CreatedOn = DateTime.Now, FailureTime = null,
                         JobArgs = new OddJobParameter[]

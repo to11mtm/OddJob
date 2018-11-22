@@ -20,7 +20,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
     {
         private readonly ISqlDbJobQueueTableConfiguration _jobQueueTableConfiguration;
         private readonly  MappingSchema _mappingSchema;
-        private readonly IStorageJobTypeResolver _typeResolver;
+        private readonly IJobTypeResolver _typeResolver;
 
         protected BaseSqlJobQueueManager(IJobQueueDataConnectionFactory jobQueueConnectionFactory,
             ISqlDbJobQueueTableConfiguration jobQueueTableConfiguration):this(jobQueueConnectionFactory,jobQueueTableConfiguration, new NullOnMissingTypeJobTypeResolver())
@@ -28,7 +28,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 
         }
         protected BaseSqlJobQueueManager(IJobQueueDataConnectionFactory jobQueueConnectionFactory,
-            ISqlDbJobQueueTableConfiguration jobQueueTableConfiguration, IStorageJobTypeResolver typeResolver)
+            ISqlDbJobQueueTableConfiguration jobQueueTableConfiguration, IJobTypeResolver typeResolver)
         {
             _jobQueueConnectionFactory = jobQueueConnectionFactory;
             
@@ -311,6 +311,8 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                         MethodName = group.First().MetaData.MethodName,
                         TypeExecutedOn = _typeResolver.GetTypeForJob(group.First().MetaData.TypeExecutedOn),
                         Status = group.First().MetaData.Status,
+                        ExecutionTime = group.First().MetaData.DoNotExecuteBefore,
+                        Queue= group.First().MetaData.QueueName,
                         JobArgs = group.OrderBy(p => p.ParamData.ParamOrdinal).Select(q=>q.ParamData).Where(s => s.SerializedType != null).GroupBy(q=>q.ParamOrdinal)
                             .Select(s => new OddJobParameter() { Name = s.FirstOrDefault().ParameterName, Value = 
                                 Newtonsoft.Json.JsonConvert.DeserializeObject(s.FirstOrDefault().SerializedValue,
@@ -321,8 +323,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                         MethodGenericTypes = group.OrderBy(q=>q.JobMethodGenericData.ParamOrder).Where(t=>t.JobMethodGenericData!= null && t.JobMethodGenericData.ParamTypeName != null)
                             .Select(q=>q.JobMethodGenericData)
                             .GroupBy(q=>q.ParamOrder)
-                            .Select(t=> Type.GetType(t.FirstOrDefault().ParamTypeName)).ToArray()
-                        
+                            .Select(t=> _typeResolver.GetTypeForJob(t.FirstOrDefault().ParamTypeName)).ToArray(),
                     });
             return finalSet;
         }
