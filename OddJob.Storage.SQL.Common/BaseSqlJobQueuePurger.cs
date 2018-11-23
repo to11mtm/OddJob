@@ -12,7 +12,7 @@ namespace GlutenFree.OddJob.Storage.Sql.SqlServer
 {
     public class BaseSqlJobQueuePurger : IJobQueuePurger
     {
-        private readonly MappingSchema _mappingSchema;
+        private readonly FluentMappingBuilder _mappingSchema;
         private readonly IJobQueueDataConnectionFactory _jobQueueConnectionFactory;
 
         public BaseSqlJobQueuePurger(IJobQueueDataConnectionFactory jobQueueConnectionFactory,
@@ -25,7 +25,7 @@ namespace GlutenFree.OddJob.Storage.Sql.SqlServer
 
         public void PurgeQueue(string name, string stateToPurge, DateTime purgeOlderThan)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
             {
                 conn.GetTable<SqlCommonOddJobParamMetaData>()
                     .Where(q => q.JobGuid.In(conn.GetTable<SqlCommonDbOddJobMetaData>()

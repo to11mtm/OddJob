@@ -9,12 +9,6 @@ namespace GlutenFree.OddJob.Storage.Sql.SqlServer
             ISqlDbJobQueueTableConfiguration tableConfig, IJobTypeResolver typeResolver) : base(jobQueueConnectionFactory,
             tableConfig, typeResolver)
         { }
-        public SqlServerJobQueueManager(SqlServerDataConnectionFactory jobQueueConnectionFactory,
-            ISqlDbJobQueueTableConfiguration tableConfig) : base(jobQueueConnectionFactory,
-            tableConfig)
-        {
-
-        }
         
     }
 }

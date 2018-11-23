@@ -1,21 +1,128 @@
 ﻿using System;
+using System.Data;
+using System.Data.SQLite;
+using System.Runtime.CompilerServices;
 using Akka.Actor;
 using Akka.Routing;
 using Akka.TestKit.Xunit2;
 using GlutenFree.OddJob.Execution.Akka.Messages;
 using GlutenFree.OddJob.Execution.Akka.Test.Mocks;
 using GlutenFree.OddJob.Execution.BaseTests;
+using GlutenFree.OddJob.Interfaces;
+using GlutenFree.OddJob.Storage.Sql.SQLite;
+using GlutenFree.OddJob.Storage.SQL.Common;
+using GlutenFree.OddJob.Storage.SQL.SQLite;
 using Xunit;
 
 namespace GlutenFree.OddJob.Execution.Akka.Test
 {
-    public class JobCoordinatorTests : TestKit
+    public static class UnitTestTableHelper
+    {
+        internal static readonly string connString = "FullUri=file::memory:?cache=shared";
+        /// <summary>
+        /// This is here because SQLite will only hold In-memory DBs as long as ONE connection is open. so we just open one here and keep it around for appdomain life.
+        /// </summary>
+        public static readonly SQLiteConnection heldConnection;
+
+        public static bool TablesCreated = false;
+        static UnitTestTableHelper()
+        {
+            heldConnection = new SQLiteConnection(connString);
+        }
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public static void EnsureTablesExist()
+        {
+            if (TablesCreated)
+            {
+                return;
+                ;
+            }
+            if (heldConnection.State != ConnectionState.Open)
+            {
+                heldConnection.Open();
+            }
+
+            using (var db = new SQLiteConnection(connString))
+            {
+                db.Open();
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandText = string.Format(@"DROP TABLE IF EXISTS {0}; ", SqlDbJobQueueDefaultTableConfiguration.DefaultQueueTableName);
+                    cmd.ExecuteNonQuery();
+                }
+
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandText = string.Format(@"DROP TABLE IF EXISTS {0}; ", SqlDbJobQueueDefaultTableConfiguration.DefaultQueueParamTableName);
+                    cmd.ExecuteNonQuery();
+                }
+
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandText = string.Format(@"DROP TABLE IF EXISTS {0}; ",
+                        SqlDbJobQueueDefaultTableConfiguration.DefaultJobMethodGenericParamTableName);
+                }
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandText = SQLiteDbJobTableHelper.JobQueueParamTableCreateScript(
+                        new SqlDbJobQueueDefaultTableConfiguration());
+                    cmd.ExecuteNonQuery();
+                }
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandText = SQLiteDbJobTableHelper.JobTableCreateScript(
+                        new SqlDbJobQueueDefaultTableConfiguration());
+                    cmd.ExecuteNonQuery();
+                }
+
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandText =
+                        SQLiteDbJobTableHelper.JobQueueJobMethodGenericParamTableCreateScript(
+                            new SqlDbJobQueueDefaultTableConfiguration());
+                    cmd.ExecuteNonQuery();
+                }
+            }
+
+            TablesCreated = true;
+
+
+
+
+        }
+    }
+    public class AkkaExecutionTest : TestKit
+    {
+        public AkkaExecutionTest()
+        {
+            UnitTestTableHelper.EnsureTablesExist();
+        }
+        public static IJobQueueManager GetJobQueueManager
+        {
+            get
+            {
+                return new SQLiteJobQueueManager(
+                    new SQLiteJobQueueDataConnectionFactory(UnitTestTableHelper.connString),
+                    new SqlDbJobQueueDefaultTableConfiguration(), new NullOnMissingTypeJobTypeResolver());
+            }
+        }
+
+        public static IJobQueueAdder GetJobQueueAdder
+        {
+            get
+            {
+                return new SQLiteJobQueueAdder(new SQLiteJobQueueDataConnectionFactory(UnitTestTableHelper.connString),
+                    new DefaultJobAdderQueueTableResolver(new SqlDbJobQueueDefaultTableConfiguration()));
+            }
+        }
+    }
+    public class JobCoordinatorTests : AkkaExecutionTest
     {
         [Fact]
         public void JobCoordinator_Can_Shutdown()
         {
             var workerCount = 5;
-            var jobStore = new InMemoryTestStore();
+            var jobStore = GetJobQueueManager;
             var executor = new MockJobSuccessExecutor();
             var queueLayerProps = Props.Create(() => new JobQueueLayerActor(jobStore));
             var workerProps = Props.Create(() => new JobWorkerActor(executor)).WithRouter(new RoundRobinPool(workerCount));

@@ -19,14 +19,10 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
     public abstract class BaseSqlJobQueueManager : IJobQueueManager , IJobSearchProvider
     {
         private readonly ISqlDbJobQueueTableConfiguration _jobQueueTableConfiguration;
-        private readonly  MappingSchema _mappingSchema;
+        private readonly  FluentMappingBuilder _mappingSchema;
         private readonly IJobTypeResolver _typeResolver;
 
-        protected BaseSqlJobQueueManager(IJobQueueDataConnectionFactory jobQueueConnectionFactory,
-            ISqlDbJobQueueTableConfiguration jobQueueTableConfiguration):this(jobQueueConnectionFactory,jobQueueTableConfiguration, new NullOnMissingTypeJobTypeResolver())
-        {
 
-        }
         protected BaseSqlJobQueueManager(IJobQueueDataConnectionFactory jobQueueConnectionFactory,
             ISqlDbJobQueueTableConfiguration jobQueueTableConfiguration, IJobTypeResolver typeResolver)
         {
@@ -43,7 +39,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 
         public virtual void MarkJobSuccess(Guid jobGuid)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
             {
                 
                 conn.GetTable<SqlCommonDbOddJobMetaData>()
@@ -57,7 +53,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 
         public virtual void MarkJobFailed(Guid jobGuid)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
             {
                 conn.GetTable<SqlCommonDbOddJobMetaData>()
                     .Where(q => q.JobGuid == jobGuid)
@@ -70,7 +66,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 
         public IEnumerable<IOddJobWithMetadata> GetJobsByCriteria(Expression<Func<SqlCommonDbOddJobMetaData, bool>> criteria)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
             {
                 var criteriaQuery = conn.GetTable<SqlCommonDbOddJobMetaData>().Where(criteria);
                 var resultSet = ExecuteJoinQuery(criteriaQuery, conn);
@@ -82,7 +78,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
         public IEnumerable<IOddJobWithMetadata> GetJobsByParameterAndMainCriteria(
             Expression<Func<SqlCommonDbOddJobMetaData, bool>> jobQueryable, Expression<Func<SqlCommonOddJobParamMetaData, bool>> paramQueryable)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
             {
 
                 var criteria = conn.GetTable<SqlCommonDbOddJobMetaData>()
@@ -97,7 +93,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 
         public IEnumerable<T> GetJobCriteriaValues<T>(Expression<Func<SqlCommonDbOddJobMetaData, T>> selector)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
             {
                 return conn.GetTable<SqlCommonDbOddJobMetaData>()
                     .Select(selector).Distinct();
@@ -106,7 +102,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
         
         public IEnumerable<T> GetJobParamCriteriaValues<T>(Expression<Func<SqlCommonOddJobParamMetaData, T>> selector)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
             {
                 return conn.GetTable<SqlCommonOddJobParamMetaData>()
                     .Select(selector).Distinct();
@@ -115,7 +111,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
         
         public bool UpdateJobParameterValues(IEnumerable<SqlCommonOddJobParamMetaData> metaDatas)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
             {
                 foreach (var metaData in metaDatas)
                 {
@@ -134,7 +130,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
             IDictionary<Expression<Func<SqlCommonDbOddJobMetaData, object>>, object> setters, Guid jobGuid,
             string oldStatusIfRequired)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
             {
                 var updatable = conn.GetTable<SqlCommonDbOddJobMetaData>()
                     .Where(q => q.JobGuid == jobGuid);
@@ -161,7 +157,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 
         public bool UpdateJobMetadataFull(SqlCommonDbOddJobMetaData metaDataToUpdate, string oldStatusIfRequired)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
             {
                 var updatable = conn.GetTable<SqlCommonDbOddJobMetaData>()
                     .Where(q => q.JobGuid == metaDataToUpdate.JobGuid);
@@ -195,7 +191,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
             var lockClaimTimeoutThreshold = DateTime.Now.AddSeconds(
                 (0) - _jobQueueTableConfiguration.JobClaimLockTimeoutInSeconds);
             var defaultMinCoalesce = DateTime.MinValue;
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
             {
                 //Because our Lock Update Does the lock, we don't bother with a transaction.
 
@@ -238,7 +234,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                 var jobWithParamQuery = conn.GetTable<SqlCommonDbOddJobMetaData>()
                     .Where(q => q.LockGuid == lockGuid);
 
-                var resultSet = ExecuteJoinQuery(jobWithParamQuery, conn);
+                var resultSet = ExecuteJoinQuery(jobWithParamQuery, conn).ToList();
 
 
                 return resultSet;
@@ -248,7 +244,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 
         public virtual void MarkJobInProgress(Guid jobId)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
             {
                 
                 conn.GetTable<SqlCommonDbOddJobMetaData>()
@@ -265,7 +261,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 
         public virtual void MarkJobInRetryAndIncrement(Guid jobId, DateTime lastAttempt)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
             {
                 
                 conn.GetTable<SqlCommonDbOddJobMetaData>()
@@ -283,7 +279,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 
         public virtual IOddJobWithMetadata GetJob(Guid jobId)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
             {
 
                 var jobWithParamQuery = conn.GetTable<SqlCommonDbOddJobMetaData>()
@@ -313,14 +309,16 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                         Status = group.First().MetaData.Status,
                         ExecutionTime = group.First().MetaData.DoNotExecuteBefore,
                         Queue= group.First().MetaData.QueueName,
-                        JobArgs = group.OrderBy(p => p.ParamData.ParamOrdinal).Select(q=>q.ParamData).Where(s => s.SerializedType != null).GroupBy(q=>q.ParamOrdinal)
+                        JobArgs = group.OrderBy(p => p.ParamData.ParamOrdinal) //Order by for Reader paranoia
+                            .Select(q=>q.ParamData).Where(s => s.SerializedType != null).GroupBy(q=>q.ParamOrdinal)
                             .Select(s => new OddJobParameter() { Name = s.FirstOrDefault().ParameterName, Value = 
                                 Newtonsoft.Json.JsonConvert.DeserializeObject(s.FirstOrDefault().SerializedValue,
                                     Type.GetType(s.FirstOrDefault().SerializedType, false))}).ToArray(),
                         RetryParameters = new RetryParameters(group.First().MetaData.MaxRetries,
                             TimeSpan.FromSeconds(group.First().MetaData.MinRetryWait),
                             group.First().MetaData.RetryCount, group.First().MetaData.LastAttempt),
-                        MethodGenericTypes = group.OrderBy(q=>q.JobMethodGenericData.ParamOrder).Where(t=>t.JobMethodGenericData!= null && t.JobMethodGenericData.ParamTypeName != null)
+                        MethodGenericTypes = group.OrderBy(q=>q.JobMethodGenericData.ParamOrder) //Order by for reader paranoia.
+                            .Where(t=>t.JobMethodGenericData!= null && t.JobMethodGenericData.ParamTypeName != null)
                             .Select(q=>q.JobMethodGenericData)
                             .GroupBy(q=>q.ParamOrder)
                             .Select(t=> _typeResolver.GetTypeForJob(t.FirstOrDefault().ParamTypeName)).ToArray(),

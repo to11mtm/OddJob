@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data.SQLite;
 using System.Linq;
 using System.Threading;
@@ -11,6 +13,47 @@ using GlutenFree.OddJob.Storage.SQL.SQLite;
 
 namespace GlutenFree.OddJob.Samples.Serialized.CommandAggregator
 {
+
+    public class MyTableConfigs : ISqlDbJobQueueTableConfiguration
+    {
+        public string QueueTableName { get; set;}
+        public string ParamTableName { get; set;}
+        public int JobClaimLockTimeoutInSeconds { get; set;}
+        public string JobMethodGenericParamTableName { get; set;}
+    }
+    /// <summary>
+    /// This is a helper class to provide mappings for Queuenames to specific tables.
+    /// If you want to use a single Queue table, you do not need to do this.
+    /// But for scenarios where you wish to have multiple queue tables,
+    /// This is an opportunity to provide a level of indirection for serialized jobs.
+    /// </summary>
+    public static class GenerateMappings
+    {
+        public static Dictionary<string,ISqlDbJobQueueTableConfiguration> TableConfigurations
+        {
+            get
+            {
+                return new Dictionary<string, ISqlDbJobQueueTableConfiguration>()
+                {
+                    {
+                        "console",
+                        new MyTableConfigs()
+                        {
+                            QueueTableName = "consoleQueue", ParamTableName = "consoleParam",
+                            JobMethodGenericParamTableName = "consoleGeneric", JobClaimLockTimeoutInSeconds = 30
+                        }
+                    },
+                    { "counter",
+                    new MyTableConfigs()
+                    {
+                        QueueTableName = "counterQueue", ParamTableName = "counterParam",
+                        JobMethodGenericParamTableName = "counterGeneric", JobClaimLockTimeoutInSeconds = 30
+                    }
+                    }
+                };
+            }
+        }
+    }
     /*
      * I'm using Akka.NET for this example as it was the easiest to express intent here.
      * This pattern is usable with HTTP or MQ Semantics as well.
@@ -22,20 +65,28 @@ namespace GlutenFree.OddJob.Samples.Serialized.CommandAggregator
 
         static void Main(string[] args)
         {
-            SampleTableHelper.EnsureTablesExist();
-            WriteInstructions();
 
+            SampleTableHelper.EnsureTablesExist(GenerateMappings.TableConfigurations.Select(q => q.Value)
+                .Append(new SqlDbJobQueueDefaultTableConfiguration()));
+            WriteInstructions();
             /*
              * Execution Engine:
              * Normally this would be it's own process, separate from your WebAPI or Akka or MQ Layer.
              * For ease of demonstration, this is rolled up into a single program.
              */
-            var engine = new GlutenFree.OddJob.Execution.Akka.HardInjectedJobExecutorShell(
+            var consoleEngine = new GlutenFree.OddJob.Execution.Akka.HardInjectedJobExecutorShell(
                 () => new JobQueueLayerActor(new SQLiteJobQueueManager(ConnFactoryFunc(),
-                    new SqlDbJobQueueDefaultTableConfiguration())),
+                    GenerateMappings.TableConfigurations["console"],new NullOnMissingTypeJobTypeResolver())),
                 () => new JobWorkerActor(new DefaultJobExecutor(new DefaultContainerFactory())),
                 () => new JobQueueCoordinator(), new StandardConsoleEngineLoggerConfig("DEBUG"));
-            engine.StartJobQueue("default", 5,5);
+            consoleEngine.StartJobQueue("console", 5,5);
+
+            var counterEngine = new GlutenFree.OddJob.Execution.Akka.HardInjectedJobExecutorShell(
+                () => new JobQueueLayerActor(new SQLiteJobQueueManager(ConnFactoryFunc(),
+                    GenerateMappings.TableConfigurations["counter"], new NullOnMissingTypeJobTypeResolver())),
+                () => new JobWorkerActor(new DefaultJobExecutor(new DefaultContainerFactory())),
+                () => new JobQueueCoordinator(), new StandardConsoleEngineLoggerConfig("DEBUG"));
+            counterEngine.StartJobQueue("counter", 5, 5);
 
             /*
              * Service Layer:
@@ -56,7 +107,8 @@ namespace GlutenFree.OddJob.Samples.Serialized.CommandAggregator
             {
                 WriteInstructions();
             }
-            engine.ShutDownQueue("default");
+            counterEngine.ShutDownQueue("default");
+            consoleEngine.ShutDownQueue("default");
             actorsystem.Terminate().RunSynchronously();
         }
 
@@ -93,12 +145,12 @@ namespace GlutenFree.OddJob.Samples.Serialized.CommandAggregator
     {
         private static object _lockObject = new object();
         private static int _counter = 0;
-        public void WriteCounter()
+        public void WriteCounter<T>(T param)
         {
             lock (_lockObject)
             {
                 _counter = _counter + 1;
-                System.Console.WriteLine("Counter" + _counter);
+                System.Console.WriteLine("Counter" + _counter + " Param: " + param.ToString());
             }
         }
     }
@@ -194,7 +246,9 @@ namespace GlutenFree.OddJob.Samples.Serialized.CommandAggregator
                     Props.Create(() =>
                         new ResultJobWriter(new SQLiteJobQueueAdder(
                             new SQLiteJobQueueDataConnectionFactory(Program.connString),
-                            new SqlDbJobQueueDefaultTableConfiguration()))), "jobWriter");
+                            new QueueNameBasedJobAdderQueueTableResolver(GenerateMappings.TableConfigurations,
+                                new SqlDbJobQueueDefaultTableConfiguration())))),
+                    "jobWriter");
             counter = 0;
         }
 
@@ -233,11 +287,19 @@ namespace GlutenFree.OddJob.Samples.Serialized.CommandAggregator
                 var msg = (MyInProcessCommand)message;
                 Context.Sender.Tell(new MyInProcessCommand(msg.Counter, msg.ResultingCommands.WithItem(
                     SerializableJobCreator.CreateJobDefiniton((CounterWriter c) =>
-                        c.WriteCounter()))));
+                            c.WriteCounter<MyParam<string, string>>(
+                                new MyParam<string, string> {Param = "genericParam"}),
+                        queueName: "counter"))));
             }
 
             return true;
         }
+    }
+
+    public class MyParam<T,TV>
+    {
+        public T Param { get; set; }
+        public TV AnotherParam { get; set; }
     }
 
     /// <summary>
@@ -252,7 +314,7 @@ namespace GlutenFree.OddJob.Samples.Serialized.CommandAggregator
                 var msg = (MyInProcessCommand) message;
                 Context.Sender.Tell(new MyInProcessCommand(msg.Counter, msg.ResultingCommands.WithItem(
                     SerializableJobCreator.CreateJobDefiniton((ConsoleWriter c) =>
-                        c.WriteToConsole(string.Format("Hello from {0}", msg.Counter))))));
+                        c.WriteToConsole(string.Format("Hello from {0}", msg.Counter)), queueName:"console"))));
 
             }
 

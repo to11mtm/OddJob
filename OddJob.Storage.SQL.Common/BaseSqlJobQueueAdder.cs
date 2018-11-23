@@ -14,13 +14,14 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 {
     public abstract class BaseSqlJobQueueAdder : IJobQueueAdder, ISerializedJobQueueAdder
     {
-        private readonly MappingSchema _mappingSchema;
-        
-        protected BaseSqlJobQueueAdder(IJobQueueDataConnectionFactory jobQueueDataConnectionFactory, ISqlDbJobQueueTableConfiguration jobQueueTableConfiguration)
+        private readonly FluentMappingBuilder _mappingSchema;
+        private readonly IJobAdderQueueTableResolver _tableResolver;
+        protected BaseSqlJobQueueAdder(IJobQueueDataConnectionFactory jobQueueDataConnectionFactory, IJobAdderQueueTableResolver tableResolver)
         {
             _jobQueueConnectionFactory = jobQueueDataConnectionFactory;
 
-            _mappingSchema = Mapping.BuildMappingSchema(jobQueueTableConfiguration);
+            _mappingSchema = MappingSchema.Default.GetFluentMappingBuilder();
+            _tableResolver = tableResolver;
         }
 
         
@@ -30,7 +31,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 
         public virtual void AddJobs(IEnumerable<SerializableOddJob> jobDatas)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
             {
                 foreach (var job in jobDatas)
                 {
@@ -41,16 +42,17 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 
         public virtual void AddJob(SerializableOddJob jobData)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
             {
                 _addJobImpl(jobData, conn);
             }
 
         }
 
-        private static void _addJobImpl(SerializableOddJob jobData, DataConnection conn)
+        private void _addJobImpl(SerializableOddJob jobData, DataConnection conn)
         {
-            var insertedIdExpr = conn.GetTable<SqlCommonDbOddJobMetaData>()
+            var table = _tableResolver.GetConfigurationForJob(jobData);
+            var insertedIdExpr = conn.GetTable<SqlCommonDbOddJobMetaData>().TableName(table.QueueTableName)
                 .Value(q => q.QueueName, jobData.QueueName)
                 .Value(q => q.TypeExecutedOn, jobData.TypeExecutedOn)
                 .Value(q => q.MethodName, jobData.MethodName)
@@ -68,7 +70,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
             var toInsert = jobData.JobArgs.Select((val, index) => new {val, index}).ToList();
             toInsert.ForEach(i =>
             {
-                conn.GetTable<SqlCommonOddJobParamMetaData>()
+                conn.GetTable<SqlCommonOddJobParamMetaData>().TableName(table.ParamTableName)
                     .Value(q => q.JobGuid, jobData.JobId)
                     .Value(q => q.ParamOrdinal, i.index)
                     .Value(q => q.SerializedValue, i.val.Value)
@@ -80,14 +82,14 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
             var genMethodArgs = jobData.MethodGenericTypes.Select((val, index) => new {val, index}).ToList();
             genMethodArgs.ForEach(i =>
             {
-                conn.GetTable<SqlDbOddJobMethodGenericInfo>()
+                conn.GetTable<SqlDbOddJobMethodGenericInfo>().TableName(table.JobMethodGenericParamTableName)
                     .Value(q => q.JobGuid, jobData.JobId)
                     .Value(q => q.ParamOrder, i.index)
                     .Value(q => q.ParamTypeName, i.val)
                     .Insert();
             });
 
-            conn.GetTable<SqlCommonDbOddJobMetaData>().Where(q => q.Id == insertedId)
+            conn.GetTable<SqlCommonDbOddJobMetaData>().TableName(table.QueueTableName).Where(q => q.Id == insertedId)
                 .Set(q => q.Status, JobStates.New)
                 .Update();
         }
@@ -95,7 +97,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
         public virtual Guid AddJob<TJob>(Expression<Action<TJob>> jobExpression, RetryParameters retryParameters = null,
             DateTimeOffset? executionTime = null, string queueName = "default")
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
             {
                 var ser = SerializableJobCreator.CreateJobDefiniton(jobExpression, retryParameters, executionTime,queueName);
                 AddJob(ser);

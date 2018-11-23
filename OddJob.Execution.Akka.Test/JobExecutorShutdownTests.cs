@@ -18,8 +18,8 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             var executor = new HardInjectedJobExecutorShell(() => new JobQueueLayerActor(jobStore),
                 () => new JobWorkerActor(new DefaultJobExecutor(new DefaultContainerFactory())),
                 () => new JobQueueCoordinator(), null);
-            executor.StartJobQueue("test", 5,5,5);
             jobStore.AddJob((ShellShutdownMockJob1 m) => m.DoThing(0), null, null, "test");
+            executor.StartJobQueue("test", 5,5,5);
             executor.ShutDownQueue("test");
             SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(5));
             Xunit.Assert.True(ShellShutdownMockJob1.MyCounter.ContainsKey(0) == false);
@@ -35,10 +35,9 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             var executor = new HardInjectedJobExecutorShell(() => new JobQueueLayerActor(jobStore),
                 () => new JobWorkerActor(new DefaultJobExecutor(new DefaultContainerFactory())),
                 () => new JobQueueCoordinator(), null);
-            
-            executor.StartJobQueue("test", 5, 1,1);
-            jobStore.AddJob((ShellShutdownMockJob2 m) => m.DoThing(1), null, null, "test");
 
+            jobStore.AddJob((ShellShutdownMockJob2 m) => m.DoThing(1), null, null, "test");
+            executor.StartJobQueue("test", 5, 5,5);
             executor.Dispose();
 
             SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(5));

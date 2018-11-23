@@ -104,7 +104,10 @@ Not-Initial-Goals (Will be done when there's a need):
 Usage:
 
  - NetStandard/NetFramework Compatibility:
-   - While Libraries are provided for both versions, compatibility between frameworks is not guaranteed in all cases. This is primarily due to the differences between the way types are serialized between versions.
+   - While Libraries are provided for both versions, compatibility between frameworks is not guaranteed in all cases. 
+    - The API and unit work for both platforms, the concern lies in jobs defined in one framework working in another.
+	  - This is primarily due to the differences between the way types are serialized between versions.
+	  - Most normal .NET types *should* be forward compatible. i.e. framework defined jobs using normal things like strings and dictionaries.
    - We will try to write unit tests around compatibility if possible.
 
  - Queue Insertion:

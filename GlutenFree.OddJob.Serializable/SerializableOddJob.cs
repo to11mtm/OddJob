@@ -3,23 +3,20 @@ using System.Linq;
 
 namespace GlutenFree.OddJob.Serializable
 {
+    /// <summary>
+    /// A Job Definition in a Serializable format.
+    /// Type information is stored in Assembly qualified Name format.
+    /// Parameter Data is stored as JSON.
+    /// Other data is stored in standard .NET types (GUID,string, etc.)
+    /// </summary>
     public class SerializableOddJob
     {
+        
+
         public SerializableOddJob()
         {
+            
 
-        }
-        public SerializableOddJob(OddJob job, RetryParameters retryParameters = null, DateTimeOffset? executionTime = null, string queueName = "default")
-        {
-            JobId = job.JobId;
-            MethodName = job.MethodName;
-            JobArgs = job.JobArgs.Select(a=> new OddJobSerializedParameter(a.Name,a.Value)).ToArray();
-            TypeExecutedOn = job.TypeExecutedOn.AssemblyQualifiedName;
-            Status = job.Status;
-            MethodGenericTypes = job.MethodGenericTypes.Select(q => q.AssemblyQualifiedName).ToArray();
-            RetryParameters = retryParameters ?? new RetryParameters();
-            ExecutionTime = executionTime;
-            QueueName = queueName;
         }
         public Guid JobId { get; set; }
         public OddJobSerializedParameter[] JobArgs { get; set; }

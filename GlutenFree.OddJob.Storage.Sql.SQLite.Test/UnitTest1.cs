@@ -23,7 +23,7 @@ namespace GlutenFree.OddJob.Storage.Sql.SQLite.Test
                 return () => new SQLiteJobQueueAdder(
                     new SQLiteJobQueueDataConnectionFactory(UnitTestTableHelper.connString)
                     ,
-                    new SqlDbJobQueueDefaultTableConfiguration());
+                    new DefaultJobAdderQueueTableResolver(new SqlDbJobQueueDefaultTableConfiguration()));
             }
         }
 
@@ -33,7 +33,7 @@ namespace GlutenFree.OddJob.Storage.Sql.SQLite.Test
             {
                 return () => new SQLiteJobQueueManager(
                     new SQLiteJobQueueDataConnectionFactory(UnitTestTableHelper.connString),
-                    new SqlDbJobQueueDefaultTableConfiguration());
+                    new SqlDbJobQueueDefaultTableConfiguration(),new NullOnMissingTypeJobTypeResolver());
             }
         }
 

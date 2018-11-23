@@ -9,9 +9,28 @@ namespace GlutenFree.OddJob.Serializable
     public static class SerializableJobCreator
     {
         public static SerializableOddJob CreateJobDefiniton<T>(Expression<Action<T>> jobExpression,
-            RetryParameters retryParameters = null, DateTimeOffset? executionTime = null, string queueName = "default")
+            RetryParameters retryParameters = null, DateTimeOffset? executionTime = null, string queueName = "default", ITypeNameSerializer typeNameSerializer=null)
         {
-            return new SerializableOddJob(JobCreator.Create(jobExpression), retryParameters, executionTime, queueName);
+            var job = JobCreator.Create(jobExpression);
+            var mySer = typeNameSerializer ?? new UnversionedTypeSerializer();
+            return new SerializableOddJob()
+            {
+                JobId = job.JobId,
+                MethodName = job.MethodName,
+                JobArgs = job.JobArgs.Select(a => new OddJobSerializedParameter()
+                {
+                    Name = a.Name,
+                    Value = Newtonsoft.Json.JsonConvert.SerializeObject(a.Value),
+                    TypeName = mySer.GetTypeName(a.Value.GetType())
+                }).ToArray(),
+                TypeExecutedOn = mySer.GetTypeName(job.TypeExecutedOn),
+                Status = job.Status,
+                MethodGenericTypes = job.MethodGenericTypes.Select(q => mySer.GetTypeName(q)).ToArray(),
+                RetryParameters = retryParameters ?? new RetryParameters(),
+                ExecutionTime = executionTime,
+                QueueName = queueName
+
+            };
         }
 
         public static IOddJobWithMetadata GetExecutableJobDefinition(SerializableOddJob jobData, IJobTypeResolver jobTypeResolver=null)

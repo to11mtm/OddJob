@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.Collections.Generic;
+using System.Data;
 using System.Data.SQLite;
 using System.Runtime.CompilerServices;
 using GlutenFree.OddJob.Storage.Sql.SQLite;
@@ -20,7 +21,7 @@ namespace GlutenFree.OddJob.Samples.Serialized.CommandAggregator
             heldConnection = new SQLiteConnection(connString);
         }
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public static void EnsureTablesExist()
+        public static void EnsureTablesExist(IEnumerable<ISqlDbJobQueueTableConfiguration> configs)
         {
             if (TablesCreated)
             {
@@ -32,47 +33,59 @@ namespace GlutenFree.OddJob.Samples.Serialized.CommandAggregator
                 heldConnection.Open();
             }
 
-            using (var db = new SQLiteConnection(connString))
+            foreach (var tableConfiguration in configs)
             {
-                db.Open();
-                using (var cmd = db.CreateCommand())
+                using (var db = new SQLiteConnection(connString))
                 {
-                    cmd.CommandText = string.Format(@"DROP TABLE IF EXISTS {0}; ", SqlDbJobQueueDefaultTableConfiguration.DefaultQueueTableName);
-                    cmd.ExecuteNonQuery();
-                }
+                    db.Open();
+                    using (var cmd = db.CreateCommand())
+                    {
+                        cmd.CommandText = string.Format(@"DROP TABLE IF EXISTS {0}; ", tableConfiguration.QueueTableName);
+                        cmd.ExecuteNonQuery();
+                    }
 
-                using (var cmd = db.CreateCommand())
-                {
-                    cmd.CommandText = string.Format(@"DROP TABLE IF EXISTS {0}; ", SqlDbJobQueueDefaultTableConfiguration.DefaultQueueParamTableName);
-                    cmd.ExecuteNonQuery();
-                }
+                    using (var cmd = db.CreateCommand())
+                    {
+                        cmd.CommandText = string.Format(@"DROP TABLE IF EXISTS {0}; ", tableConfiguration.ParamTableName);
+                        cmd.ExecuteNonQuery();
+                    }
 
-                using (var cmd = db.CreateCommand())
-                {
-                    cmd.CommandText = string.Format(@"DROP TABLE IF EXISTS {0}; ",
-                        SqlDbJobQueueDefaultTableConfiguration.DefaultJobMethodGenericParamTableName);
-                }
-                using (var cmd = db.CreateCommand())
-                {
-                    cmd.CommandText = SQLiteDbJobTableHelper.JobQueueParamTableCreateScript(
-                        new SqlDbJobQueueDefaultTableConfiguration());
-                    cmd.ExecuteNonQuery();
-                }
-                using (var cmd = db.CreateCommand())
-                {
-                    cmd.CommandText = SQLiteDbJobTableHelper.JobTableCreateScript(
-                        new SqlDbJobQueueDefaultTableConfiguration());
-                    cmd.ExecuteNonQuery();
-                }
+                    using (var cmd = db.CreateCommand())
+                    {
+                        cmd.CommandText = string.Format(@"DROP TABLE IF EXISTS {0}; ",
+                            tableConfiguration.JobMethodGenericParamTableName);
+                    }
+                    using (var cmd = db.CreateCommand())
+                    {
+                        cmd.CommandText = SQLiteDbJobTableHelper.JobQueueParamTableCreateScript(
+                            tableConfiguration);
+                        cmd.ExecuteNonQuery();
+                    }
+                    using (var cmd = db.CreateCommand())
+                    {
+                        cmd.CommandText = SQLiteDbJobTableHelper.JobTableCreateScript(
+                            tableConfiguration);
+                        cmd.ExecuteNonQuery();
+                    }
 
-                using (var cmd = db.CreateCommand())
-                {
-                    cmd.CommandText =
-                        SQLiteDbJobTableHelper.JobQueueJobMethodGenericParamTableCreateScript(
-                            new SqlDbJobQueueDefaultTableConfiguration());
-                    cmd.ExecuteNonQuery();
+                    using (var cmd = db.CreateCommand())
+                    {
+                        cmd.CommandText =
+                            SQLiteDbJobTableHelper.JobQueueJobMethodGenericParamTableCreateScript(
+                                tableConfiguration);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    using (var cmd = db.CreateCommand())
+                    {
+                        cmd.CommandText =
+                            SQLiteDbJobTableHelper.SuggestedIndexes(tableConfiguration);
+                        cmd.ExecuteNonQuery();
+                    }
+
                 }
             }
+            
 
             TablesCreated = true;
 
