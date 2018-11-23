@@ -8,6 +8,18 @@ namespace GlutenFree.OddJob.Serializable
 {
     public static class SerializableJobCreator
     {
+        /// <summary>
+        /// Creates a Serialized Job Definition.
+        /// Complex Parameters are stored as JSON strings,
+        /// And Type Information is stored in a nonversioned format by default.
+        /// </summary>
+        /// <typeparam name="T">The type of the job to execute.</typeparam>
+        /// <param name="jobExpression">The job Expression</param>
+        /// <param name="retryParameters">The retry parameters to use, if any.</param>
+        /// <param name="executionTime">A time to schedule; use this to schedule jobs in future</param>
+        /// <param name="queueName">The Queue to resolve</param>
+        /// <param name="typeNameSerializer">To change the default behavior (nonversioned types) specify a different <see cref="ITypeNameSerializer"/> here.</param>
+        /// <returns>A wire-safe Serializable job definition.</returns>
         public static SerializableOddJob CreateJobDefiniton<T>(Expression<Action<T>> jobExpression,
             RetryParameters retryParameters = null, DateTimeOffset? executionTime = null, string queueName = "default", ITypeNameSerializer typeNameSerializer=null)
         {
