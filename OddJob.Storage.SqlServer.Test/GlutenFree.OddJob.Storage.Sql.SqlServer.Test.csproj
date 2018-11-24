@@ -6,9 +6,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
     
-  <PropertyGroup>
-   <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-</PropertyGroup> 
+   
 
 
   <ItemGroup>
@@ -31,6 +29,11 @@
     <Reference Include="linq2db">
       <HintPath>..\packages\linq2db.2.2.0\lib\net45\linq2db.dll</HintPath>
     </Reference>
+  </ItemGroup> 
+
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
 
 </Project>

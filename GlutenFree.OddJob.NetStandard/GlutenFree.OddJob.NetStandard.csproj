@@ -5,9 +5,7 @@
     <AssemblyName>GlutenFree.OddJob</AssemblyName>
     <RootNamespace>GlutenFree.OddJob</RootNamespace>
   </PropertyGroup>
-<PropertyGroup>
-   <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-</PropertyGroup> 
+ 
   <ItemGroup>
     <Compile Include="..\OddJob\**\*.cs" />
   </ItemGroup>

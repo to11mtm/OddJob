@@ -60,9 +60,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GlutenFree.OddJob.Execution
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GlutenFree.OddJob.Serializable", "GlutenFree.OddJob.Serializable\GlutenFree.OddJob.Serializable.csproj", "{31542FC2-91FF-46D7-B779-75FE0BC6D694}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Serializable.Tests", "GlutenFree.OddJob.Serializable.Tests\GlutenFree.OddJob.Serializable.Tests.csproj", "{E19C0B99-011B-49F3-B7DC-C3BC7D3EF4FF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GlutenFree.OddJob.Serializable.Tests", "GlutenFree.OddJob.Serializable.Tests\GlutenFree.OddJob.Serializable.Tests.csproj", "{E19C0B99-011B-49F3-B7DC-C3BC7D3EF4FF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Samples.Serialized.CommandAggregator", "GlutenFree.OddJob.Samples.Serialized.CommandAggregator\GlutenFree.OddJob.Samples.Serialized.CommandAggregator.csproj", "{501CD55E-49FF-47BD-B355-19EEE25FD110}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GlutenFree.OddJob.Samples.Serialized.CommandAggregator", "GlutenFree.OddJob.Samples.Serialized.CommandAggregator\GlutenFree.OddJob.Samples.Serialized.CommandAggregator.csproj", "{501CD55E-49FF-47BD-B355-19EEE25FD110}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

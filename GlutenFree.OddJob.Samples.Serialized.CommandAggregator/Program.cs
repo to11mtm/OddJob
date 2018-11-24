@@ -33,8 +33,8 @@ namespace GlutenFree.OddJob.Samples.Serialized.CommandAggregator
             WriteInstructions();
             /*
              * Execution Engine:
-             * Normally this would be it's own process, separate from your WebAPI or Akka or MQ Layer.
-             * For ease of demonstration, this is rolled up into a single program.
+             * Normally each of these would be it's own process, separate from your WebAPI or Akka or MQ Layer.
+             * For ease of demonstration, this is rolled up into this single program.
              */
             consoleEngine = Service1.CreateAndStartEngine1();
 
@@ -59,8 +59,10 @@ namespace GlutenFree.OddJob.Samples.Serialized.CommandAggregator
             {
                 WriteInstructions();
             }
+            //Cleanly shut down worker engines when done.
             counterEngine.ShutDownQueue("counter");
             consoleEngine.ShutDownQueue("console");
+            //Cleanly terminate service layer.
             actorsystem.Terminate().RunSynchronously();
         }
 

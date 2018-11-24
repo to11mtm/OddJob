@@ -4,10 +4,10 @@
     <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
     <AssemblyName>GlutenFree.OddJob.Storage.Sql.Common</AssemblyName>
     <RootNamespace>GlutenFree.OddJob.Storage.Sql.Common</RootNamespace>
+    <Description>Oddjob Base SQL Storage Implementation for Storage and retrieval of jobs.</Description>
+    <PackageTags>job jobs jobscheduler scheduler oddjob task future later sql sqlcommon common</PackageTags>
   </PropertyGroup>
-<PropertyGroup>
-   <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-</PropertyGroup>
+
 <ItemGroup>
   <PackageReference Include="linq2db" Version="2.2.0" />
   <PackageReference Include="Newtonsoft.Json" Version="6.0.3" />
@@ -15,5 +15,8 @@
 <ItemGroup>
   <ProjectReference Include="..\GlutenFree.OddJob.Serializable\GlutenFree.OddJob.Serializable.csproj" />
   <ProjectReference Include="..\OddJob\GlutenFree.OddJob.csproj" />
+</ItemGroup>
+<ItemGroup>
+  <Folder Include="Properties\" />
 </ItemGroup> 
 </Project>

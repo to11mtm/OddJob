@@ -15,9 +15,11 @@
   <ItemGroup>
     <ProjectReference Include="..\OddJob\GlutenFree.OddJob.csproj" />
   </ItemGroup>
-<PropertyGroup>
-   <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-</PropertyGroup> 
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+ 
 
 
 </Project>

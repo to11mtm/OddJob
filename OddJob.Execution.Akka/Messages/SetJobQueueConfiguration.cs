@@ -12,9 +12,10 @@ namespace GlutenFree.OddJob.Execution.Akka.Messages
         public int FirstPulseDelayInSeconds { get; protected set; }
         public Props WorkerProps { get; protected set; }
         public Props QueueProps { get; protected set; }
+        public bool AggressiveSweep { get; protected set; }
         public Expression<Func<JobLockData, object>> PriorityExpression { get; protected set; }
         public SetJobQueueConfiguration(Props workerProps, Props queueProps, string queueName, int numWorkers,
-            int pulseDelayInSeconds, int firstPulseDelayInSeconds = 5, Expression<Func<JobLockData, object>> priorityExpression = null)
+            int pulseDelayInSeconds, int firstPulseDelayInSeconds = 5, Expression<Func<JobLockData, object>> priorityExpression = null, bool aggressiveSweep=false)
         {
             QueueName = queueName;
             NumWorkers = numWorkers;
@@ -23,6 +24,7 @@ namespace GlutenFree.OddJob.Execution.Akka.Messages
             WorkerProps = workerProps;
             QueueProps = queueProps;
             PriorityExpression = priorityExpression ?? ((JobLockData p)=> p.MostRecentDate);
+            AggressiveSweep = aggressiveSweep;
         }
     }
 }

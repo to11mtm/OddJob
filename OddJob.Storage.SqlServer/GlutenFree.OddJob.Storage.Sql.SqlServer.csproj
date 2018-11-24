@@ -7,9 +7,14 @@
    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
    <AssemblyName>GlutenFree.OddJob.Storage.Sql.SqlServer</AssemblyName>
    <RootNamespace>GlutenFree.OddJob.Storage.Sql.SqlServer</RootNamespace>
+    <Description>SQLServer OddJob Storage implementation.</Description>
+    <PackageTags>job jobs jobscheduler scheduler oddjob task future later sql server sqlserver</PackageTags>
 </PropertyGroup> 
       <ItemGroup>
         <ProjectReference Include="..\OddJob.Storage.Sql.Common\GlutenFree.OddJob.Storage.Sql.Common.csproj" />
+      </ItemGroup> 
+      <ItemGroup>
+        <Folder Include="Properties\" />
       </ItemGroup>
 
 </Project>

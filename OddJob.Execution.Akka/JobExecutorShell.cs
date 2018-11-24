@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -16,8 +17,8 @@ namespace GlutenFree.OddJob.Execution.Akka
     {
         protected ActorSystem _actorSystem { get; private set; }
         
-        internal  Dictionary<string, IActorRef> coordinatorPool = new Dictionary<string, IActorRef>();
-        internal  Dictionary<string, ICancelable> cancelPulsePool = new Dictionary<string, ICancelable>();
+        protected internal Dictionary<string, IActorRef> coordinatorPool = new Dictionary<string, IActorRef>();
+        protected Dictionary<string, ICancelable> cancelPulsePool = new Dictionary<string, ICancelable>();
         string mailboxString
         {
             get
@@ -69,7 +70,8 @@ namespace GlutenFree.OddJob.Execution.Akka
         /// <param name="pulseDelayInSeconds">The Delay in seconds between 'pulses'.</param>
         /// <param name="firstPulseDelayInSeconds">The time to wait before the first pulse delay. Default is 5. Can use any value greater than 0</param>
         /// <param name="priorityExpresssion">An expression to use for setting retrieval priority. Default is most recent Attempt/Creation</param>
-        public void StartJobQueue(string queueName, int numWorkers, int pulseDelayInSeconds, int firstPulseDelayInSeconds = 5, Expression<Func<JobLockData,object>> priorityExpresssion = null)
+        /// <param name="aggressiveSweep">If true, when queues are saturated, a silent 'resweep' will be repeatedly sent for each saturated pulse, until the saturation condition has ended. These repeated attempts will not trigger the 'OnJobQueueSaturated' method or further increment the counters.</param>
+        public void StartJobQueue(string queueName, int numWorkers, int pulseDelayInSeconds, int firstPulseDelayInSeconds = 5, Expression<Func<JobLockData,object>> priorityExpresssion = null, bool aggressiveSweep = false)
         {
             if (coordinatorPool.ContainsKey(queueName) == false)
             {
@@ -84,7 +86,7 @@ namespace GlutenFree.OddJob.Execution.Akka
                     queueName);
                 var result = jobCoordinator.Ask(new SetJobQueueConfiguration(WorkerProps, JobQueueProps, queueName,
                             numWorkers,
-                            pulseDelayInSeconds, firstPulseDelayInSeconds, priExpr),
+                            pulseDelayInSeconds, firstPulseDelayInSeconds, priExpr, aggressiveSweep),
                         TimeSpan.FromSeconds(10))
                     .Result;
                 if (result is Configured)
@@ -104,6 +106,34 @@ namespace GlutenFree.OddJob.Execution.Akka
             }
         }
 
+        /// <summary>
+        /// This allows for an extension point on your Coordinator, to perhaps set special configurations if needed after start,
+        /// or for creating advanced pipeline scenarios.
+        /// </summary>
+        /// <param name="queueName">The name of the queue that is about to start.</param>
+        /// <param name="coordinatorRef">A Thread-safe <see cref="IActorRef"/>that can be used to communicate with a custom coordinator.</param>
+        /// <remarks>This may be useful for some special scenarios where you wish to set configurations before anything else is configured.</remarks>
+        protected virtual void BeforeQueueStart(string queueName, IActorRef coordinatorRef)
+        {
+
+        }
+
+        /// <summary>
+        /// This allows for an extension point on your Coordinator, to perhaps set special configurations if needed after start,
+        /// or for creating advanced pipeline scenarios.
+        /// </summary>
+        /// <param name="queueName">The name of the queue that has been started.</param>
+        /// <param name="coordinatorRef">A Thread-safe <see cref="IActorRef"/>that can be used to communicate with a custom coordinator.</param>
+        /// <param name="cancelToken">A Cancellation token for the initial worker</param>
+        /// <remarks>
+        /// This can be useful for highly-responsive scenarios. Consider where a SQL Server queue or RabbitMQ could be set to wait for messages,
+        /// then telling the coordinator to sweep immediately. This can greatly simplify the complexities of working with such a bus.
+        /// </remarks>
+        protected virtual void OnQueueStart(string queueName, IActorRef coordinatorRef, ICancelable cancelToken)
+        {
+
+        }
+
         protected abstract Props WorkerProps { get; }
         protected abstract Props JobQueueProps { get; }
         protected abstract Props CoordinatorProps { get; }
@@ -116,10 +146,21 @@ namespace GlutenFree.OddJob.Execution.Akka
         {
             try
             {
-                cancelPulsePool[queueName].Cancel();
-                var result =
-                    coordinatorPool[queueName].Ask(new ShutDownQueues(), TimeSpan.FromSeconds(timeoutInSeconds))
-                        .Result as QueueShutDown;
+                if (cancelPulsePool.ContainsKey(queueName))
+                {
+                    if (cancelPulsePool[queueName].IsCancellationRequested == false)
+                    {
+                        cancelPulsePool[queueName].Cancel();
+                    }
+                }
+
+                if (coordinatorPool.ContainsKey(queueName))
+                {
+                    var result =
+                        coordinatorPool[queueName].Ask(new ShutDownQueues(), TimeSpan.FromSeconds(timeoutInSeconds))
+                            .Result as QueueShutDown;
+                }
+                
                 coordinatorPool[queueName].Tell(PoisonPill.Instance);
             }
             finally

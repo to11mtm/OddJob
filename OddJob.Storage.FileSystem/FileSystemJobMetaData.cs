@@ -21,7 +21,8 @@ namespace GlutenFree.OddJob.Storage.FileSystem
         public DateTime QueueTime { get; internal set; }
         public DateTime FailureTime { get; internal set; }
         public DateTime LastAttemptTime { get; internal set; }
-
+        public DateTimeOffset? ExecutionTime { get; set; }
+        public string Queue { get; set; }
         IRetryParameters IOddJobWithMetadata.RetryParameters
         {
             get

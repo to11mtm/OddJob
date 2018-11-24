@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Data;
 using System.Data.SQLite;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Akka.Actor;
 using Akka.Routing;
 using Akka.TestKit.Xunit2;
@@ -116,6 +118,25 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             }
         }
     }
+
+    public class CountingOnJobQueueSaturatedCoordinator : JobQueueCoordinator
+    {
+        public static ConcurrentDictionary<string,int> pulseCount = new ConcurrentDictionary<string, int>();
+        protected override void OnJobQueueSaturated(DateTime saturationTime, int saturationMissedPulseCount, long queueLifeSaturationPulseCount)
+        {
+            pulseCount.AddOrUpdate(QueueName, (qn) => 1, (qn, i) => i + 1);
+        }
+    }
+
+    public class DelayJob
+    {
+        public static ConcurrentDictionary<string,int> MsgCounter = new ConcurrentDictionary<string, int>();
+        public void DoDelay(string msg)
+        {
+            MsgCounter.AddOrUpdate(msg, (m) => 1, (m, i) => i + 1);
+            SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(1));
+        }
+    }
     public class JobCoordinatorTests : AkkaExecutionTest
     {
         [Fact]
@@ -131,6 +152,56 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             coordinator.Tell(new ShutDownQueues());
             ExpectMsgFrom<QueueShutDown>(coordinator);
 
+        }
+
+        [Fact]
+        public void JobCoordinator_Will_Not_Fire_OnJobQueueSaturation_For_AggressiveSweep()
+        {
+            //TODO: Make this less like an integration test; there's no reason we couldn't mock this out with just testprobe.
+            var workerCount = 1;
+            var jobAdder = GetJobQueueAdder;
+            var executor = new DefaultJobExecutor(new DefaultContainerFactory());
+            var probe = CreateTestProbe("queue");
+            var queueLayerProps = Props.Create(() => new JobQueueLayerActor(GetJobQueueManager));
+            var workerProps = Props.Create(() => new JobWorkerActor(executor)).WithRouter(new RoundRobinPool(workerCount));
+            var coordinator = Sys.ActorOf(Props.Create(() => new CountingOnJobQueueSaturatedCoordinator()));
+            jobAdder.AddJob((DelayJob j) => j.DoDelay("ar-1"), queueName: "test");
+            jobAdder.AddJob((DelayJob j) => j.DoDelay("ar-2"), queueName: "test");
+            jobAdder.AddJob((DelayJob j) => j.DoDelay("ar-3"), queueName: "test");
+            coordinator.Tell(new SetJobQueueConfiguration(workerProps, queueLayerProps, "test", 1, 1, 1, aggressiveSweep:true));
+            coordinator.Tell(new JobSweep());
+            coordinator.Tell(new JobSweep());
+            coordinator.Tell(new JobSweep());
+            SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(5));
+            Xunit.Assert.Equal(2, CountingOnJobQueueSaturatedCoordinator.pulseCount["test"]);
+            Xunit.Assert.True(DelayJob.MsgCounter.ContainsKey("ar-1"));
+            Xunit.Assert.True(DelayJob.MsgCounter.ContainsKey("ar-2"));
+            Xunit.Assert.True(DelayJob.MsgCounter.ContainsKey("ar-3"));
+        }
+
+        [Fact]
+        public void JobCoordinator_Will_Fire_OnJobQueueSaturation()
+        {
+            //TODO: Make this less like an integration test; there's no reason we couldn't mock this out with just testprobe.
+            var workerCount = 1;
+            var jobAdder = GetJobQueueAdder;
+            var executor = new DefaultJobExecutor(new DefaultContainerFactory());
+            var probe = CreateTestProbe("queue");
+            var queueLayerProps = Props.Create(() => new JobQueueLayerActor(GetJobQueueManager));
+            var workerProps = Props.Create(() => new JobWorkerActor(executor)).WithRouter(new RoundRobinPool(workerCount));
+            var coordinator = Sys.ActorOf(Props.Create(() => new CountingOnJobQueueSaturatedCoordinator()));
+            jobAdder.AddJob((DelayJob j) => j.DoDelay("qs-1"), queueName:"test");
+            jobAdder.AddJob((DelayJob j) => j.DoDelay("qs-2"),queueName:"test");
+            jobAdder.AddJob((DelayJob j) => j.DoDelay("qs-3"),queueName:"test");
+            coordinator.Tell(new SetJobQueueConfiguration(workerProps, queueLayerProps, "test", 1, 1, 1));
+            coordinator.Tell(new JobSweep());
+            coordinator.Tell(new JobSweep());
+            coordinator.Tell(new JobSweep());
+            SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(2));
+            Xunit.Assert.Equal(2,CountingOnJobQueueSaturatedCoordinator.pulseCount["test"]);
+            Xunit.Assert.True(DelayJob.MsgCounter.ContainsKey("qs-1"));
+            Xunit.Assert.True(DelayJob.MsgCounter.ContainsKey("qs-2"));
+            Xunit.Assert.False(DelayJob.MsgCounter.ContainsKey("qs-3"));
         }
 
         [Fact]

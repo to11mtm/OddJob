@@ -6,6 +6,8 @@
       <PropertyGroup>
    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
    <AssemblyName>GlutenFree.OddJob.Storage.Sql.SQLite</AssemblyName>
+   <Description>SQLite OddJob Storage implementation.</Description>
+   <PackageTags>job jobs jobscheduler scheduler oddjob task future later sql sqlite</PackageTags>
 </PropertyGroup>
       <ItemGroup>
         <ProjectReference Include="..\OddJob.Storage.SQL.Common\GlutenFree.OddJob.Storage.Sql.Common.csproj" />
