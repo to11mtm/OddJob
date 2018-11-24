@@ -9,7 +9,7 @@ namespace GlutenFree.OddJob.Samples.Serialized.CommandAggregator
 {
     public static class SampleTableHelper
     {
-        internal static readonly string connString = "FullUri=file::memory:?cache=shared";
+        internal static readonly string connString = "FullURI=file:data.db?cache=shared"; //"FullUri=file::memory:?cache=shared";
         /// <summary>
         /// This is here because SQLite will only hold In-memory DBs as long as ONE connection is open. so we just open one here and keep it around for appdomain life.
         /// </summary>
@@ -20,6 +20,9 @@ namespace GlutenFree.OddJob.Samples.Serialized.CommandAggregator
         {
             heldConnection = new SQLiteConnection(connString);
         }
+
+        //We only want this to execute once for the sample.
+        //You would want to get rid of the DROPs in a real world scenario, and instead check that you aren't breaking anything.
         [MethodImpl(MethodImplOptions.Synchronized)]
         public static void EnsureTablesExist(IEnumerable<ISqlDbJobQueueTableConfiguration> configs)
         {

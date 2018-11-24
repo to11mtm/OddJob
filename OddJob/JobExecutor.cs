@@ -32,6 +32,7 @@ namespace GlutenFree.OddJob
             if (expr.MethodGenericTypes != null && expr.MethodGenericTypes.Length > 0)
             {
                 method = expr.TypeExecutedOn.GetMethods().Where(q =>
+                        q.Name==expr.MethodName &&
                         q.IsGenericMethod && q.GetGenericArguments().Length == expr.MethodGenericTypes.Length &&
                         q.GetParameters().Length == expr.JobArgs.Length)
                     .FirstOrDefault().MakeGenericMethod(expr.MethodGenericTypes);

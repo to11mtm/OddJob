@@ -58,6 +58,7 @@ ParamTypeName text not null
             return string.Format(@"
 create index {2}_jobguid_idx on {2}(JobGuid);
 create index {1}_jobguid_idx on {1}(JobGuid);
+create unique  index {0}_jobguid_idx on {0}(JobGuid);
 ", config.QueueTableName, config.ParamTableName, config.JobMethodGenericParamTableName);
         }
     }
