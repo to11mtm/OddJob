@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GlutenFree.OddJob.Storage.SQL.Common
+namespace GlutenFree.OddJob.Serializable
 {
     public interface IJobTypeResolver
     {

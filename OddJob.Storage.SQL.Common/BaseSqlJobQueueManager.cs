@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using GlutenFree.OddJob.Interfaces;
+using GlutenFree.OddJob.Serializable;
 using GlutenFree.OddJob.Storage.Sql.Common;
 using GlutenFree.OddJob.Storage.Sql.Common.DbDtos;
 using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
@@ -250,10 +251,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 
                 var resultSet = ExecuteJoinQuery(jobWithParamQuery, conn).ToList();
 
-                Debug.WriteLine(_jobQueueTableConfiguration.QueueTableName);
-                Debug.WriteLine(_jobQueueTableConfiguration.ParamTableName);
-                Debug.WriteLine(_jobQueueTableConfiguration.JobMethodGenericParamTableName);
-                Debug.WriteLine(updateWhere.ToString());
+                
                 return resultSet;
 
             }
@@ -329,7 +327,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                             .Select(q=>q.ParamData).Where(s => s.SerializedType != null).GroupBy(q=>q.ParamOrdinal)
                             .Select(s => new OddJobParameter() { Name = s.FirstOrDefault().ParameterName, Value = 
                                 Newtonsoft.Json.JsonConvert.DeserializeObject(s.FirstOrDefault().SerializedValue,
-                                    Type.GetType(s.FirstOrDefault().SerializedType, false))}).ToArray(),
+                                    Type.GetType(TargetPlatformHelpers.ReplaceCoreTypes(s.FirstOrDefault().SerializedType), false))}).ToArray(),
                         RetryParameters = new RetryParameters(group.First().MetaData.MaxRetries,
                             TimeSpan.FromSeconds(group.First().MetaData.MinRetryWait),
                             group.First().MetaData.RetryCount, group.First().MetaData.LastAttempt),

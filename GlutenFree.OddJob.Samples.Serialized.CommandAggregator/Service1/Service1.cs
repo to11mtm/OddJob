@@ -1,4 +1,5 @@
 ﻿using GlutenFree.OddJob.Execution.Akka;
+using GlutenFree.OddJob.Serializable;
 using GlutenFree.OddJob.Storage.SQL.Common;
 using GlutenFree.OddJob.Storage.SQL.SQLite;
 

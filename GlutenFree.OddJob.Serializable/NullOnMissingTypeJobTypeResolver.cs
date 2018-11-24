@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GlutenFree.OddJob.Storage.SQL.Common
+namespace GlutenFree.OddJob.Serializable
 {
     public class NullOnMissingTypeJobTypeResolver : IJobTypeResolver
     {
@@ -8,7 +8,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
         {
             try
             {
-                return  Type.GetType(assemblyQualifiedTypeName);
+                return  Type.GetType(TargetPlatformHelpers.ReplaceCoreTypes(assemblyQualifiedTypeName));
             }
             catch (Exception)
             {

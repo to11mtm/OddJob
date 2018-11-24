@@ -2,6 +2,7 @@
 using System.IO;
 using System.Reflection;
 using GlutenFree.OddJob.Interfaces;
+using GlutenFree.OddJob.Serializable;
 using GlutenFree.OddJob.Storage.BaseTests;
 using GlutenFree.OddJob.Storage.SQL.Common;
 using LinqToDB;

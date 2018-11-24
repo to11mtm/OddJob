@@ -57,7 +57,7 @@ namespace GlutenFree.OddJob.Execution.Akka
 
             var hocon = CustomHoconString + Environment.NewLine + 
                         mailboxString + Environment.NewLine + loggerConfigString;
-            _actorSystem = ActorSystem.Create("Oddjob-Akka", ConfigurationFactory.ParseString(hocon));
+            _actorSystem = ActorSystem.Create("Oddjob-Akka-"+ Guid.NewGuid(), ConfigurationFactory.ParseString(hocon));
             
         }
 

@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Linq.Expressions;
 using GlutenFree.OddJob.Interfaces;
-using GlutenFree.OddJob.Storage.SQL.Common;
 
 namespace GlutenFree.OddJob.Serializable
 {

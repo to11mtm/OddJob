@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using GlutenFree.OddJob.Interfaces;
+using GlutenFree.OddJob.Serializable;
 using GlutenFree.OddJob.Storage.SQL.Common;
 using LinqToDB.DataProvider.SqlServer;
 using OddJob.Storage.Sql.SqlServer.Test;

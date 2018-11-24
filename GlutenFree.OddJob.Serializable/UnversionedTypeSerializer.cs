@@ -10,11 +10,14 @@ namespace GlutenFree.OddJob.Serializable
             if (type != null)
             {
                 var str = _assemblyRegex.Replace(type.AssemblyQualifiedName, "");
-                return str;
+                var str2 = str.Replace(TargetPlatformHelpers.GetCoreAssemblyName(), TargetPlatformHelpers.coreLibString);
+                return str2;
             }
 
             return "";
         }
+
+
         //(\[[^,]*?,\s*[^,]*?)(,[^\]]*?)(\])(\],[^,]*)
         //(\[[^,]*?,\s*[^,]*?)(,[^\]]*?)(\])
         internal static Regex _assemblyRegex = new Regex(@"(\,\s*Version\=\S*\sCulture\S*,\sPublicKeyToken=[A-Za-z0-9_]*)", RegexOptions.Compiled);
