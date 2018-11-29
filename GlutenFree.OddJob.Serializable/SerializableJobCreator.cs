@@ -19,7 +19,7 @@ namespace GlutenFree.OddJob.Serializable
         /// <param name="queueName">The Queue to resolve</param>
         /// <param name="typeNameSerializer">To change the default behavior (nonversioned types) specify a different <see cref="ITypeNameSerializer"/> here.</param>
         /// <returns>A wire-safe Serializable job definition.</returns>
-        public static SerializableOddJob CreateJobDefiniton<T>(Expression<Action<T>> jobExpression,
+        public static SerializableOddJob CreateJobDefinition<T>(Expression<Action<T>> jobExpression,
             RetryParameters retryParameters = null, DateTimeOffset? executionTime = null, string queueName = "default", ITypeNameSerializer typeNameSerializer=null)
         {
             var job = JobCreator.Create(jobExpression);

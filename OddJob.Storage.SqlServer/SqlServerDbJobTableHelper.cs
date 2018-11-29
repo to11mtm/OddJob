@@ -32,7 +32,7 @@ CreatedDate datetime not null)
             return string.Format(@"
 Create table {0}
 (
-JobParamId bigint not null identity(1,1) primary key,
+Id bigint not null identity(1,1) primary key,
 JobGuid uniqueidentifier not null, 
 ParamOrdinal int not null,
 SerializedValue nvarchar(max) null,

@@ -62,7 +62,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                 .Value(q => q.CreatedDate, DateTime.Now)
                 .Value(q => q.MaxRetries, (jobData.RetryParameters == null ? 0 : (int?) jobData.RetryParameters.MaxRetries))
                 .Value(q => q.MinRetryWait,
-                    jobData.RetryParameters == null ? 0 : (double?) jobData.RetryParameters.MinRetryWait.TotalSeconds)
+                    jobData.RetryParameters == null ? 0 : (int?) jobData.RetryParameters.MinRetryWait.TotalSeconds)
                 .Value(q => q.RetryCount, 0);
             var insertedId = insertedIdExpr.InsertWithInt64Identity();
 
@@ -99,7 +99,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
         {
             using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
             {
-                var ser = SerializableJobCreator.CreateJobDefiniton(jobExpression, retryParameters, executionTime,queueName);
+                var ser = SerializableJobCreator.CreateJobDefinition(jobExpression, retryParameters, executionTime,queueName);
                 AddJob(ser);
                 return ser.JobId;
             }

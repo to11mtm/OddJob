@@ -14,7 +14,7 @@ namespace GlutenFree.OddJob.Samples.Serialized.CommandAggregator
             {
                 var msg = (MyInProcessCommand)message;
                 Context.Sender.Tell(new MyInProcessCommand(msg.Counter, msg.ResultingCommands.WithItem(
-                    SerializableJobCreator.CreateJobDefiniton((IService2Contract c) =>
+                    SerializableJobCreator.CreateJobDefinition((IService2Contract c) =>
                             c.WriteCounter<MyParam<string, string>>(
                                 new MyParam<string, string> {Param = "genericParam"}),
                         queueName: "counter"))));
