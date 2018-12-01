@@ -5,6 +5,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common.DbDtos
 {
     public class SqlCommonDbOddJobMetaData
     {
+        [Identity]
         [PrimaryKey]
         public long Id { get; set; }
         public Guid JobGuid { get; set; }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using GlutenFree.OddJob.Interfaces;
@@ -16,7 +17,9 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
     {
         private readonly FluentMappingBuilder _mappingSchema;
         private readonly IJobAdderQueueTableResolver _tableResolver;
-        protected BaseSqlJobQueueAdder(IJobQueueDataConnectionFactory jobQueueDataConnectionFactory, IJobAdderQueueTableResolver tableResolver)
+
+        protected BaseSqlJobQueueAdder(IJobQueueDataConnectionFactory jobQueueDataConnectionFactory,
+            IJobAdderQueueTableResolver tableResolver)
         {
             _jobQueueConnectionFactory = jobQueueDataConnectionFactory;
 
@@ -24,8 +27,8 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
             _tableResolver = tableResolver;
         }
 
-        
-        
+
+
         private IJobQueueDataConnectionFactory _jobQueueConnectionFactory { get; set; }
 
 
@@ -35,7 +38,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
             {
                 foreach (var job in jobDatas)
                 {
-                    _addJobImpl(job,conn);
+                    _addJobImpl(job, conn);
                 }
             }
         }
@@ -49,9 +52,90 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 
         }
 
+        /*
+        public void AddJob_Idempotent(SerializableOddJob jobData, DataConnection conn)
+        {
+            var mergeSource1 = new[] {GetMetaDataForJob(jobData)};
+            var mergeSource2 = GetParamDataForJob(jobData);
+            var mergeSource3 = GetGenericDataForJob(jobData);
+            var table = _tableResolver.GetConfigurationForJob(jobData);
+            conn.GetTable<SqlCommonDbOddJobMetaData>().TableName(table.QueueTableName).Merge()
+                .Using(mergeSource1)
+                .On((q, s) => q.QueueName == s.QueueName && q.MethodName == s.MethodName &&
+                              q.TypeExecutedOn == s.TypeExecutedOn)
+                .InsertWhenNotMatched();
+            conn.GetTable<SqlCommonOddJobParamMetaData>().TableName(table.ParamTableName).Merge()
+                .Using(mergeSource2)
+                .On((q, s) => q.JobGuid == s.JobGuid && q.ParamOrdinal == s.ParamOrdinal)
+                .InsertWhenNotMatched();
+            conn.GetTable<SqlDbOddJobMethodGenericInfo>().TableName(table.JobMethodGenericParamTableName).Merge()
+                .Using(mergeSource3)
+                .On((q, s) => q.JobGuid == s.JobGuid && q.ParamOrder == s.ParamOrder)
+                .InsertWhenNotMatched();
+        }
+        */
+
+        public SqlCommonDbOddJobMetaData GetMetaDataForJob(SerializableOddJob jobData)
+        {
+            return new SqlCommonDbOddJobMetaData()
+            {
+                QueueName = jobData.QueueName,
+                TypeExecutedOn = jobData.TypeExecutedOn,
+                MethodName = jobData.MethodName,
+                DoNotExecuteBefore = jobData.ExecutionTime,
+                JobGuid = jobData.JobId,
+                Status = JobStates.Inserting,
+                CreatedDate = DateTime.Now,
+                MaxRetries = (jobData.RetryParameters == null ? 0 : (int) jobData.RetryParameters.MaxRetries),
+                MinRetryWait =
+                    jobData.RetryParameters == null ? 0 : (int) jobData.RetryParameters.MinRetryWait.TotalSeconds,
+                RetryCount = 0
+            };
+        }
+
+        public SqlCommonOddJobParamMetaData[] GetParamDataForJob(SerializableOddJob jobData)
+        {
+            return jobData.JobArgs.Select((q, i) => new SqlCommonOddJobParamMetaData()
+            {
+                JobGuid = jobData.JobId,
+                ParamOrdinal = i,
+                SerializedValue = q.Value,
+                SerializedType = q.TypeName,
+                ParameterName = q.Name
+            }).ToArray();
+
+        }
+
+        public SqlDbOddJobMethodGenericInfo[] GetGenericDataForJob(SerializableOddJob jobData)
+        {
+            return jobData.MethodGenericTypes.Select((q, i) => new SqlDbOddJobMethodGenericInfo()
+            {
+                JobGuid = jobData.JobId,
+                ParamOrder = i,
+                ParamTypeName = q
+            }).ToArray();
+
+        }
+
+
+        protected virtual BulkCopyOptions BulkOptions
+        {
+            get
+            {
+                return new BulkCopyOptions()
+                {
+                    KeepIdentity = false
+                };
+            }
+        }
+
         private void _addJobImpl(SerializableOddJob jobData, DataConnection conn)
         {
+
             var table = _tableResolver.GetConfigurationForJob(jobData);
+            //var jobMetaData = GetMetaDataForJob(jobData);
+            var paramData = GetParamDataForJob(jobData);
+            var jobGenParams = GetGenericDataForJob(jobData);
             var insertedIdExpr = conn.GetTable<SqlCommonDbOddJobMetaData>().TableName(table.QueueTableName)
                 .Value(q => q.QueueName, jobData.QueueName)
                 .Value(q => q.TypeExecutedOn, jobData.TypeExecutedOn)
@@ -66,28 +150,18 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                 .Value(q => q.RetryCount, 0);
             var insertedId = insertedIdExpr.InsertWithInt64Identity();
 
-
-            var toInsert = jobData.JobArgs.Select((val, index) => new {val, index}).ToList();
-            toInsert.ForEach(i =>
+            if (paramData.Length > 0)
             {
                 conn.GetTable<SqlCommonOddJobParamMetaData>().TableName(table.ParamTableName)
-                    .Value(q => q.JobGuid, jobData.JobId)
-                    .Value(q => q.ParamOrdinal, i.index)
-                    .Value(q => q.SerializedValue, i.val.Value)
-                    .Value(q => q.SerializedType, i.val.TypeName)
-                    .Value(q => q.ParameterName, i.val.Name)
-                    .Insert();
-            });
+                    .BulkCopy(BulkOptions, paramData);
+            }
 
-            var genMethodArgs = jobData.MethodGenericTypes.Select((val, index) => new {val, index}).ToList();
-            genMethodArgs.ForEach(i =>
+            if (jobGenParams.Length > 0)
             {
                 conn.GetTable<SqlDbOddJobMethodGenericInfo>().TableName(table.JobMethodGenericParamTableName)
-                    .Value(q => q.JobGuid, jobData.JobId)
-                    .Value(q => q.ParamOrder, i.index)
-                    .Value(q => q.ParamTypeName, i.val)
-                    .Insert();
-            });
+                    .BulkCopy(BulkOptions,jobGenParams);
+            }
+            
 
             conn.GetTable<SqlCommonDbOddJobMetaData>().TableName(table.QueueTableName).Where(q => q.Id == insertedId)
                 .Set(q => q.Status, JobStates.New)
