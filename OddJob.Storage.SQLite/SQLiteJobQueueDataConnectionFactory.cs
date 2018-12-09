@@ -1,4 +1,7 @@
-﻿using GlutenFree.OddJob.Storage.SQL.Common;
+﻿using System.Collections.Generic;
+using System.Linq.Expressions;
+using GlutenFree.Linq2Db.Helpers;
+using GlutenFree.OddJob.Storage.SQL.Common;
 using LinqToDB;
 using LinqToDB.Data;
 using LinqToDB.Mapping;
@@ -15,7 +18,7 @@ namespace GlutenFree.OddJob.Storage.SQL.SQLite
         }
         public DataConnection CreateDataConnection(MappingSchema mappingSchema)
         {
-            return new DataConnection(ProviderName.SQLiteClassic, _connectionString, mappingSchema);
+            return new ExpressionReplacingLinq2DbConnection(ProviderName.SQLiteClassic, _connectionString, mappingSchema,new List<ExpressionVisitor>());
         }
     }
 }

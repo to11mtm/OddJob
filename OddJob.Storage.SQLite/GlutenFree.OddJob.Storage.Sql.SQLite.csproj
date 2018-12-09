@@ -10,6 +10,7 @@
    <PackageTags>job jobs jobscheduler scheduler oddjob task future later sql sqlite</PackageTags>
 </PropertyGroup>
       <ItemGroup>
+        <ProjectReference Include="..\GlutenFree.Linq2Db.Helpers\GlutenFree.Linq2Db.Helpers.csproj" />
         <ProjectReference Include="..\OddJob.Storage.SQL.Common\GlutenFree.OddJob.Storage.Sql.Common.csproj" />
       </ItemGroup> 
 </Project>

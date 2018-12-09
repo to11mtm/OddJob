@@ -85,7 +85,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
             {
                 var criteriaQuery = QueueTable(conn).Where(criteria);
                 var resultSet = ExecuteJoinQuery(criteriaQuery, conn);
-                return resultSet;
+                return resultSet.ToList();
             }
 
         }

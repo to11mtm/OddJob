@@ -1,0 +1,37 @@
+﻿<!-- ClientLoad = Inline -->
+<!DOCTYPE html>
+<html lang="en">
+<body>
+    <div style="width: 400px">
+        <h1>My TODO list</h1>
+        <div id="search"></div>
+        <div style="display: none" ws-children-template="Main">
+            <ul class="list-unstyled" ws-hole="ListContainer">
+                <li ws-template="ListItem">
+                    <div class="checkbox">
+                        <label ws-attr="ShowDone">
+                            <!--<input type="checkbox" ws-var="Done" />-->
+                            ${Job}
+                            <!--<button class="btn btn-danger btn-xs pull-right" type="button" ws-onclick="Clear">X</button>-->
+                        </label>
+                    </div>
+                </li>
+            </ul>
+            <form onsubmit="return false">
+                <div class="form-group">
+                    <label>New task</label>
+                    <div class="input-group">
+                        <input class="form-control" ws-var="SearchQueueName" />
+                        <input class="form-control" ws-var="SearchMethodName" />
+                        <span class="input-group-btn">
+                            <button class="btn btn-primary" type="button" ws-onclick="Search">Search</button>
+                        </span>
+                    </div>
+                    <p class="help-block">You are going to add: ${NewTaskName}<span></span></p>
+                </div>
+                <button class="btn btn-default" type="button" ws-onclick="Clear">Clear Criteria</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
