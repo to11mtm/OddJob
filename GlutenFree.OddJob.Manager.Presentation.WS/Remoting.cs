@@ -16,8 +16,11 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
     [JavaScript]
     public class JobSearchCriteria
     {
+        public bool UseMethod;
+        public bool UseStatus;
         public string QueueName { get; set; }
         public string MethodName { get; set; }
+        public string Status { get; set; }
         public Guid? JobGuid { get; set; }
     }
 
@@ -54,14 +57,39 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
 
     public static class Remoting
     {
+
         [Remote]
-        public static Task<JobMetadataResult[]> SearchCriteria(string queueName, string methodName)
+        public static string[] GetQueueNameList()
+        {
+            var manager = new SQLiteJobQueueManager(new SQLiteJobQueueDataConnectionFactory(TempDevInfo.ConnString),
+                TempDevInfo.TableConfigurations["console"], new NullOnMissingTypeJobTypeResolver());
+            var result = manager.GetJobCriteriaValues(q => q.QueueName).ToArray();
+            return result;
+        }
+
+        [Remote]
+        public static Task<JobMetadataResult[]> SearchCriteria(JobSearchCriteria criteria )
         {
             var manager = new SQLiteJobQueueManager(new SQLiteJobQueueDataConnectionFactory(TempDevInfo.ConnString),
                 TempDevInfo.TableConfigurations["console"], new NullOnMissingTypeJobTypeResolver());
             Expression<Func<SqlCommonDbOddJobMetaData, bool>> expr = null;
-            expr = ExpressionHelpers.CombineBinaryExpression(expr,
-                (a) => a.MethodName.ToLower().Contains(methodName.ToLower()), false);
+            if (!string.IsNullOrWhiteSpace(criteria.QueueName))
+            {
+                expr = ExpressionHelpers.CombineBinaryExpression(expr,
+                    (a) => a.QueueName.ToLower().Contains(criteria.QueueName.ToLower()), false);
+            }
+
+            if (!string.IsNullOrWhiteSpace(criteria.MethodName) && criteria.UseMethod)
+            {
+                expr = ExpressionHelpers.CombineBinaryExpression(expr,
+                    (a) => a.MethodName.ToLower().Contains(criteria.MethodName.ToLower()), false);
+            }
+            if (!string.IsNullOrWhiteSpace(criteria.Status) && criteria.UseStatus)
+            {
+                expr = ExpressionHelpers.CombineBinaryExpression(expr,
+                    (a) => a.Status.ToLower().Contains(criteria.Status.ToLower()), false);
+            }
+
             /*       if (statusCriteria != null && statusCriteria.Any())
                    {
                        expr = ExpressionHelpers.CombineBinaryExpression(expr, (a) => a.Status.LikeAnyLower(statusCriteria),
@@ -91,7 +119,7 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
                        (lastExecutedNoEarlierThan == null || a.LastAttempt >= lastExecutedNoEarlierThan)
                    ), requireAll);
                    */
-            var result = manager.GetJobsByCriteria(expr).Select(q => new JobMetadataResult()
+            var result = expr == null ? new JobMetadataResult[]{} : manager.GetJobsByCriteria(expr).Select(q => new JobMetadataResult()
             {
                 ExecutionTime = q.ExecutionTime.ToString(),
                 JobArgs = q.JobArgs.Select(r => new JobParameterDto()
@@ -114,6 +142,23 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
         public static Task<string> DoSomething(JobSearchCriteria input)
         {
             return Task.FromResult(new String(input.ToString().ToCharArray().Reverse().ToArray()));
+        }
+        [Remote]
+        public static Task<string[]> GetMethods(string queueName)
+        {
+            var manager = new SQLiteJobQueueManager(new SQLiteJobQueueDataConnectionFactory(TempDevInfo.ConnString),
+                TempDevInfo.TableConfigurations["console"], new NullOnMissingTypeJobTypeResolver());
+            Expression<Func<SqlCommonDbOddJobMetaData, bool>> expr = null;
+            var results = new string[]{null};
+            if (!string.IsNullOrWhiteSpace(queueName))
+            {
+                expr = ExpressionHelpers.CombineBinaryExpression(expr,
+                    (a) => a.QueueName.ToLower().Contains(queueName.ToLower()), false);
+                results = results.Concat(manager.GetJobCriteriaByCriteria(expr, q => q.MethodName)).ToArray();
+            }
+
+            
+            return Task.FromResult(results);
         }
     }
 }

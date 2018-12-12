@@ -20,6 +20,8 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
         IEnumerable<T> GetJobParamCriteriaValues<T>(Expression<Func<SqlCommonOddJobParamMetaData, T>> selector);
         IEnumerable<T> GetJobCriteriaValues<T>(Expression<Func<SqlCommonDbOddJobMetaData, T>> selector);
 
+        IEnumerable<T> GetJobCriteriaByCriteria<T>(Expression<Func<SqlCommonDbOddJobMetaData, bool>> criteria,
+            Expression<Func<SqlCommonDbOddJobMetaData, T>> selector);
         IEnumerable<IOddJobWithMetadata> GetJobsByParameterAndMainCriteria(
             Expression<Func<SqlCommonDbOddJobMetaData, bool>> jobQueryable,
             Expression<Func<SqlCommonOddJobParamMetaData, bool>> paramQueryable);

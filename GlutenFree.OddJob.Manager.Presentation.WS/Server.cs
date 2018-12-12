@@ -47,8 +47,8 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
             heldConnection = new SQLiteConnection(ConnString);
             EnsureTablesExist(TableConfigurations.Values.Append(new SqlDbJobQueueDefaultTableConfiguration()));
             var sampleDataAdder1 = new SQLiteJobQueueAdder(new SQLiteJobQueueDataConnectionFactory(ConnString),
-                new QueueNameBasedJobAdderQueueTableResolver(TableConfigurations,
-                    new SqlDbJobQueueDefaultTableConfiguration()));
+                new QueueNameBasedJobAdderQueueTableResolver(new Dictionary<string, ISqlDbJobQueueTableConfiguration>(),
+                    TempDevInfo.TableConfigurations["console"]));
             sampleDataAdder1.AddJob((IJob1 j) => j.Job1Method1(), new RetryParameters(), null, "console");
             sampleDataAdder1.AddJob((IJob1 j) => j.Job1Method2(), new RetryParameters(), null, "console");
             sampleDataAdder1.AddJob((IJob1 j) => j.Job1Method1(), new RetryParameters(), null, "counter");

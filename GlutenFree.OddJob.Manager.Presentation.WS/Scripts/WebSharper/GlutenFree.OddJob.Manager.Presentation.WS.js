@@ -1,7 +1,7 @@
 (function()
 {
  "use strict";
- var Global,GlutenFree,OddJob,Manager,Presentation,WS,JobSearchClient,Client,WebSharper,Obj,JobSearchCriteria,JobRetryParameters,JobParameterDto,JobMetadataResult,Template,Jobitem,Vars,UI,Templating,Runtime,Server,TemplateInstance,Instance,JobItem,Vars$1,Instance$1,Jobparameter,Vars$2,Instance$2,JobParameter,Vars$3,Instance$3,Jobsearch,Vars$4,Instance$4,ListItem,Vars$5,Instance$5,Main,Vars$6,Instance$6,Main$1,Vars$7,Instance$7,GlutenFree$OddJob$Manager$Presentation$WS_Templates,ListModel,Nullable,Var$1,Submitter,Unchecked,Doc,Remoting,AjaxRemotingProvider,Arrays,Seq,Linq,View,Concurrency,AttrProxy,IntelliFactory,Runtime$1,Task,Handler,System,Guid,Client$1,Templates,DomUtility;
+ var Global,GlutenFree,OddJob,Manager,Presentation,WS,JobSearchClient,Client,WebSharper,Obj,JobSearchCriteria,JobRetryParameters,JobParameterDto,JobMetadataResult,Template,Jobitem,Vars,UI,Templating,Runtime,Server,TemplateInstance,Instance,JobItem,Vars$1,Instance$1,Jobparameter,Vars$2,Instance$2,JobParameter,Vars$3,Instance$3,Jobsearch,Vars$4,Instance$4,ListItem,Vars$5,Instance$5,Main,Vars$6,Instance$6,Main$1,Vars$7,Instance$7,Searchoption,Vars$8,Instance$8,SearchOption,Vars$9,Instance$9,GlutenFree$OddJob$Manager$Presentation$WS_Templates,Var$1,Submitter,Unchecked,Doc,Remoting,AjaxRemotingProvider,Arrays,Seq,Linq,View,Concurrency,List,AttrModule,AttrProxy,IntelliFactory,Runtime$1,Task,Handler,System,Guid,Client$1,Templates,DomUtility;
  Global=self;
  GlutenFree=Global.GlutenFree=Global.GlutenFree||{};
  OddJob=GlutenFree.OddJob=GlutenFree.OddJob||{};
@@ -46,9 +46,13 @@
  Main$1=Template.Main=Template.Main||{};
  Vars$7=Main$1.Vars=Main$1.Vars||{};
  Instance$7=Main$1.Instance=Main$1.Instance||{};
+ Searchoption=Template.Searchoption=Template.Searchoption||{};
+ Vars$8=Searchoption.Vars=Searchoption.Vars||{};
+ Instance$8=Searchoption.Instance=Searchoption.Instance||{};
+ SearchOption=Searchoption.SearchOption=Searchoption.SearchOption||{};
+ Vars$9=SearchOption.Vars=SearchOption.Vars||{};
+ Instance$9=SearchOption.Instance=SearchOption.Instance||{};
  GlutenFree$OddJob$Manager$Presentation$WS_Templates=Global.GlutenFree$OddJob$Manager$Presentation$WS_Templates=Global.GlutenFree$OddJob$Manager$Presentation$WS_Templates||{};
- ListModel=UI&&UI.ListModel;
- Nullable=WebSharper&&WebSharper.Nullable;
  Var$1=UI&&UI.Var$1;
  Submitter=UI&&UI.Submitter;
  Unchecked=WebSharper&&WebSharper.Unchecked;
@@ -60,6 +64,8 @@
  Linq=WebSharper&&WebSharper.Linq;
  View=UI&&UI.View;
  Concurrency=WebSharper&&WebSharper.Concurrency;
+ List=WebSharper&&WebSharper.List;
+ AttrModule=UI&&UI.AttrModule;
  AttrProxy=UI&&UI.AttrProxy;
  IntelliFactory=Global.IntelliFactory;
  Runtime$1=IntelliFactory&&IntelliFactory.Runtime;
@@ -72,17 +78,86 @@
  DomUtility=UI&&UI.DomUtility;
  JobSearchClient.Main=function()
  {
-  var jobs,criteria,testList,submit,results,a,var1,a$1,var2,callback,content;
-  jobs=new ListModel.New$1(function(job)
-  {
-   return Nullable.getOrValue(job.get_JobGuid(),"00000000-0000-0000-0000-000000000000");
-  });
+  var criteria,a,statusLens,a$1,useStatus,a$2,methodLens,a$3,useMethod,statusOptions,methodCriteria,submit,results,a$4,queueNameLens,callback,content;
   criteria=Var$1.Create$1(new JobSearchCriteria.New());
-  testList=new ListModel.New$1(Global.id);
+  function del(a$5,b)
+  {
+   a$5.set_Status(b);
+   return a$5;
+  }
+  statusLens=(a=function(a$5)
+  {
+   return function(b)
+   {
+    return del(a$5,b);
+   };
+  },Var$1.Lens(criteria,function(q)
+  {
+   return q.get_Status();
+  },function($1,$2)
+  {
+   return(a($1))($2);
+  }));
+  function del$1(a$5,b)
+  {
+   a$5.UseStatus=b;
+   return a$5;
+  }
+  useStatus=(a$1=function(a$5)
+  {
+   return function(b)
+   {
+    return del$1(a$5,b);
+   };
+  },Var$1.Lens(criteria,function(q)
+  {
+   return q.UseStatus;
+  },function($1,$2)
+  {
+   return(a$1($1))($2);
+  }));
+  function del$2(a$5,b)
+  {
+   a$5.set_MethodName(b);
+   return a$5;
+  }
+  methodLens=(a$2=function(a$5)
+  {
+   return function(b)
+   {
+    return del$2(a$5,b);
+   };
+  },Var$1.Lens(criteria,function(q)
+  {
+   return q.get_MethodName();
+  },function($1,$2)
+  {
+   return(a$2($1))($2);
+  }));
+  function del$3(a$5,b)
+  {
+   a$5.UseMethod=b;
+   return a$5;
+  }
+  useMethod=(a$3=function(a$5)
+  {
+   return function(b)
+   {
+    return del$3(a$5,b);
+   };
+  },Var$1.Lens(criteria,function(q)
+  {
+   return q.UseMethod;
+  },function($1,$2)
+  {
+   return(a$3($1))($2);
+  }));
+  statusOptions=Var$1.Create$1([null,"Processed","New","Failed","Retry","InProgress","Inserting"]);
+  methodCriteria=Var$1.Create$1([null]);
   submit=Submitter.CreateOption(criteria.get_View());
   function f(input)
   {
-   var $task,$run,$state,future,$await,awaitedFuture,result;
+   var $task,$run,$state,methodOptionFuture,$await,awaitedMethodOptions,future,$await$1,awaitedFuture,result;
    $task=new WebSharper.Task1({
     status:3,
     continuations:[]
@@ -101,9 +176,9 @@
          $task.RunContinuations();
          return;
         }
-       future=(new AjaxRemotingProvider.New()).Task("GlutenFree.OddJob.Manager.Presentation.WS:GlutenFree.OddJob.Manager.Presentation.WS.Remoting.SearchCriteria:-509659379",[input.$0.get_QueueName(),input.$0.get_MethodName()]);
+       methodOptionFuture=(new AjaxRemotingProvider.New()).Task("GlutenFree.OddJob.Manager.Presentation.WS:GlutenFree.OddJob.Manager.Presentation.WS.Remoting.GetMethods:1236116521",[input.$0.get_QueueName()]);
        $await=void 0;
-       $await=future;
+       $await=methodOptionFuture;
        $state=1;
        $await.OnCompleted($run);
        return;
@@ -115,7 +190,23 @@
          $task.RunContinuations();
          return;
         }
-       awaitedFuture=$await.result;
+       awaitedMethodOptions=$await.result;
+       methodCriteria.Set(awaitedMethodOptions);
+       future=(new AjaxRemotingProvider.New()).Task("GlutenFree.OddJob.Manager.Presentation.WS:GlutenFree.OddJob.Manager.Presentation.WS.Remoting.SearchCriteria:306186415",[input.$0]);
+       $await$1=void 0;
+       $await$1=future;
+       $state=2;
+       $await$1.OnCompleted($run);
+       return;
+      case 2:
+       if($await$1.exc)
+        {
+         $task.exc=$await$1.exc;
+         $task.status=7;
+         $task.RunContinuations();
+         return;
+        }
+       awaitedFuture=$await$1.result;
        result=Arrays.ofSeq(Seq.map(function(q)
        {
         return(new JobItem.New()).MethodName$1(q.get_MethodName()).QueueName$1(q.get_Queue()).Status$1(q.get_Status()).JobGuid$1(q.get_JobId()).JobParameter$4(Doc.ElementMixed("ul",Arrays.ofSeq(Linq.Select(q.get_JobArgs(),function(r,i)
@@ -132,51 +223,70 @@
    $run();
    return $task;
   }
-  results=View.MapAsync(function(a$2)
+  results=View.MapAsync(function(a$5)
   {
-   return Concurrency.AwaitTask1(f(a$2));
+   return Concurrency.AwaitTask1(f(a$5));
   },submit.view);
-  function del(a$2,b)
+  function del$4(a$5,b)
   {
-   a$2.set_QueueName(b);
-   return a$2;
+   a$5.set_QueueName(b);
+   return a$5;
   }
-  var1=(a=function(a$2)
+  queueNameLens=(a$4=function(a$5)
   {
    return function(b)
    {
-    return del(a$2,b);
+    return del$4(a$5,b);
    };
   },Var$1.Lens(criteria,function(q)
   {
    return q.get_QueueName();
   },function($1,$2)
   {
-   return(a($1))($2);
+   return(a$4($1))($2);
   }));
-  function del$1(a$2,b)
+  function del$5(r,e)
   {
-   a$2.set_MethodName(b);
-   return a$2;
+   return submit.Trigger();
   }
-  var2=(a$1=function(a$2)
+  content=Doc.ElementMixed("div",[Doc.ElementMixed("div",["Queue Name: ",Doc.Select([],function(q)
+  {
+   return q===null?"Please Select a Queue...":q;
+  },List.ofSeq([null,"console","counter"]),queueNameLens),AttrModule.Handler("change",function(a$5)
   {
    return function(b)
    {
-    return del$1(a$2,b);
+    return del$5(a$5,b);
    };
-  },Var$1.Lens(criteria,function(q)
+  }),AttrProxy.Create("name","queueNameSelect")]),JobSearchClient.TextSearch("Method Name",methodLens,useMethod),JobSearchClient.OptionSearch("Status",statusLens,statusOptions.get_View(),useStatus,function()
   {
-   return q.get_MethodName();
-  },function($1,$2)
+   return submit.Trigger();
+  }),JobSearchClient.OptionSearch("Method",methodLens,methodCriteria.get_View(),useMethod,function()
   {
-   return(a$1($1))($2);
-  }));
-  content=Doc.ElementMixed("div",[Doc.ElementMixed("div",["Queue Name: ",Doc.Input([AttrProxy.Create("name","queueName")],var1)]),Doc.ElementMixed("div",["Method Name: ",Doc.Input([AttrProxy.Create("name","methodName")],var2)]),(callback=Runtime$1.BindDelegate(Submitter.prototype.Trigger,submit),Doc.Button("Search",[],function()
+   return submit.Trigger();
+  }),(callback=Runtime$1.BindDelegate(Submitter.prototype.Trigger,submit),Doc.Button("Search",[],function()
   {
    callback();
   })),Doc.ElementMixed("div",[results])]);
   return content;
+ };
+ JobSearchClient.OptionSearch=function(name,criteriaLens,optionView,useCriteriaLens,changeAction)
+ {
+  var del;
+  return Doc.ElementMixed("div",[Doc.CheckBox([],useCriteriaLens),name+": ",Doc.SelectDyn([],function(q)
+  {
+   return q===null?"Please Select a "+name+"...":q;
+  },View.Map(List.ofSeq,optionView),criteriaLens),AttrModule.Handler("change",(del=changeAction,function(a)
+  {
+   return function(b)
+   {
+    return del(a,b);
+   };
+  }))]);
+ };
+ JobSearchClient.TextSearch=function(name,criteriaLens,useCriteriaLens)
+ {
+  return Doc.ElementMixed("div",[Doc.CheckBox([],useCriteriaLens),name,Doc.Input([],criteriaLens)]);
  };
  Client.Main=function()
  {
@@ -207,6 +317,14 @@
   {
    return this.$JobGuid;
   },
+  set_Status:function(value)
+  {
+   this.$Status=value;
+  },
+  get_Status:function()
+  {
+   return this.$Status;
+  },
   set_MethodName:function(value)
   {
    this.$MethodName=value;
@@ -225,8 +343,11 @@
   },
   $init:function()
   {
+   this.UseMethod=null;
+   this.UseStatus=null;
    this.set_QueueName(null);
    this.set_MethodName(null);
+   this.set_Status(null);
    this.set_JobGuid(null);
   }
  },Obj,JobSearchCriteria);
@@ -1391,6 +1512,222 @@
  {
   TemplateInstance.New.call(this,v,d);
  },Instance$7);
+ Searchoption=Template.Searchoption=Runtime$1.Class({
+  Doc:function()
+  {
+   return this.Create().get_Doc();
+  },
+  Create:function()
+  {
+   var completed,doc;
+   completed=Handler.CompleteHoles(this.key,this.holes,[]);
+   doc=GlutenFree$OddJob$Manager$Presentation$WS_Templates.t(completed[0]);
+   this.instance=new Instance$8.New(completed[1],doc);
+   return this.instance;
+  },
+  $init:function()
+  {
+   this.key=Guid.NewGuid();
+   this.holes=[];
+   this.instance=null;
+  }
+ },Obj,Searchoption);
+ Searchoption.New=Runtime$1.Ctor(function()
+ {
+  this.$init();
+ },Searchoption);
+ Vars$8=Searchoption.Vars=Runtime$1.Class({
+  $init:function()
+  {
+   this.instance=null;
+  }
+ },null,Vars$8);
+ Vars$8.New=Runtime$1.Ctor(function()
+ {
+  this.$init();
+ },Vars$8);
+ Vars$8.New$1=Runtime$1.Ctor(function(i)
+ {
+  this.$init();
+  this.instance=i;
+ },Vars$8);
+ Instance$8=Searchoption.Instance=Runtime$1.Class({
+  get_Vars:function()
+  {
+   return new Vars$8.New$1(this);
+  }
+ },TemplateInstance,Instance$8);
+ Instance$8.New=Runtime$1.Ctor(function(v,d)
+ {
+  TemplateInstance.New.call(this,v,d);
+ },Instance$8);
+ SearchOption=Searchoption.SearchOption=Runtime$1.Class({
+  Doc:function()
+  {
+   return this.Create().get_Doc();
+  },
+  Create:function()
+  {
+   var completed,doc;
+   completed=Handler.CompleteHoles(this.key,this.holes,[]);
+   doc=GlutenFree$OddJob$Manager$Presentation$WS_Templates.searchoption(completed[0]);
+   this.instance=new Instance$9.New(completed[1],doc);
+   return this.instance;
+  },
+  JobParameter:function(x)
+  {
+   this.holes.push({
+    $:2,
+    $0:"jobparameter",
+    $1:x
+   });
+   return this;
+  },
+  JobParameter$1:function(x)
+  {
+   this.holes.push({
+    $:1,
+    $0:"jobparameter",
+    $1:x
+   });
+   return this;
+  },
+  JobParameter$2:function(x)
+  {
+   x=x==void 0?[]:x;
+   this.holes.push({
+    $:0,
+    $0:"jobparameter",
+    $1:Doc.Concat(x)
+   });
+   return this;
+  },
+  JobParameter$3:function(x)
+  {
+   this.holes.push({
+    $:0,
+    $0:"jobparameter",
+    $1:Doc.Concat(x)
+   });
+   return this;
+  },
+  JobParameter$4:function(x)
+  {
+   this.holes.push({
+    $:0,
+    $0:"jobparameter",
+    $1:x
+   });
+   return this;
+  },
+  Status:function(x)
+  {
+   this.holes.push({
+    $:2,
+    $0:"status",
+    $1:x
+   });
+   return this;
+  },
+  Status$1:function(x)
+  {
+   this.holes.push({
+    $:1,
+    $0:"status",
+    $1:x
+   });
+   return this;
+  },
+  QueueName:function(x)
+  {
+   this.holes.push({
+    $:2,
+    $0:"queuename",
+    $1:x
+   });
+   return this;
+  },
+  QueueName$1:function(x)
+  {
+   this.holes.push({
+    $:1,
+    $0:"queuename",
+    $1:x
+   });
+   return this;
+  },
+  MethodName:function(x)
+  {
+   this.holes.push({
+    $:2,
+    $0:"methodname",
+    $1:x
+   });
+   return this;
+  },
+  MethodName$1:function(x)
+  {
+   this.holes.push({
+    $:1,
+    $0:"methodname",
+    $1:x
+   });
+   return this;
+  },
+  JobGuid:function(x)
+  {
+   this.holes.push({
+    $:2,
+    $0:"jobguid",
+    $1:x
+   });
+   return this;
+  },
+  JobGuid$1:function(x)
+  {
+   this.holes.push({
+    $:1,
+    $0:"jobguid",
+    $1:x
+   });
+   return this;
+  },
+  $init:function()
+  {
+   this.key=Guid.NewGuid();
+   this.holes=[];
+   this.instance=null;
+  }
+ },Obj,SearchOption);
+ SearchOption.New=Runtime$1.Ctor(function()
+ {
+  this.$init();
+ },SearchOption);
+ Vars$9=SearchOption.Vars=Runtime$1.Class({
+  $init:function()
+  {
+   this.instance=null;
+  }
+ },null,Vars$9);
+ Vars$9.New=Runtime$1.Ctor(function()
+ {
+  this.$init();
+ },Vars$9);
+ Vars$9.New$1=Runtime$1.Ctor(function(i)
+ {
+  this.$init();
+  this.instance=i;
+ },Vars$9);
+ Instance$9=SearchOption.Instance=Runtime$1.Class({
+  get_Vars:function()
+  {
+   return new Vars$9.New$1(this);
+  }
+ },TemplateInstance,Instance$9);
+ Instance$9.New=Runtime$1.Ctor(function(v,d)
+ {
+  TemplateInstance.New.call(this,v,d);
+ },Instance$9);
  GlutenFree$OddJob$Manager$Presentation$WS_Templates.t=function(h)
  {
   return h?Templates.GetOrLoadTemplate("jobitem",null,function()
@@ -1479,6 +1816,22 @@
  {
   Templates.LoadLocalTemplates("main");
   return h?Templates.NamedTemplate("main",null,h):void 0;
+ };
+ GlutenFree$OddJob$Manager$Presentation$WS_Templates.searchoption=function(h)
+ {
+  return h?Templates.GetOrLoadTemplate("searchoption",{
+   $:1,
+   $0:"searchoption"
+  },function()
+  {
+   return DomUtility.ParseHTMLIntoFakeRoot("<li>\r\n    <div class=\"searchOpt\">\r\n        <select></select>\r\n    </div>\r\n    <div class=\"Jobs\">\r\n        <div>JobGuid: <input value=\"${JobGuid}\" readonly=\"readonly\" size=\"40\"></div>\r\n        <div>MethodName: <input value=\"${MethodName}\" readonly=\"readonly\" size=\"40\"> </div>\r\n        <div>QueueName: <input value=\"${QueueName}\" readonly=\"readonly\" size=\"40\"></div>\r\n        <div>Status: <input value=\"${Status}\" readonly=\"readonly\" size=\"40\"></div>\r\n        <div ws-hole=\"JobParameter\"></div>\r\n    </div>\r\n</li>");
+  },h):Templates.PrepareTemplate("searchoption",{
+   $:1,
+   $0:"searchoption"
+  },function()
+  {
+   return DomUtility.ParseHTMLIntoFakeRoot("<li>\r\n    <div class=\"searchOpt\">\r\n        <select></select>\r\n    </div>\r\n    <div class=\"Jobs\">\r\n        <div>JobGuid: <input value=\"${JobGuid}\" readonly=\"readonly\" size=\"40\"></div>\r\n        <div>MethodName: <input value=\"${MethodName}\" readonly=\"readonly\" size=\"40\"> </div>\r\n        <div>QueueName: <input value=\"${QueueName}\" readonly=\"readonly\" size=\"40\"></div>\r\n        <div>Status: <input value=\"${Status}\" readonly=\"readonly\" size=\"40\"></div>\r\n        <div ws-hole=\"JobParameter\"></div>\r\n    </div>\r\n</li>");
+  });
  };
 }());
 

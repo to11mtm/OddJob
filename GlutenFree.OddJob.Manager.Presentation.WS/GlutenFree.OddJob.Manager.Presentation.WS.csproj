@@ -136,6 +136,7 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Content Include="SearchOption.html" />
     <Content Include="Web.config" />
     <None Include="packages.config" />
     <None Include="Web.Debug.config">

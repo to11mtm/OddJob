@@ -111,16 +111,27 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
             using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
             {
                 return QueueTable(conn)
-                    .Select(selector).Distinct();
+                    .Select(selector).Distinct().ToList();
             }
         }
-        
+
+        public IEnumerable<T> GetJobCriteriaByCriteria<T>(Expression<Func<SqlCommonDbOddJobMetaData, bool>> criteria, Expression<Func<SqlCommonDbOddJobMetaData, T>> selector)
+        {
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            {
+                var criteriaQuery = QueueTable(conn).Where(criteria);
+                var resultSet = criteriaQuery.Select(selector);
+                return resultSet.ToList();
+            }
+
+        }
+
         public IEnumerable<T> GetJobParamCriteriaValues<T>(Expression<Func<SqlCommonOddJobParamMetaData, T>> selector)
         {
             using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
             {
                 return ParamTable(conn)
-                    .Select(selector).Distinct();
+                    .Select(selector).Distinct().ToList();
             }
         }
 
