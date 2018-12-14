@@ -1,13 +1,14 @@
 (function()
 {
  "use strict";
- var Global,GlutenFree,OddJob,Manager,Presentation,WS,JobSearchClient,Client,WebSharper,Obj,JobSearchCriteria,JobRetryParameters,JobParameterDto,JobMetadataResult,Template,Jobitem,Vars,UI,Templating,Runtime,Server,TemplateInstance,Instance,JobItem,Vars$1,Instance$1,Jobparameter,Vars$2,Instance$2,JobParameter,Vars$3,Instance$3,Jobsearch,Vars$4,Instance$4,ListItem,Vars$5,Instance$5,Main,Vars$6,Instance$6,Main$1,Vars$7,Instance$7,Searchoption,Vars$8,Instance$8,SearchOption,Vars$9,Instance$9,GlutenFree$OddJob$Manager$Presentation$WS_Templates,Var$1,Submitter,Unchecked,Doc,Remoting,AjaxRemotingProvider,Arrays,Seq,Linq,View,Concurrency,List,AttrModule,AttrProxy,IntelliFactory,Runtime$1,Task,Handler,System,Guid,Client$1,Templates,DomUtility;
+ var Global,GlutenFree,OddJob,Manager,Presentation,WS,JSHelpers,JobSearchClient,Client,WebSharper,Obj,JobSearchCriteria,JobRetryParameters,JobParameterDto,JobMetadataResult,Template,Jobitem,Vars,UI,Templating,Runtime,Server,TemplateInstance,Instance,JobItem,Vars$1,Instance$1,Jobparameter,Vars$2,Instance$2,JobParameter,Vars$3,Instance$3,Jobsearch,Vars$4,Instance$4,ListItem,Vars$5,Instance$5,Main,Vars$6,Instance$6,Main$1,Vars$7,Instance$7,Searchoption,Vars$8,Instance$8,SearchOption,Vars$9,Instance$9,GlutenFree$OddJob$Manager$Presentation$WS_Templates,Strings,Var$1,Submitter,Remoting,AjaxRemotingProvider,View,Concurrency,Unchecked,Doc,Arrays,Seq,Linq,List,AttrModule,AttrProxy,IntelliFactory,Runtime$1,Task,Handler,System,Guid,Client$1,Templates,DomUtility;
  Global=self;
  GlutenFree=Global.GlutenFree=Global.GlutenFree||{};
  OddJob=GlutenFree.OddJob=GlutenFree.OddJob||{};
  Manager=OddJob.Manager=OddJob.Manager||{};
  Presentation=Manager.Presentation=Manager.Presentation||{};
  WS=Presentation.WS=Presentation.WS||{};
+ JSHelpers=WS.JSHelpers=WS.JSHelpers||{};
  JobSearchClient=WS.JobSearchClient=WS.JobSearchClient||{};
  Client=WS.Client=WS.Client||{};
  WebSharper=Global.WebSharper;
@@ -53,17 +54,18 @@
  Vars$9=SearchOption.Vars=SearchOption.Vars||{};
  Instance$9=SearchOption.Instance=SearchOption.Instance||{};
  GlutenFree$OddJob$Manager$Presentation$WS_Templates=Global.GlutenFree$OddJob$Manager$Presentation$WS_Templates=Global.GlutenFree$OddJob$Manager$Presentation$WS_Templates||{};
+ Strings=WebSharper&&WebSharper.Strings;
  Var$1=UI&&UI.Var$1;
  Submitter=UI&&UI.Submitter;
- Unchecked=WebSharper&&WebSharper.Unchecked;
- Doc=UI&&UI.Doc;
  Remoting=WebSharper&&WebSharper.Remoting;
  AjaxRemotingProvider=Remoting&&Remoting.AjaxRemotingProvider;
+ View=UI&&UI.View;
+ Concurrency=WebSharper&&WebSharper.Concurrency;
+ Unchecked=WebSharper&&WebSharper.Unchecked;
+ Doc=UI&&UI.Doc;
  Arrays=WebSharper&&WebSharper.Arrays;
  Seq=WebSharper&&WebSharper.Seq;
  Linq=WebSharper&&WebSharper.Linq;
- View=UI&&UI.View;
- Concurrency=WebSharper&&WebSharper.Concurrency;
  List=WebSharper&&WebSharper.List;
  AttrModule=UI&&UI.AttrModule;
  AttrProxy=UI&&UI.AttrProxy;
@@ -76,20 +78,28 @@
  Client$1=UI&&UI.Client;
  Templates=Client$1&&Client$1.Templates;
  DomUtility=UI&&UI.DomUtility;
+ JSHelpers.TimeToString=function(time)
+ {
+  return(new Global.Date(time)).getHours()+":"+(new Global.Date(time)).getMinutes();
+ };
+ JSHelpers.DateToString=function(date)
+ {
+  return(new Global.Date(date)).getFullYear()+"-"+Strings.PadLeftWith(Global.String((new Global.Date(date)).getMonth()+1),2,"0")+"-"+Strings.PadLeftWith(Global.String((new Global.Date(date)).getDate()),2,"0");
+ };
  JobSearchClient.Main=function()
  {
-  var criteria,a,statusLens,a$1,useStatus,a$2,methodLens,a$3,useMethod,statusOptions,methodCriteria,submit,results,a$4,queueNameLens,callback,content;
+  var criteria,a,statusLens,a$1,useStatus,a$2,methodLens,a$3,useMethod,statusOptions,dummyQueueCriteriaFiller,criteriaFiller,queueNames,queueNameView,methodCriteria,submit,results,a$4,queueNameLens,a$5,useCreatedLens,a$6,createdBeforeDateLens,a$7,createdAfterDateLens,a$8,createdBeforeTimeLens,a$9,createdAfterTimeLens,a$10,useAttemptedDTLens,a$11,lastExecutedBeforeTimeLens,a$12,lastExecutedBeforeDateLens,a$13,lastExecutedAfterTimeLens,a$14,lastExecutedAfterDateLens,callback,content;
   criteria=Var$1.Create$1(new JobSearchCriteria.New());
-  function del(a$5,b)
+  function del(a$15,b)
   {
-   a$5.set_Status(b);
-   return a$5;
+   a$15.set_Status(b);
+   return a$15;
   }
-  statusLens=(a=function(a$5)
+  statusLens=(a=function(a$15)
   {
    return function(b)
    {
-    return del(a$5,b);
+    return del(a$15,b);
    };
   },Var$1.Lens(criteria,function(q)
   {
@@ -98,16 +108,16 @@
   {
    return(a($1))($2);
   }));
-  function del$1(a$5,b)
+  function del$1(a$15,b)
   {
-   a$5.UseStatus=b;
-   return a$5;
+   a$15.UseStatus=b;
+   return a$15;
   }
-  useStatus=(a$1=function(a$5)
+  useStatus=(a$1=function(a$15)
   {
    return function(b)
    {
-    return del$1(a$5,b);
+    return del$1(a$15,b);
    };
   },Var$1.Lens(criteria,function(q)
   {
@@ -116,16 +126,16 @@
   {
    return(a$1($1))($2);
   }));
-  function del$2(a$5,b)
+  function del$2(a$15,b)
   {
-   a$5.set_MethodName(b);
-   return a$5;
+   a$15.set_MethodName(b);
+   return a$15;
   }
-  methodLens=(a$2=function(a$5)
+  methodLens=(a$2=function(a$15)
   {
    return function(b)
    {
-    return del$2(a$5,b);
+    return del$2(a$15,b);
    };
   },Var$1.Lens(criteria,function(q)
   {
@@ -134,16 +144,16 @@
   {
    return(a$2($1))($2);
   }));
-  function del$3(a$5,b)
+  function del$3(a$15,b)
   {
-   a$5.UseMethod=b;
-   return a$5;
+   a$15.UseMethod=b;
+   return a$15;
   }
-  useMethod=(a$3=function(a$5)
+  useMethod=(a$3=function(a$15)
   {
    return function(b)
    {
-    return del$3(a$5,b);
+    return del$3(a$15,b);
    };
   },Var$1.Lens(criteria,function(q)
   {
@@ -153,9 +163,60 @@
    return(a$3($1))($2);
   }));
   statusOptions=Var$1.Create$1([null,"Processed","New","Failed","Retry","InProgress","Inserting"]);
+  dummyQueueCriteriaFiller=Var$1.Create$1("");
+  criteriaFiller=Submitter.CreateOption(dummyQueueCriteriaFiller.get_View());
+  queueNames=Var$1.Create$1([null]);
+  function f(input)
+  {
+   var $task,$run,$state,$1,$2,$3,$4,$await;
+   $task=new WebSharper.Task1({
+    status:3,
+    continuations:[]
+   });
+   $state=0;
+   $run=function()
+   {
+    $top:while(true)
+     switch($state)
+     {
+      case 0:
+       $3=void 0;
+       $4=void 0;
+       $3=void 0;
+       $4=void 0;
+       $await=void 0;
+       $3=queueNames;
+       $await=(new AjaxRemotingProvider.New()).Task("GlutenFree.OddJob.Manager.Presentation.WS:GlutenFree.OddJob.Manager.Presentation.WS.Remoting.GetQueueNameList:1051861547",[]);
+       $state=1;
+       $await.OnCompleted($run);
+       return;
+      case 1:
+       if($await.exc)
+        {
+         $task.exc=$await.exc;
+         $task.status=7;
+         $task.RunContinuations();
+         return;
+        }
+       $4=$await.result;
+       $3.Set($4);
+       $task.result=queueNames.Get();
+       $task.status=5;
+       $task.RunContinuations();
+       return;
+     }
+   };
+   $run();
+   return $task;
+  }
+  queueNameView=View.MapAsync(function(a$15)
+  {
+   return Concurrency.AwaitTask1(f(a$15));
+  },criteriaFiller.view);
+  criteriaFiller.Trigger();
   methodCriteria=Var$1.Create$1([null]);
   submit=Submitter.CreateOption(criteria.get_View());
-  function f(input)
+  function f$1(input)
   {
    var $task,$run,$state,methodOptionFuture,$await,awaitedMethodOptions,future,$await$1,awaitedFuture,result;
    $task=new WebSharper.Task1({
@@ -223,20 +284,20 @@
    $run();
    return $task;
   }
-  results=View.MapAsync(function(a$5)
+  results=View.MapAsync(function(a$15)
   {
-   return Concurrency.AwaitTask1(f(a$5));
+   return Concurrency.AwaitTask1(f$1(a$15));
   },submit.view);
-  function del$4(a$5,b)
+  function del$4(a$15,b)
   {
-   a$5.set_QueueName(b);
-   return a$5;
+   a$15.set_QueueName(b);
+   return a$15;
   }
-  queueNameLens=(a$4=function(a$5)
+  queueNameLens=(a$4=function(a$15)
   {
    return function(b)
    {
-    return del$4(a$5,b);
+    return del$4(a$15,b);
    };
   },Var$1.Lens(criteria,function(q)
   {
@@ -245,18 +306,198 @@
   {
    return(a$4($1))($2);
   }));
-  function del$5(r,e)
+  function del$5(a$15,b)
   {
-   return submit.Trigger();
+   a$15.useCreatedDate=b;
+   return a$15;
   }
-  content=Doc.ElementMixed("div",[Doc.ElementMixed("div",["Queue Name: ",Doc.Select([],function(q)
-  {
-   return q===null?"Please Select a Queue...":q;
-  },List.ofSeq([null,"console","counter"]),queueNameLens),AttrModule.Handler("change",function(a$5)
+  useCreatedLens=(a$5=function(a$15)
   {
    return function(b)
    {
-    return del$5(a$5,b);
+    return del$5(a$15,b);
+   };
+  },Var$1.Lens(criteria,function(q)
+  {
+   return q.useCreatedDate;
+  },function($1,$2)
+  {
+   return(a$5($1))($2);
+  }));
+  function del$6(a$15,b)
+  {
+   a$15.createdBefore=b;
+   return a$15;
+  }
+  createdBeforeDateLens=(a$6=function(a$15)
+  {
+   return function(b)
+   {
+    return del$6(a$15,b);
+   };
+  },Var$1.Lens(criteria,function(q)
+  {
+   return q.createdBefore;
+  },function($1,$2)
+  {
+   return(a$6($1))($2);
+  }));
+  function del$7(a$15,b)
+  {
+   a$15.createdBefore=b;
+   return a$15;
+  }
+  createdAfterDateLens=(a$7=function(a$15)
+  {
+   return function(b)
+   {
+    return del$7(a$15,b);
+   };
+  },Var$1.Lens(criteria,function(q)
+  {
+   return q.createdAfter;
+  },function($1,$2)
+  {
+   return(a$7($1))($2);
+  }));
+  function del$8(a$15,b)
+  {
+   a$15.createdBeforeTime=b;
+   return a$15;
+  }
+  createdBeforeTimeLens=(a$8=function(a$15)
+  {
+   return function(b)
+   {
+    return del$8(a$15,b);
+   };
+  },Var$1.Lens(criteria,function(q)
+  {
+   return q.createdBeforeTime;
+  },function($1,$2)
+  {
+   return(a$8($1))($2);
+  }));
+  function del$9(a$15,b)
+  {
+   a$15.createdAfterTime=b;
+   return a$15;
+  }
+  createdAfterTimeLens=(a$9=function(a$15)
+  {
+   return function(b)
+   {
+    return del$9(a$15,b);
+   };
+  },Var$1.Lens(criteria,function(q)
+  {
+   return q.createdAfterTime;
+  },function($1,$2)
+  {
+   return(a$9($1))($2);
+  }));
+  function del$10(a$15,b)
+  {
+   a$15.useLastAttemptDate=b;
+   return a$15;
+  }
+  useAttemptedDTLens=(a$10=function(a$15)
+  {
+   return function(b)
+   {
+    return del$10(a$15,b);
+   };
+  },Var$1.Lens(criteria,function(q)
+  {
+   return q.useLastAttemptDate;
+  },function($1,$2)
+  {
+   return(a$10($1))($2);
+  }));
+  function del$11(a$15,b)
+  {
+   a$15.attemptedBeforeTime=b;
+   return a$15;
+  }
+  lastExecutedBeforeTimeLens=(a$11=function(a$15)
+  {
+   return function(b)
+   {
+    return del$11(a$15,b);
+   };
+  },Var$1.Lens(criteria,function(q)
+  {
+   return q.attemptedBeforeTime;
+  },function($1,$2)
+  {
+   return(a$11($1))($2);
+  }));
+  function del$12(a$15,b)
+  {
+   a$15.attemptedBeforeDate=b;
+   return a$15;
+  }
+  lastExecutedBeforeDateLens=(a$12=function(a$15)
+  {
+   return function(b)
+   {
+    return del$12(a$15,b);
+   };
+  },Var$1.Lens(criteria,function(q)
+  {
+   return q.attemptedBeforeDate;
+  },function($1,$2)
+  {
+   return(a$12($1))($2);
+  }));
+  function del$13(a$15,b)
+  {
+   a$15.attemptedAfterTime=b;
+   return a$15;
+  }
+  lastExecutedAfterTimeLens=(a$13=function(a$15)
+  {
+   return function(b)
+   {
+    return del$13(a$15,b);
+   };
+  },Var$1.Lens(criteria,function(q)
+  {
+   return q.attemptedAfterTime;
+  },function($1,$2)
+  {
+   return(a$13($1))($2);
+  }));
+  function del$14(a$15,b)
+  {
+   a$15.attemptedAfterDate=b;
+   return a$15;
+  }
+  lastExecutedAfterDateLens=(a$14=function(a$15)
+  {
+   return function(b)
+   {
+    return del$14(a$15,b);
+   };
+  },Var$1.Lens(criteria,function(q)
+  {
+   return q.attemptedAfterDate;
+  },function($1,$2)
+  {
+   return(a$14($1))($2);
+  }));
+  function del$15(r,e)
+  {
+   return submit.Trigger();
+  }
+  content=Doc.ElementMixed("div",[Doc.ElementMixed("div",["Queue Name: ",Doc.SelectDyn([],function(q)
+  {
+   return q===null?"Please Select a Queue...":q;
+  },View.Map(List.ofSeq,queueNameView),queueNameLens),AttrModule.Handler("change",function(a$15)
+  {
+   return function(b)
+   {
+    return del$15(a$15,b);
    };
   }),AttrProxy.Create("name","queueNameSelect")]),JobSearchClient.TextSearch("Method Name",methodLens,useMethod),JobSearchClient.OptionSearch("Status",statusLens,statusOptions.get_View(),useStatus,function()
   {
@@ -264,11 +505,45 @@
   }),JobSearchClient.OptionSearch("Method",methodLens,methodCriteria.get_View(),useMethod,function()
   {
    return submit.Trigger();
-  }),(callback=Runtime$1.BindDelegate(Submitter.prototype.Trigger,submit),Doc.Button("Search",[],function()
+  }),JobSearchClient.DateTimeRangeSearch("Created",useCreatedLens,createdBeforeDateLens,createdBeforeTimeLens,createdAfterDateLens,createdAfterTimeLens),JobSearchClient.DateTimeRangeSearch("Attempt",useAttemptedDTLens,lastExecutedBeforeDateLens,lastExecutedBeforeTimeLens,lastExecutedAfterDateLens,lastExecutedAfterTimeLens),Doc.ElementMixed("br",[]),(callback=Runtime$1.BindDelegate(Submitter.prototype.Trigger,submit),Doc.Button("Search",[],function()
   {
    callback();
   })),Doc.ElementMixed("div",[results])]);
   return content;
+ };
+ JobSearchClient.ClearableTimeInput=function(timeLens)
+ {
+  function callback()
+  {
+   var $1;
+   timeLens.Set($1="");
+   return $1;
+  }
+  return Doc.ElementMixed("div",[Doc.Input([AttrProxy.Create("type","time")],timeLens),Doc.Button("Clear",[],function()
+  {
+   callback();
+  })]);
+ };
+ JobSearchClient.ClearableDateInput=function(dateLens)
+ {
+  function callback()
+  {
+   var $1;
+   dateLens.Set($1="");
+   return $1;
+  }
+  return Doc.ElementMixed("div",[Doc.Input([AttrProxy.Create("type","date")],dateLens),Doc.Button("Clear",[],function()
+  {
+   callback();
+  })]);
+ };
+ JobSearchClient.DateTimeRangeSearch=function(name,useCriteriaLens,beforeDateLens,beforeTimeLens,afterDateLens,afterTimeLens)
+ {
+  return Doc.ElementMixed("div",[AttrModule.Style("float","left"),Doc.CheckBox([],useCriteriaLens),name+": ",Doc.ElementMixed("br",[]),Doc.ElementMixed("div",[AttrModule.Style("float","left"),JobSearchClient.ClearableDateInput(beforeDateLens),JobSearchClient.ClearableTimeInput(beforeTimeLens)]),Doc.ElementMixed("div",[AttrModule.Style("float","left"),JobSearchClient.ClearableDateInput(afterDateLens),JobSearchClient.ClearableTimeInput(afterTimeLens)])]);
+ };
+ JobSearchClient.DateRangeSearch=function(name,useCriteriaLens,beforeLens,afterLens)
+ {
+  return Doc.ElementMixed("div",[Doc.CheckBox([],useCriteriaLens),name+": ",Doc.Input([AttrProxy.Create("type","date")],beforeLens),Doc.Input([AttrProxy.Create("type","date")],afterLens)]);
  };
  JobSearchClient.OptionSearch=function(name,criteriaLens,optionView,useCriteriaLens,changeAction)
  {
@@ -345,6 +620,16 @@
   {
    this.UseMethod=null;
    this.UseStatus=null;
+   this.useCreatedDate=null;
+   this.useLastAttemptDate=null;
+   this.createdBefore="";
+   this.createdAfter="";
+   this.attemptedBeforeDate="";
+   this.attemptedAfterDate="";
+   this.attemptedBeforeTime="";
+   this.attemptedAfterTime="";
+   this.createdBeforeTime="";
+   this.createdAfterTime="";
    this.set_QueueName(null);
    this.set_MethodName(null);
    this.set_Status(null);

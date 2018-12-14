@@ -18,8 +18,19 @@ using Html = WebSharper.UI.Client.Html;
 namespace GlutenFree.OddJob.Manager.Presentation.WS
 {
     [JavaScript]
+    public static class JSHelpers
+    {
+       public static string DateToString(DateTime date) =>
+            $"{date.Year}-{date.Month.ToString().PadLeft(2, '0')}-{date.Day.ToString().PadLeft(2, '0')}";
+
+        public static string TimeToString(DateTime time) =>
+            $"{time.Hour}:{time.Minute}";
+    }
+    [JavaScript]
     public static class JobSearchClient
     {
+        
+
         public static Elt TextSearch(string name, Var<string> criteriaLens, Var<bool> useCriteriaLens)
         {
             return div(checkbox(useCriteriaLens), name, input(criteriaLens));
@@ -30,6 +41,28 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
         {
             return div(checkbox(useCriteriaLens), name + ": ", @select(criteriaLens, optionView, (q) => q ?? "Please Select a " + name +"..."),
                 on.change(changeAction));
+        }
+
+        public static Elt DateRangeSearch(string name, Var<bool> useCriteriaLens,Var<string> beforeLens, Var<string> afterLens)
+        {
+            return (div(checkbox(useCriteriaLens),name + ": ", input(beforeLens, attr.type("date")), input(afterLens,attr.type("date"))));
+        }
+
+        public static Elt DateTimeRangeSearch(string name, Var<bool> useCriteriaLens, Var<string> beforeDateLens, Var<string> beforeTimeLens,
+            Var<string> afterDateLens, Var<string>afterTimeLens)
+        {
+            return (div(style("float", "left"),checkbox(useCriteriaLens), name + ": ", br(),
+                div(style("float","left"), ClearableDateInput(beforeDateLens),ClearableTimeInput(beforeTimeLens)),
+                div(style("float", "left"),ClearableDateInput(afterDateLens), ClearableTimeInput(afterTimeLens))));
+        }
+
+        public static Elt ClearableDateInput(Var<string> dateLens)
+        {
+            return div(input(dateLens, attr.type("date")), button("Clear", () => dateLens.Value = ""));
+        }
+        public static Elt ClearableTimeInput(Var<string> timeLens)
+        {
+            return div(input(timeLens, attr.type("time")), button("Clear", () => timeLens.Value = ""));
         }
 
         public static IControlBody Main()
@@ -62,6 +95,16 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
                 null, "Processed", "New", "Failed",
                 "Retry", "InProgress", "Inserting"
             });
+            var dummyQueueCriteriaFiller = Var.Create("");
+            var criteriaFiller = Submitter.CreateOption(dummyQueueCriteriaFiller.View);
+
+            var queueNames = Var.Create<IEnumerable<string>>(new string[] {null});
+            var queueNameView = criteriaFiller.View.MapAsync(async input =>
+            {
+                queueNames.Value=  await Remoting.GetQueueNameList();
+                return queueNames.Value;
+            });
+            criteriaFiller.Trigger();
         var methodCriteria = Var.Create<IEnumerable<string>>(new string[] {null});
             var submit = Submitter.CreateOption(criteria.View);
             var results = submit.View.MapAsync(async input =>
@@ -87,15 +130,70 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
                 a.QueueName = b;
                 return a;
             });
-            
-            
-            
-
+            var useCreatedLens = criteria.Lens(q => q.useCreatedDate, (a, b) =>
+            {
+                a.useCreatedDate = b;
+                return a;
+            });
+            var createdBeforeDateLens = criteria.Lens(q => q.createdBefore, (a, b) =>
+            {
+                a.createdBefore = b;
+                return a;
+            });
+            var createdAfterDateLens = criteria.Lens(q => q.createdAfter, (a, b) =>
+            {
+                a.createdBefore = b;
+                return a;
+            });
+            var createdBeforeTimeLens = criteria.Lens(q => q.createdBeforeTime, (a, b) =>
+            {
+                a.createdBeforeTime = b;
+                return a;
+            });
+            var createdAfterTimeLens = criteria.Lens(q => q.createdAfterTime, (a, b) =>
+            {
+                a.createdAfterTime = b;
+                return a;
+            });
+            var useAttemptedDTLens = criteria.Lens(q => q.useLastAttemptDate, (a, b) =>
+            {
+                a.useLastAttemptDate = b;
+                return a;
+            });
+            var lastExecutedBeforeTimeLens = criteria.Lens(q => q.attemptedBeforeTime, (a, b) =>
+            {
+                a.attemptedBeforeTime = b;
+                return a;
+            });
+            var lastExecutedBeforeDateLens = criteria.Lens(q => q.attemptedBeforeDate, (a, b) =>
+            {
+                a.attemptedBeforeDate = b;
+                return a;
+            });
+            var lastExecutedAfterTimeLens = criteria.Lens(q => q.attemptedAfterTime, (a, b) =>
+            {
+                a.attemptedAfterTime = b;
+                return a;
+            });
+            var lastExecutedAfterDateLens = criteria.Lens(q => q.attemptedAfterDate, (a, b) =>
+            {
+                a.attemptedAfterDate = b;
+                return a;
+            });
+           /* WebSharper.Html.Client.Operators.OnAfterRender(
+                f: FSharpConvert.Fun<Datepicker>(d =>
+                {
+                    d.SetDate(DateTime.Now.ToShortDateString());
+                }),
+                w: createdFilter);*/
             var content = div(
-                    div("Queue Name: ",@select(queueNameLens, new[]{null,"console","counter"}, (q) => q ?? "Please Select a Queue..."),on.change((r,e)=> submit.Trigger()), attr.name("queueNameSelect")),
+                    div("Queue Name: ",@select(queueNameLens, queueNameView, (q) => q ?? "Please Select a Queue..."),on.change((r,e)=> submit.Trigger()), attr.name("queueNameSelect")),
                     TextSearch("Method Name", methodLens,useMethod),
                     OptionSearch("Status", statusLens, statusOptions.View, useStatus, (a,b)=>submit.Trigger()),
                     OptionSearch("Method", methodLens, methodCriteria.View, useMethod,(a,b)=> submit.Trigger()),
+                    DateTimeRangeSearch("Created", useCreatedLens, createdBeforeDateLens, createdBeforeTimeLens, createdAfterDateLens, createdAfterTimeLens),
+                    DateTimeRangeSearch("Attempt", useAttemptedDTLens, lastExecutedBeforeDateLens, lastExecutedBeforeTimeLens, lastExecutedAfterDateLens, lastExecutedAfterTimeLens),
+                    br(),
                     button("Search", submit.Trigger),
                     div(results)
                 );

@@ -18,6 +18,16 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
     {
         public bool UseMethod;
         public bool UseStatus;
+        public bool useCreatedDate;
+        public bool useLastAttemptDate;
+        public string createdBefore = "";
+        public string createdAfter = "";
+        public string attemptedBeforeDate = "";
+        public string attemptedAfterDate = "";
+        public string attemptedBeforeTime = "";
+        public string attemptedAfterTime = "";
+        public string createdBeforeTime="";
+        public string createdAfterTime = "";
         public string QueueName { get; set; }
         public string MethodName { get; set; }
         public string Status { get; set; }
@@ -59,12 +69,12 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
     {
 
         [Remote]
-        public static string[] GetQueueNameList()
+        public static Task<string[]> GetQueueNameList()
         {
             var manager = new SQLiteJobQueueManager(new SQLiteJobQueueDataConnectionFactory(TempDevInfo.ConnString),
                 TempDevInfo.TableConfigurations["console"], new NullOnMissingTypeJobTypeResolver());
-            var result = manager.GetJobCriteriaValues(q => q.QueueName).ToArray();
-            return result;
+            var result = (new string[]{null}).Concat(manager.GetJobCriteriaValues(q => q.QueueName).ToList()).ToArray();
+            return Task.FromResult(result);
         }
 
         [Remote]
