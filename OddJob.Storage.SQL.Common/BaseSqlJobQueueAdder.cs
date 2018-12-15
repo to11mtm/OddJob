@@ -95,10 +95,10 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 
         public SqlCommonOddJobParamMetaData[] GetParamDataForJob(SerializableOddJob jobData)
         {
-            return jobData.JobArgs.Select((q, i) => new SqlCommonOddJobParamMetaData()
+            return jobData.JobArgs.Select(q => new SqlCommonOddJobParamMetaData()
             {
                 JobGuid = jobData.JobId,
-                ParamOrdinal = i,
+                ParamOrdinal = q.Ordinal,
                 SerializedValue = q.Value,
                 SerializedType = q.TypeName,
                 ParameterName = q.Name

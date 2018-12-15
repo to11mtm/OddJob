@@ -1,7 +1,7 @@
 (function()
 {
  "use strict";
- var Global,GlutenFree,OddJob,Manager,Presentation,WS,JSHelpers,JobSearchClient,Client,WebSharper,Obj,JobSearchCriteria,JobRetryParameters,JobParameterDto,JobMetadataResult,Template,Jobitem,Vars,UI,Templating,Runtime,Server,TemplateInstance,Instance,JobItem,Vars$1,Instance$1,Jobparameter,Vars$2,Instance$2,JobParameter,Vars$3,Instance$3,Jobsearch,Vars$4,Instance$4,ListItem,Vars$5,Instance$5,Main,Vars$6,Instance$6,Main$1,Vars$7,Instance$7,Searchoption,Vars$8,Instance$8,SearchOption,Vars$9,Instance$9,GlutenFree$OddJob$Manager$Presentation$WS_Templates,Strings,Var$1,Submitter,Remoting,AjaxRemotingProvider,View,Concurrency,Unchecked,Doc,Arrays,Seq,Linq,List,AttrModule,AttrProxy,IntelliFactory,Runtime$1,Task,Handler,System,Guid,Client$1,Templates,DomUtility;
+ var Global,GlutenFree,OddJob,Manager,Presentation,WS,JSHelpers,ElementCreators,JobSearchClient,Client,WebSharper,Obj,JobSearchCriteria,UpdateForJob,UpdateForParam,JobRetryParameters,JobParameterDto,JobUpdateViewModel,JobMetadataResult,Template,Jobitem,Vars,UI,Templating,Runtime,Server,TemplateInstance,Instance,JobItem,Vars$1,Instance$1,Jobparameter,Vars$2,Instance$2,JobParameter,Vars$3,Instance$3,Jobsearch,Vars$4,Instance$4,ListItem,Vars$5,Instance$5,Main,Vars$6,Instance$6,Main$1,Vars$7,Instance$7,Editablejobitem,Vars$8,Instance$8,EditableJobItem,Vars$9,Instance$9,Searchoption,Vars$10,Instance$10,SearchOption,Vars$11,Instance$11,GlutenFree$OddJob$Manager$Presentation$WS_Templates,Strings,Doc,AttrProxy,View,List,AttrModule,Var$1,Submitter,ListModel,Remoting,AjaxRemotingProvider,Concurrency,DocExtension,Unchecked,Arrays,Linq,Seq,Comparers,BaseComparer,BaseEqualityComparer,IntelliFactory,Runtime$1,Task,Handler,System,Guid,Client$1,Templates,DomUtility;
  Global=self;
  GlutenFree=Global.GlutenFree=Global.GlutenFree||{};
  OddJob=GlutenFree.OddJob=GlutenFree.OddJob||{};
@@ -9,13 +9,17 @@
  Presentation=Manager.Presentation=Manager.Presentation||{};
  WS=Presentation.WS=Presentation.WS||{};
  JSHelpers=WS.JSHelpers=WS.JSHelpers||{};
+ ElementCreators=WS.ElementCreators=WS.ElementCreators||{};
  JobSearchClient=WS.JobSearchClient=WS.JobSearchClient||{};
  Client=WS.Client=WS.Client||{};
  WebSharper=Global.WebSharper;
  Obj=WebSharper&&WebSharper.Obj;
  JobSearchCriteria=WS.JobSearchCriteria=WS.JobSearchCriteria||{};
+ UpdateForJob=WS.UpdateForJob=WS.UpdateForJob||{};
+ UpdateForParam=WS.UpdateForParam=WS.UpdateForParam||{};
  JobRetryParameters=WS.JobRetryParameters=WS.JobRetryParameters||{};
  JobParameterDto=WS.JobParameterDto=WS.JobParameterDto||{};
+ JobUpdateViewModel=WS.JobUpdateViewModel=WS.JobUpdateViewModel||{};
  JobMetadataResult=WS.JobMetadataResult=WS.JobMetadataResult||{};
  Template=WS.Template=WS.Template||{};
  Jobitem=Template.Jobitem=Template.Jobitem||{};
@@ -47,28 +51,39 @@
  Main$1=Template.Main=Template.Main||{};
  Vars$7=Main$1.Vars=Main$1.Vars||{};
  Instance$7=Main$1.Instance=Main$1.Instance||{};
+ Editablejobitem=Template.Editablejobitem=Template.Editablejobitem||{};
+ Vars$8=Editablejobitem.Vars=Editablejobitem.Vars||{};
+ Instance$8=Editablejobitem.Instance=Editablejobitem.Instance||{};
+ EditableJobItem=Editablejobitem.EditableJobItem=Editablejobitem.EditableJobItem||{};
+ Vars$9=EditableJobItem.Vars=EditableJobItem.Vars||{};
+ Instance$9=EditableJobItem.Instance=EditableJobItem.Instance||{};
  Searchoption=Template.Searchoption=Template.Searchoption||{};
- Vars$8=Searchoption.Vars=Searchoption.Vars||{};
- Instance$8=Searchoption.Instance=Searchoption.Instance||{};
+ Vars$10=Searchoption.Vars=Searchoption.Vars||{};
+ Instance$10=Searchoption.Instance=Searchoption.Instance||{};
  SearchOption=Searchoption.SearchOption=Searchoption.SearchOption||{};
- Vars$9=SearchOption.Vars=SearchOption.Vars||{};
- Instance$9=SearchOption.Instance=SearchOption.Instance||{};
+ Vars$11=SearchOption.Vars=SearchOption.Vars||{};
+ Instance$11=SearchOption.Instance=SearchOption.Instance||{};
  GlutenFree$OddJob$Manager$Presentation$WS_Templates=Global.GlutenFree$OddJob$Manager$Presentation$WS_Templates=Global.GlutenFree$OddJob$Manager$Presentation$WS_Templates||{};
  Strings=WebSharper&&WebSharper.Strings;
- Var$1=UI&&UI.Var$1;
- Submitter=UI&&UI.Submitter;
- Remoting=WebSharper&&WebSharper.Remoting;
- AjaxRemotingProvider=Remoting&&Remoting.AjaxRemotingProvider;
- View=UI&&UI.View;
- Concurrency=WebSharper&&WebSharper.Concurrency;
- Unchecked=WebSharper&&WebSharper.Unchecked;
  Doc=UI&&UI.Doc;
- Arrays=WebSharper&&WebSharper.Arrays;
- Seq=WebSharper&&WebSharper.Seq;
- Linq=WebSharper&&WebSharper.Linq;
+ AttrProxy=UI&&UI.AttrProxy;
+ View=UI&&UI.View;
  List=WebSharper&&WebSharper.List;
  AttrModule=UI&&UI.AttrModule;
- AttrProxy=UI&&UI.AttrProxy;
+ Var$1=UI&&UI.Var$1;
+ Submitter=UI&&UI.Submitter;
+ ListModel=UI&&UI.ListModel;
+ Remoting=WebSharper&&WebSharper.Remoting;
+ AjaxRemotingProvider=Remoting&&Remoting.AjaxRemotingProvider;
+ Concurrency=WebSharper&&WebSharper.Concurrency;
+ DocExtension=UI&&UI.DocExtension;
+ Unchecked=WebSharper&&WebSharper.Unchecked;
+ Arrays=WebSharper&&WebSharper.Arrays;
+ Linq=WebSharper&&WebSharper.Linq;
+ Seq=WebSharper&&WebSharper.Seq;
+ Comparers=WebSharper&&WebSharper.Comparers;
+ BaseComparer=Comparers&&Comparers.BaseComparer;
+ BaseEqualityComparer=Comparers&&Comparers.BaseEqualityComparer;
  IntelliFactory=Global.IntelliFactory;
  Runtime$1=IntelliFactory&&IntelliFactory.Runtime;
  Task=WebSharper&&WebSharper.Task;
@@ -86,85 +101,171 @@
  {
   return(new Global.Date(date)).getFullYear()+"-"+Strings.PadLeftWith(Global.String((new Global.Date(date)).getMonth()+1),2,"0")+"-"+Strings.PadLeftWith(Global.String((new Global.Date(date)).getDate()),2,"0");
  };
- JobSearchClient.Main=function()
+ ElementCreators.CheckableNumberInput=function(name,useInput,valueLens,defaultValue)
  {
-  var criteria,a,statusLens,a$1,useStatus,a$2,methodLens,a$3,useMethod,statusOptions,dummyQueueCriteriaFiller,criteriaFiller,queueNames,queueNameView,methodCriteria,submit,results,a$4,queueNameLens,a$5,useCreatedLens,a$6,createdBeforeDateLens,a$7,createdAfterDateLens,a$8,createdBeforeTimeLens,a$9,createdAfterTimeLens,a$10,useAttemptedDTLens,a$11,lastExecutedBeforeTimeLens,a$12,lastExecutedBeforeDateLens,a$13,lastExecutedAfterTimeLens,a$14,lastExecutedAfterDateLens,callback,content;
-  criteria=Var$1.Create$1(new JobSearchCriteria.New());
-  function del(a$15,b)
+  return Doc.ElementMixed("span",[Doc.CheckBox([],useInput),name,Doc.ElementMixed("input",[AttrProxy.Create("type","number"),valueLens,AttrProxy.Create("placeholder",Global.String(defaultValue))])]);
+ };
+ ElementCreators.CheckableTextInput=function(name,useInput,valueLens,defaultValue)
+ {
+  return Doc.ElementMixed("span",[Doc.CheckBox([],useInput),name,Doc.Input([AttrProxy.Create("placeholder",defaultValue)],valueLens)]);
+ };
+ ElementCreators.CheckableTextInput$1=function(name,useInput,valueLens)
+ {
+  return Doc.ElementMixed("span",[Doc.CheckBox([],useInput),name,Doc.Input([],valueLens)]);
+ };
+ ElementCreators.ClearableTimeInput=function(timeLens)
+ {
+  function callback()
   {
-   a$15.set_Status(b);
-   return a$15;
+   var $1;
+   timeLens.Set($1="");
+   return $1;
   }
-  statusLens=(a=function(a$15)
+  return Doc.ElementMixed("span",[Doc.Input([AttrProxy.Create("type","time")],timeLens),Doc.Button("Clear",[],function()
+  {
+   callback();
+  })]);
+ };
+ ElementCreators.ClearableDateInput=function(dateLens)
+ {
+  function callback()
+  {
+   var $1;
+   dateLens.Set($1="");
+   return $1;
+  }
+  return Doc.ElementMixed("span",[Doc.Input([AttrProxy.Create("type","date")],dateLens),Doc.Button("Clear",[],function()
+  {
+   callback();
+  })]);
+ };
+ ElementCreators.DateTimeRangeSearch=function(name,useCriteriaLens,beforeDateLens,beforeTimeLens,afterDateLens,afterTimeLens)
+ {
+  return Doc.ElementMixed("span",[Doc.CheckBox([],useCriteriaLens),name+": ",Doc.ElementMixed("br",[]),Doc.ElementMixed("span",[ElementCreators.ClearableDateInput(beforeDateLens),ElementCreators.ClearableTimeInput(beforeTimeLens)]),Doc.ElementMixed("span",[ElementCreators.ClearableDateInput(afterDateLens),ElementCreators.ClearableTimeInput(afterTimeLens)])]);
+ };
+ ElementCreators.DateRangeSearch=function(name,useCriteriaLens,beforeLens,afterLens)
+ {
+  return Doc.ElementMixed("span",[Doc.CheckBox([],useCriteriaLens),name+": ",Doc.Input([AttrProxy.Create("type","date")],beforeLens),Doc.Input([AttrProxy.Create("type","date")],afterLens)]);
+ };
+ ElementCreators.OptionSearch=function(name,criteriaLens,optionView,useCriteriaLens,changeAction)
+ {
+  var del;
+  return Doc.ElementMixed("span",[Doc.CheckBox([],useCriteriaLens),name+": ",Doc.SelectDyn([],function(q)
+  {
+   return q===null?"Please Select a "+name+"...":q;
+  },View.Map(List.ofSeq,optionView),criteriaLens),AttrModule.Handler("change",(del=changeAction,function(a)
   {
    return function(b)
    {
-    return del(a$15,b);
+    return del(a,b);
+   };
+  }))]);
+ };
+ ElementCreators.TextSearch=function(name,criteriaLens,useCriteriaLens)
+ {
+  return Doc.ElementMixed("span",[Doc.CheckBox([],useCriteriaLens),name,Doc.Input([],criteriaLens)]);
+ };
+ JobSearchClient.Main=function()
+ {
+  var criteria,a,useQueueLens,a$1,statusLens,a$2,useStatus,a$3,methodLens,a$4,useMethod,statusOptions,dummyQueueCriteriaFiller,criteriaFiller,updateSet,queueNames,queueNameView,methodCriteria,submit,result,results,a$5,queueNameLens,a$6,useCreatedLens,a$7,createdBeforeDateLens,a$8,createdAfterDateLens,a$9,createdBeforeTimeLens,a$10,createdAfterTimeLens,a$11,useAttemptedDTLens,a$12,lastExecutedBeforeTimeLens,a$13,lastExecutedBeforeDateLens,a$14,lastExecutedAfterTimeLens,a$15,lastExecutedAfterDateLens,callback,content;
+  criteria=Var$1.Create$1(new JobSearchCriteria.New());
+  function del(a$16,b)
+  {
+   a$16.UseQueue=b;
+   return a$16;
+  }
+  useQueueLens=(a=function(a$16)
+  {
+   return function(b)
+   {
+    return del(a$16,b);
+   };
+  },Var$1.Lens(criteria,function(q)
+  {
+   return q.UseQueue;
+  },function($1,$2)
+  {
+   return(a($1))($2);
+  }));
+  function del$1(a$16,b)
+  {
+   a$16.set_Status(b);
+   return a$16;
+  }
+  statusLens=(a$1=function(a$16)
+  {
+   return function(b)
+   {
+    return del$1(a$16,b);
    };
   },Var$1.Lens(criteria,function(q)
   {
    return q.get_Status();
   },function($1,$2)
   {
-   return(a($1))($2);
+   return(a$1($1))($2);
   }));
-  function del$1(a$15,b)
+  function del$2(a$16,b)
   {
-   a$15.UseStatus=b;
-   return a$15;
+   a$16.UseStatus=b;
+   return a$16;
   }
-  useStatus=(a$1=function(a$15)
+  useStatus=(a$2=function(a$16)
   {
    return function(b)
    {
-    return del$1(a$15,b);
+    return del$2(a$16,b);
    };
   },Var$1.Lens(criteria,function(q)
   {
    return q.UseStatus;
   },function($1,$2)
   {
-   return(a$1($1))($2);
+   return(a$2($1))($2);
   }));
-  function del$2(a$15,b)
+  function del$3(a$16,b)
   {
-   a$15.set_MethodName(b);
-   return a$15;
+   a$16.set_MethodName(b);
+   return a$16;
   }
-  methodLens=(a$2=function(a$15)
+  methodLens=(a$3=function(a$16)
   {
    return function(b)
    {
-    return del$2(a$15,b);
+    return del$3(a$16,b);
    };
   },Var$1.Lens(criteria,function(q)
   {
    return q.get_MethodName();
   },function($1,$2)
   {
-   return(a$2($1))($2);
+   return(a$3($1))($2);
   }));
-  function del$3(a$15,b)
+  function del$4(a$16,b)
   {
-   a$15.UseMethod=b;
-   return a$15;
+   a$16.UseMethod=b;
+   return a$16;
   }
-  useMethod=(a$3=function(a$15)
+  useMethod=(a$4=function(a$16)
   {
    return function(b)
    {
-    return del$3(a$15,b);
+    return del$4(a$16,b);
    };
   },Var$1.Lens(criteria,function(q)
   {
    return q.UseMethod;
   },function($1,$2)
   {
-   return(a$3($1))($2);
+   return(a$4($1))($2);
   }));
   statusOptions=Var$1.Create$1([null,"Processed","New","Failed","Retry","InProgress","Inserting"]);
   dummyQueueCriteriaFiller=Var$1.Create$1("");
   criteriaFiller=Submitter.CreateOption(dummyQueueCriteriaFiller.get_View());
+  updateSet=new ListModel.New$1(function(q)
+  {
+   return q.JobGuid;
+  });
   queueNames=Var$1.Create$1([null]);
   function f(input)
   {
@@ -209,16 +310,302 @@
    $run();
    return $task;
   }
-  queueNameView=View.MapAsync(function(a$15)
+  queueNameView=View.MapAsync(function(a$16)
   {
-   return Concurrency.AwaitTask1(f(a$15));
+   return Concurrency.AwaitTask1(f(a$16));
   },criteriaFiller.view);
   criteriaFiller.Trigger();
   methodCriteria=Var$1.Create$1([null]);
   submit=Submitter.CreateOption(criteria.get_View());
+  result=DocExtension.Doc$1(updateSet,function(juvm)
+  {
+   var map,updateSubmitter,updateResult,jobParamUpdate,a$16,newMethodName,a$17,updateMethodName,a$18,updateStatus,a$19,newStatus,a$20,updateQueue,a$21,newQueue,a$22,updateMaxRetryCount,a$23,newMaxRetryCount;
+   map=updateSet.Lens(juvm.JobGuid);
+   updateSubmitter=Submitter.CreateOption(map.get_View());
+   function f$2(input)
+   {
+    var $task,$run,$state,$await,success;
+    $task=new WebSharper.Task1({
+     status:3,
+     continuations:[]
+    });
+    $state=0;
+    $run=function()
+    {
+     $top:while(true)
+      switch($state)
+      {
+       case 0:
+        if(Unchecked.Equals(input,null))
+         {
+          $task.result=Doc.ElementMixed("div",[""]);
+          $task.status=5;
+          $task.RunContinuations();
+          return;
+         }
+        $await=void 0;
+        $await=(new AjaxRemotingProvider.New()).Task("GlutenFree.OddJob.Manager.Presentation.WS:GlutenFree.OddJob.Manager.Presentation.WS.Remoting.UpdateJob:-1756354977",[input.$0]);
+        $state=1;
+        $await.OnCompleted($run);
+        return;
+       case 1:
+        if($await.exc)
+         {
+          $task.exc=$await.exc;
+          $task.status=7;
+          $task.RunContinuations();
+          return;
+         }
+        success=$await.result;
+        $task.result=Doc.ElementMixed("div",[success?"Updated":"Failed update"]);
+        $task.status=5;
+        $task.RunContinuations();
+        return;
+      }
+    };
+    $run();
+    return $task;
+   }
+   updateResult=View.MapAsync(function(a$24)
+   {
+    return Concurrency.AwaitTask1(f$2(a$24));
+   },updateSubmitter.view);
+   jobParamUpdate=Arrays.ofSeq(Linq.Select(juvm.UpdateDate.ParamUpdates,function(updateDateParamUpdate,i)
+   {
+    var a$24,updateParamTypeLens,a$25,newParamTypeLens,a$26,updateParamValueLens,a$27,newParamValueLens;
+    function del$24(a$28,b)
+    {
+     a$28.UpdateDate.ParamUpdates.get_Item(updateDateParamUpdate.K).UpdateParamType=b;
+     return a$28;
+    }
+    updateParamTypeLens=(a$24=function(a$28)
+    {
+     return function(b)
+     {
+      return del$24(a$28,b);
+     };
+    },Var$1.Lens(map,function(uvm)
+    {
+     return uvm.UpdateDate.ParamUpdates.get_Item(updateDateParamUpdate.K).UpdateParamType;
+    },function($1,$2)
+    {
+     return(a$24($1))($2);
+    }));
+    function del$25(a$28,b)
+    {
+     a$28.UpdateDate.ParamUpdates.get_Item(updateDateParamUpdate.K).NewParamType=b;
+     return a$28;
+    }
+    newParamTypeLens=(a$25=function(a$28)
+    {
+     return function(b)
+     {
+      return del$25(a$28,b);
+     };
+    },Var$1.Lens(map,function(uvm)
+    {
+     return uvm.UpdateDate.ParamUpdates.get_Item(updateDateParamUpdate.K).NewParamType;
+    },function($1,$2)
+    {
+     return(a$25($1))($2);
+    }));
+    function del$26(a$28,b)
+    {
+     a$28.UpdateDate.ParamUpdates.get_Item(updateDateParamUpdate.K).UpdateParamValue=b;
+     return a$28;
+    }
+    updateParamValueLens=(a$26=function(a$28)
+    {
+     return function(b)
+     {
+      return del$26(a$28,b);
+     };
+    },Var$1.Lens(map,function(uvm)
+    {
+     return uvm.UpdateDate.ParamUpdates.get_Item(updateDateParamUpdate.K).UpdateParamValue;
+    },function($1,$2)
+    {
+     return(a$26($1))($2);
+    }));
+    function del$27(a$28,b)
+    {
+     a$28.UpdateDate.ParamUpdates.get_Item(updateDateParamUpdate.K).NewParamValue=b;
+     return a$28;
+    }
+    newParamValueLens=(a$27=function(a$28)
+    {
+     return function(b)
+     {
+      return del$27(a$28,b);
+     };
+    },Var$1.Lens(map,function(uvm)
+    {
+     return uvm.UpdateDate.ParamUpdates.get_Item(updateDateParamUpdate.K).NewParamValue;
+    },function($1,$2)
+    {
+     return(a$27($1))($2);
+    }));
+    return Doc.ElementMixed("div",[ElementCreators.CheckableTextInput("Type",updateParamTypeLens,newParamTypeLens,juvm.MetaData.JobArgs[i].Type),ElementCreators.CheckableTextInput("Value",updateParamValueLens,newParamValueLens,juvm.MetaData.JobArgs[i].Value)]);
+   }));
+   function del$16(a$24,b)
+   {
+    a$24.UpdateDate.NewMethodName=b;
+    return a$24;
+   }
+   newMethodName=(a$16=function(a$24)
+   {
+    return function(b)
+    {
+     return del$16(a$24,b);
+    };
+   },Var$1.Lens(map,function(uvm)
+   {
+    return uvm.UpdateDate.NewMethodName;
+   },function($1,$2)
+   {
+    return(a$16($1))($2);
+   }));
+   function del$17(a$24,b)
+   {
+    a$24.UpdateDate.UpdateMethodName=b;
+    return a$24;
+   }
+   updateMethodName=(a$17=function(a$24)
+   {
+    return function(b)
+    {
+     return del$17(a$24,b);
+    };
+   },Var$1.Lens(map,function(uvm)
+   {
+    return uvm.UpdateDate.UpdateMethodName;
+   },function($1,$2)
+   {
+    return(a$17($1))($2);
+   }));
+   function del$18(a$24,b)
+   {
+    a$24.UpdateDate.UpdateStatus=b;
+    return a$24;
+   }
+   updateStatus=(a$18=function(a$24)
+   {
+    return function(b)
+    {
+     return del$18(a$24,b);
+    };
+   },Var$1.Lens(map,function(uvm)
+   {
+    return uvm.UpdateDate.UpdateStatus;
+   },function($1,$2)
+   {
+    return(a$18($1))($2);
+   }));
+   function del$19(a$24,b)
+   {
+    a$24.UpdateDate.NewStatus=b;
+    return a$24;
+   }
+   newStatus=(a$19=function(a$24)
+   {
+    return function(b)
+    {
+     return del$19(a$24,b);
+    };
+   },Var$1.Lens(map,function(uvm)
+   {
+    return uvm.UpdateDate.NewStatus;
+   },function($1,$2)
+   {
+    return(a$19($1))($2);
+   }));
+   function del$20(a$24,b)
+   {
+    a$24.UpdateDate.UpdateQueueName=b;
+    return a$24;
+   }
+   updateQueue=(a$20=function(a$24)
+   {
+    return function(b)
+    {
+     return del$20(a$24,b);
+    };
+   },Var$1.Lens(map,function(uvm)
+   {
+    return uvm.UpdateDate.UpdateQueueName;
+   },function($1,$2)
+   {
+    return(a$20($1))($2);
+   }));
+   function del$21(a$24,b)
+   {
+    a$24.UpdateDate.NewQueueName=b;
+    return a$24;
+   }
+   newQueue=(a$21=function(a$24)
+   {
+    return function(b)
+    {
+     return del$21(a$24,b);
+    };
+   },Var$1.Lens(map,function(uvm)
+   {
+    return uvm.UpdateDate.NewQueueName;
+   },function($1,$2)
+   {
+    return(a$21($1))($2);
+   }));
+   function del$22(a$24,b)
+   {
+    a$24.UpdateDate.UpdateRetryCount=b;
+    return a$24;
+   }
+   updateMaxRetryCount=(a$22=function(a$24)
+   {
+    return function(b)
+    {
+     return del$22(a$24,b);
+    };
+   },Var$1.Lens(map,function(uvm)
+   {
+    return uvm.UpdateDate.UpdateRetryCount;
+   },function($1,$2)
+   {
+    return(a$22($1))($2);
+   }));
+   function del$23(a$24,b)
+   {
+    a$24.UpdateDate.NewMaxRetryCount=b;
+    return a$24;
+   }
+   newMaxRetryCount=(a$23=function(a$24)
+   {
+    return function(b)
+    {
+     return del$23(a$24,b);
+    };
+   },Var$1.Lens(map,function(uvm)
+   {
+    return uvm.UpdateDate.NewMaxRetryCount;
+   },function($1,$2)
+   {
+    return(a$23($1))($2);
+   }));
+   function callback$1()
+   {
+    updateSubmitter.Trigger();
+   }
+   return Doc.ElementMixed("div",[AttrModule.Style("display","grid"),AttrModule.Style("grid-template-columns","50% 50%"),Doc.ElementMixed("div",[(new JobItem.New()).MethodName$1(juvm.MetaData.MethodName).QueueName$1(juvm.MetaData.Queue).Status$1(juvm.MetaData.Status).JobGuid$1(juvm.MetaData.JobId).Doc()]),Doc.ElementMixed("div",[Doc.ElementMixed("div",[Doc.ElementMixed("div",[ElementCreators.CheckableTextInput("Status",updateStatus,newStatus,juvm.MetaData.Status)]),Doc.ElementMixed("div",[ElementCreators.CheckableTextInput("MethodName",updateMethodName,newMethodName,juvm.MetaData.MethodName)]),Doc.ElementMixed("div",[ElementCreators.CheckableTextInput("QueueName",updateQueue,newQueue,juvm.MetaData.Queue)]),Doc.ElementMixed("div",[ElementCreators.CheckableNumberInput("MaxRetryCount",updateMaxRetryCount,newMaxRetryCount,juvm.MetaData.RetryParameters.MaxRetries)])])]),Doc.ElementMixed("div",[Doc.ElementMixed("div",Arrays.ofSeq(Linq.Select(juvm.MetaData.JobArgs,function(r,i)
+   {
+    return Doc.ElementMixed("span",[(new JobParameter.New()).Type$1(r.Type).Name$1(r.Name).Value$1(r.Value).Ordinal$1(Global.String(i)).Doc()]);
+   })))]),Doc.ElementMixed("div",jobParamUpdate),Doc.Button("Update",[],function()
+   {
+    callback$1();
+   }),Doc.ElementMixed("div",[updateResult])]);
+  });
   function f$1(input)
   {
-   var $task,$run,$state,methodOptionFuture,$await,awaitedMethodOptions,future,$await$1,awaitedFuture,result;
+   var $task,$run,$state,methodOptionFuture,$await,awaitedMethodOptions,future,$await$1,awaitedFuture;
    $task=new WebSharper.Task1({
     status:3,
     continuations:[]
@@ -268,14 +655,31 @@
          return;
         }
        awaitedFuture=$await$1.result;
-       result=Arrays.ofSeq(Seq.map(function(q)
+       updateSet.Set(Seq.map(function(q)
        {
-        return(new JobItem.New()).MethodName$1(q.get_MethodName()).QueueName$1(q.get_Queue()).Status$1(q.get_Status()).JobGuid$1(q.get_JobId()).JobParameter$4(Doc.ElementMixed("ul",Arrays.ofSeq(Linq.Select(q.get_JobArgs(),function(r,i)
+        var $1,$2;
+        $1=new JobUpdateViewModel.New();
+        $1.JobGuid=q.JobId;
+        $1.MetaData=q;
+        $1.UpdateDate=($2=new UpdateForJob.New(),$2.JobGuid=q.JobId,$2.OldStatus=q.Status,$2.ParamUpdates=Linq.ToDictionary(Linq.Select(Linq.OrderBy(q.JobArgs,function(a$16)
         {
-         return(new JobParameter.New()).Type$1(r.get_Type()).Name$1(r.get_Name()).Value$1(r.get_Value()).Ordinal$1(Global.String(i)).Doc();
-        })))).Doc();
+         return a$16.Ordinal;
+        },new BaseComparer.New()),function(r,i)
+        {
+         return{
+          key:Global.String(i),
+          value:new UpdateForParam.New()
+         };
+        }),function(r)
+        {
+         return r.key;
+        },function(s)
+        {
+         return s.value;
+        },new BaseEqualityComparer.New()),$2);
+        return $1;
        },awaitedFuture));
-       $task.result=Doc.ElementMixed("div",[Doc.ElementMixed("h3",["Results:"]),Doc.ElementMixed("br",[]),Doc.ConcatMixed([Doc.ElementMixed("ul",result)])]);
+       $task.result=Doc.ElementMixed("div",[Doc.ElementMixed("h3",["Results:"]),Doc.ElementMixed("br",[]),Doc.ConcatMixed([result])]);
        $task.status=5;
        $task.RunContinuations();
        return;
@@ -284,284 +688,226 @@
    $run();
    return $task;
   }
-  results=View.MapAsync(function(a$15)
+  results=View.MapAsync(function(a$16)
   {
-   return Concurrency.AwaitTask1(f$1(a$15));
+   return Concurrency.AwaitTask1(f$1(a$16));
   },submit.view);
-  function del$4(a$15,b)
+  function del$5(a$16,b)
   {
-   a$15.set_QueueName(b);
-   return a$15;
+   a$16.set_QueueName(b);
+   return a$16;
   }
-  queueNameLens=(a$4=function(a$15)
+  queueNameLens=(a$5=function(a$16)
   {
    return function(b)
    {
-    return del$4(a$15,b);
+    return del$5(a$16,b);
    };
   },Var$1.Lens(criteria,function(q)
   {
    return q.get_QueueName();
   },function($1,$2)
   {
-   return(a$4($1))($2);
+   return(a$5($1))($2);
   }));
-  function del$5(a$15,b)
+  function del$6(a$16,b)
   {
-   a$15.useCreatedDate=b;
-   return a$15;
+   a$16.useCreatedDate=b;
+   return a$16;
   }
-  useCreatedLens=(a$5=function(a$15)
+  useCreatedLens=(a$6=function(a$16)
   {
    return function(b)
    {
-    return del$5(a$15,b);
+    return del$6(a$16,b);
    };
   },Var$1.Lens(criteria,function(q)
   {
    return q.useCreatedDate;
   },function($1,$2)
   {
-   return(a$5($1))($2);
+   return(a$6($1))($2);
   }));
-  function del$6(a$15,b)
+  function del$7(a$16,b)
   {
-   a$15.createdBefore=b;
-   return a$15;
+   a$16.createdBefore=b;
+   return a$16;
   }
-  createdBeforeDateLens=(a$6=function(a$15)
+  createdBeforeDateLens=(a$7=function(a$16)
   {
    return function(b)
    {
-    return del$6(a$15,b);
+    return del$7(a$16,b);
    };
   },Var$1.Lens(criteria,function(q)
   {
    return q.createdBefore;
   },function($1,$2)
   {
-   return(a$6($1))($2);
+   return(a$7($1))($2);
   }));
-  function del$7(a$15,b)
+  function del$8(a$16,b)
   {
-   a$15.createdBefore=b;
-   return a$15;
+   a$16.createdBefore=b;
+   return a$16;
   }
-  createdAfterDateLens=(a$7=function(a$15)
+  createdAfterDateLens=(a$8=function(a$16)
   {
    return function(b)
    {
-    return del$7(a$15,b);
+    return del$8(a$16,b);
    };
   },Var$1.Lens(criteria,function(q)
   {
    return q.createdAfter;
   },function($1,$2)
   {
-   return(a$7($1))($2);
+   return(a$8($1))($2);
   }));
-  function del$8(a$15,b)
+  function del$9(a$16,b)
   {
-   a$15.createdBeforeTime=b;
-   return a$15;
+   a$16.createdBeforeTime=b;
+   return a$16;
   }
-  createdBeforeTimeLens=(a$8=function(a$15)
+  createdBeforeTimeLens=(a$9=function(a$16)
   {
    return function(b)
    {
-    return del$8(a$15,b);
+    return del$9(a$16,b);
    };
   },Var$1.Lens(criteria,function(q)
   {
    return q.createdBeforeTime;
   },function($1,$2)
   {
-   return(a$8($1))($2);
+   return(a$9($1))($2);
   }));
-  function del$9(a$15,b)
+  function del$10(a$16,b)
   {
-   a$15.createdAfterTime=b;
-   return a$15;
+   a$16.createdAfterTime=b;
+   return a$16;
   }
-  createdAfterTimeLens=(a$9=function(a$15)
+  createdAfterTimeLens=(a$10=function(a$16)
   {
    return function(b)
    {
-    return del$9(a$15,b);
+    return del$10(a$16,b);
    };
   },Var$1.Lens(criteria,function(q)
   {
    return q.createdAfterTime;
   },function($1,$2)
   {
-   return(a$9($1))($2);
+   return(a$10($1))($2);
   }));
-  function del$10(a$15,b)
+  function del$11(a$16,b)
   {
-   a$15.useLastAttemptDate=b;
-   return a$15;
+   a$16.useLastAttemptDate=b;
+   return a$16;
   }
-  useAttemptedDTLens=(a$10=function(a$15)
+  useAttemptedDTLens=(a$11=function(a$16)
   {
    return function(b)
    {
-    return del$10(a$15,b);
+    return del$11(a$16,b);
    };
   },Var$1.Lens(criteria,function(q)
   {
    return q.useLastAttemptDate;
   },function($1,$2)
   {
-   return(a$10($1))($2);
+   return(a$11($1))($2);
   }));
-  function del$11(a$15,b)
+  function del$12(a$16,b)
   {
-   a$15.attemptedBeforeTime=b;
-   return a$15;
+   a$16.attemptedBeforeTime=b;
+   return a$16;
   }
-  lastExecutedBeforeTimeLens=(a$11=function(a$15)
+  lastExecutedBeforeTimeLens=(a$12=function(a$16)
   {
    return function(b)
    {
-    return del$11(a$15,b);
+    return del$12(a$16,b);
    };
   },Var$1.Lens(criteria,function(q)
   {
    return q.attemptedBeforeTime;
   },function($1,$2)
   {
-   return(a$11($1))($2);
+   return(a$12($1))($2);
   }));
-  function del$12(a$15,b)
+  function del$13(a$16,b)
   {
-   a$15.attemptedBeforeDate=b;
-   return a$15;
+   a$16.attemptedBeforeDate=b;
+   return a$16;
   }
-  lastExecutedBeforeDateLens=(a$12=function(a$15)
+  lastExecutedBeforeDateLens=(a$13=function(a$16)
   {
    return function(b)
    {
-    return del$12(a$15,b);
+    return del$13(a$16,b);
    };
   },Var$1.Lens(criteria,function(q)
   {
    return q.attemptedBeforeDate;
   },function($1,$2)
   {
-   return(a$12($1))($2);
+   return(a$13($1))($2);
   }));
-  function del$13(a$15,b)
+  function del$14(a$16,b)
   {
-   a$15.attemptedAfterTime=b;
-   return a$15;
+   a$16.attemptedAfterTime=b;
+   return a$16;
   }
-  lastExecutedAfterTimeLens=(a$13=function(a$15)
+  lastExecutedAfterTimeLens=(a$14=function(a$16)
   {
    return function(b)
    {
-    return del$13(a$15,b);
+    return del$14(a$16,b);
    };
   },Var$1.Lens(criteria,function(q)
   {
    return q.attemptedAfterTime;
   },function($1,$2)
   {
-   return(a$13($1))($2);
+   return(a$14($1))($2);
   }));
-  function del$14(a$15,b)
+  function del$15(a$16,b)
   {
-   a$15.attemptedAfterDate=b;
-   return a$15;
+   a$16.attemptedAfterDate=b;
+   return a$16;
   }
-  lastExecutedAfterDateLens=(a$14=function(a$15)
+  lastExecutedAfterDateLens=(a$15=function(a$16)
   {
    return function(b)
    {
-    return del$14(a$15,b);
+    return del$15(a$16,b);
    };
   },Var$1.Lens(criteria,function(q)
   {
    return q.attemptedAfterDate;
   },function($1,$2)
   {
-   return(a$14($1))($2);
+   return(a$15($1))($2);
   }));
-  function del$15(r,e)
+  content=Doc.ElementMixed("div",[Doc.ElementMixed("div",[AttrModule.Style("width","100%"),Doc.ElementMixed("div",[ElementCreators.OptionSearch("Queue Name",queueNameLens,queueNameView,useQueueLens,function()
   {
    return submit.Trigger();
-  }
-  content=Doc.ElementMixed("div",[Doc.ElementMixed("div",["Queue Name: ",Doc.SelectDyn([],function(q)
-  {
-   return q===null?"Please Select a Queue...":q;
-  },View.Map(List.ofSeq,queueNameView),queueNameLens),AttrModule.Handler("change",function(a$15)
-  {
-   return function(b)
-   {
-    return del$15(a$15,b);
-   };
-  }),AttrProxy.Create("name","queueNameSelect")]),JobSearchClient.TextSearch("Method Name",methodLens,useMethod),JobSearchClient.OptionSearch("Status",statusLens,statusOptions.get_View(),useStatus,function()
+  }),ElementCreators.TextSearch("Method Name",methodLens,useMethod),ElementCreators.OptionSearch("Status",statusLens,statusOptions.get_View(),useStatus,function()
   {
    return submit.Trigger();
-  }),JobSearchClient.OptionSearch("Method",methodLens,methodCriteria.get_View(),useMethod,function()
+  }),ElementCreators.OptionSearch("Method",methodLens,methodCriteria.get_View(),useMethod,function()
   {
    return submit.Trigger();
-  }),JobSearchClient.DateTimeRangeSearch("Created",useCreatedLens,createdBeforeDateLens,createdBeforeTimeLens,createdAfterDateLens,createdAfterTimeLens),JobSearchClient.DateTimeRangeSearch("Attempt",useAttemptedDTLens,lastExecutedBeforeDateLens,lastExecutedBeforeTimeLens,lastExecutedAfterDateLens,lastExecutedAfterTimeLens),Doc.ElementMixed("br",[]),(callback=Runtime$1.BindDelegate(Submitter.prototype.Trigger,submit),Doc.Button("Search",[],function()
+  }),ElementCreators.DateTimeRangeSearch("Created",useCreatedLens,createdBeforeDateLens,createdBeforeTimeLens,createdAfterDateLens,createdAfterTimeLens),ElementCreators.DateTimeRangeSearch("Attempt",useAttemptedDTLens,lastExecutedBeforeDateLens,lastExecutedBeforeTimeLens,lastExecutedAfterDateLens,lastExecutedAfterTimeLens),Doc.ElementMixed("div",[(callback=Runtime$1.BindDelegate(Submitter.prototype.Trigger,submit),Doc.Button("Search",[],function()
   {
    callback();
-  })),Doc.ElementMixed("div",[results])]);
+  }))])])]),Doc.ElementMixed("div",[Doc.ElementMixed("br",[])]),Doc.ElementMixed("div",[results])]);
   return content;
  };
- JobSearchClient.ClearableTimeInput=function(timeLens)
+ JobSearchClient.BuildUpdateForJob=function(juvm)
  {
-  function callback()
-  {
-   var $1;
-   timeLens.Set($1="");
-   return $1;
-  }
-  return Doc.ElementMixed("div",[Doc.Input([AttrProxy.Create("type","time")],timeLens),Doc.Button("Clear",[],function()
-  {
-   callback();
-  })]);
- };
- JobSearchClient.ClearableDateInput=function(dateLens)
- {
-  function callback()
-  {
-   var $1;
-   dateLens.Set($1="");
-   return $1;
-  }
-  return Doc.ElementMixed("div",[Doc.Input([AttrProxy.Create("type","date")],dateLens),Doc.Button("Clear",[],function()
-  {
-   callback();
-  })]);
- };
- JobSearchClient.DateTimeRangeSearch=function(name,useCriteriaLens,beforeDateLens,beforeTimeLens,afterDateLens,afterTimeLens)
- {
-  return Doc.ElementMixed("div",[AttrModule.Style("float","left"),Doc.CheckBox([],useCriteriaLens),name+": ",Doc.ElementMixed("br",[]),Doc.ElementMixed("div",[AttrModule.Style("float","left"),JobSearchClient.ClearableDateInput(beforeDateLens),JobSearchClient.ClearableTimeInput(beforeTimeLens)]),Doc.ElementMixed("div",[AttrModule.Style("float","left"),JobSearchClient.ClearableDateInput(afterDateLens),JobSearchClient.ClearableTimeInput(afterTimeLens)])]);
- };
- JobSearchClient.DateRangeSearch=function(name,useCriteriaLens,beforeLens,afterLens)
- {
-  return Doc.ElementMixed("div",[Doc.CheckBox([],useCriteriaLens),name+": ",Doc.Input([AttrProxy.Create("type","date")],beforeLens),Doc.Input([AttrProxy.Create("type","date")],afterLens)]);
- };
- JobSearchClient.OptionSearch=function(name,criteriaLens,optionView,useCriteriaLens,changeAction)
- {
-  var del;
-  return Doc.ElementMixed("div",[Doc.CheckBox([],useCriteriaLens),name+": ",Doc.SelectDyn([],function(q)
-  {
-   return q===null?"Please Select a "+name+"...":q;
-  },View.Map(List.ofSeq,optionView),criteriaLens),AttrModule.Handler("change",(del=changeAction,function(a)
-  {
-   return function(b)
-   {
-    return del(a,b);
-   };
-  }))]);
- };
- JobSearchClient.TextSearch=function(name,criteriaLens,useCriteriaLens)
- {
-  return Doc.ElementMixed("div",[Doc.CheckBox([],useCriteriaLens),name,Doc.Input([],criteriaLens)]);
+  return Doc.ElementMixed("div",[]);
  };
  Client.Main=function()
  {
@@ -630,6 +976,7 @@
    this.attemptedAfterTime="";
    this.createdBeforeTime="";
    this.createdAfterTime="";
+   this.UseQueue=true;
    this.set_QueueName(null);
    this.set_MethodName(null);
    this.set_Status(null);
@@ -640,45 +987,47 @@
  {
   this.$init();
  },JobSearchCriteria);
- JobRetryParameters=WS.JobRetryParameters=Runtime$1.Class({
-  set_LastAttempt:function(value)
-  {
-   this.$LastAttempt=value;
-  },
-  get_LastAttempt:function()
-  {
-   return this.$LastAttempt;
-  },
-  set_RetryCount:function(value)
-  {
-   this.$RetryCount=value;
-  },
-  get_RetryCount:function()
-  {
-   return this.$RetryCount;
-  },
-  set_MinRetryWait:function(value)
-  {
-   this.$MinRetryWait=value;
-  },
-  get_MinRetryWait:function()
-  {
-   return this.$MinRetryWait;
-  },
-  set_MaxRetries:function(value)
-  {
-   this.$MaxRetries=value;
-  },
-  get_MaxRetries:function()
-  {
-   return this.$MaxRetries;
-  },
+ UpdateForJob=WS.UpdateForJob=Runtime$1.Class({
   $init:function()
   {
-   this.set_MaxRetries(0);
-   this.set_MinRetryWait(0);
-   this.set_RetryCount(0);
-   this.set_LastAttempt(null);
+   this.JobGuid=null;
+   this.OldStatus=null;
+   this.UpdateRetryCount=null;
+   this.NewMaxRetryCount=0;
+   this.RequireOldStatus=null;
+   this.UpdateMethodName=null;
+   this.NewMethodName=null;
+   this.UpdateQueueName=null;
+   this.NewQueueName=null;
+   this.UpdateStatus=null;
+   this.NewStatus=null;
+   this.ParamUpdates=null;
+  }
+ },Obj,UpdateForJob);
+ UpdateForJob.New=Runtime$1.Ctor(function()
+ {
+  this.$init();
+ },UpdateForJob);
+ UpdateForParam=WS.UpdateForParam=Runtime$1.Class({
+  $init:function()
+  {
+   this.UpdateParamType=null;
+   this.NewParamType=null;
+   this.UpdateParamValue=null;
+   this.NewParamValue=null;
+  }
+ },Obj,UpdateForParam);
+ UpdateForParam.New=Runtime$1.Ctor(function()
+ {
+  this.$init();
+ },UpdateForParam);
+ JobRetryParameters=WS.JobRetryParameters=Runtime$1.Class({
+  $init:function()
+  {
+   this.MaxRetries=0;
+   this.MinRetryWait=0;
+   this.RetryCount=0;
+   this.LastAttempt=null;
   }
  },Obj,JobRetryParameters);
  JobRetryParameters.New=Runtime$1.Ctor(function()
@@ -686,125 +1035,42 @@
   this.$init();
  },JobRetryParameters);
  JobParameterDto=WS.JobParameterDto=Runtime$1.Class({
-  set_Value:function(value)
-  {
-   this.$Value=value;
-  },
-  get_Value:function()
-  {
-   return this.$Value;
-  },
-  set_Name:function(value)
-  {
-   this.$Name=value;
-  },
-  get_Name:function()
-  {
-   return this.$Name;
-  },
-  set_Type:function(value)
-  {
-   this.$Type=value;
-  },
-  get_Type:function()
-  {
-   return this.$Type;
-  },
   $init:function()
   {
-   this.set_Type(null);
-   this.set_Name(null);
-   this.set_Value(null);
+   this.Ordinal=0;
+   this.Type=null;
+   this.Name=null;
+   this.Value=null;
   }
  },Obj,JobParameterDto);
  JobParameterDto.New=Runtime$1.Ctor(function()
  {
   this.$init();
  },JobParameterDto);
- JobMetadataResult=WS.JobMetadataResult=Runtime$1.Class({
-  set_Queue:function(value)
-  {
-   this.$Queue=value;
-  },
-  get_Queue:function()
-  {
-   return this.$Queue;
-  },
-  set_RetryParameters:function(value)
-  {
-   this.$RetryParameters=value;
-  },
-  get_RetryParameters:function()
-  {
-   return this.$RetryParameters;
-  },
-  set_ExecutionTime:function(value)
-  {
-   this.$ExecutionTime=value;
-  },
-  get_ExecutionTime:function()
-  {
-   return this.$ExecutionTime;
-  },
-  set_MethodGenericTypes:function(value)
-  {
-   this.$MethodGenericTypes=value;
-  },
-  get_MethodGenericTypes:function()
-  {
-   return this.$MethodGenericTypes;
-  },
-  set_Status:function(value)
-  {
-   this.$Status=value;
-  },
-  get_Status:function()
-  {
-   return this.$Status;
-  },
-  set_MethodName:function(value)
-  {
-   this.$MethodName=value;
-  },
-  get_MethodName:function()
-  {
-   return this.$MethodName;
-  },
-  set_TypeExecutedOn:function(value)
-  {
-   this.$TypeExecutedOn=value;
-  },
-  get_TypeExecutedOn:function()
-  {
-   return this.$TypeExecutedOn;
-  },
-  set_JobArgs:function(value)
-  {
-   this.$JobArgs=value;
-  },
-  get_JobArgs:function()
-  {
-   return this.$JobArgs;
-  },
-  set_JobId:function(value)
-  {
-   this.$JobId=value;
-  },
-  get_JobId:function()
-  {
-   return this.$JobId;
-  },
+ JobUpdateViewModel=WS.JobUpdateViewModel=Runtime$1.Class({
   $init:function()
   {
-   this.set_JobId(null);
-   this.set_JobArgs(null);
-   this.set_TypeExecutedOn(null);
-   this.set_MethodName(null);
-   this.set_Status(null);
-   this.set_MethodGenericTypes(null);
-   this.set_ExecutionTime(null);
-   this.set_RetryParameters(null);
-   this.set_Queue(null);
+   this.JobGuid=null;
+   this.UpdateDate=null;
+   this.MetaData=null;
+  }
+ },Obj,JobUpdateViewModel);
+ JobUpdateViewModel.New=Runtime$1.Ctor(function()
+ {
+  this.$init();
+ },JobUpdateViewModel);
+ JobMetadataResult=WS.JobMetadataResult=Runtime$1.Class({
+  $init:function()
+  {
+   this.JobId=null;
+   this.JobArgs=null;
+   this.TypeExecutedOn=null;
+   this.MethodName=null;
+   this.Status=null;
+   this.MethodGenericTypes=null;
+   this.ExecutionTime=null;
+   this.RetryParameters=null;
+   this.Queue=null;
   }
  },Obj,JobMetadataResult);
  JobMetadataResult.New=Runtime$1.Ctor(function()
@@ -872,52 +1138,6 @@
    doc=GlutenFree$OddJob$Manager$Presentation$WS_Templates.jobitem(completed[0]);
    this.instance=new Instance$1.New(completed[1],doc);
    return this.instance;
-  },
-  JobParameter:function(x)
-  {
-   this.holes.push({
-    $:2,
-    $0:"jobparameter",
-    $1:x
-   });
-   return this;
-  },
-  JobParameter$1:function(x)
-  {
-   this.holes.push({
-    $:1,
-    $0:"jobparameter",
-    $1:x
-   });
-   return this;
-  },
-  JobParameter$2:function(x)
-  {
-   x=x==void 0?[]:x;
-   this.holes.push({
-    $:0,
-    $0:"jobparameter",
-    $1:Doc.Concat(x)
-   });
-   return this;
-  },
-  JobParameter$3:function(x)
-  {
-   this.holes.push({
-    $:0,
-    $0:"jobparameter",
-    $1:Doc.Concat(x)
-   });
-   return this;
-  },
-  JobParameter$4:function(x)
-  {
-   this.holes.push({
-    $:0,
-    $0:"jobparameter",
-    $1:x
-   });
-   return this;
   },
   Status:function(x)
   {
@@ -1797,7 +2017,7 @@
  {
   TemplateInstance.New.call(this,v,d);
  },Instance$7);
- Searchoption=Template.Searchoption=Runtime$1.Class({
+ Editablejobitem=Template.Editablejobitem=Runtime$1.Class({
   Doc:function()
   {
    return this.Create().get_Doc();
@@ -1816,12 +2036,12 @@
    this.holes=[];
    this.instance=null;
   }
- },Obj,Searchoption);
- Searchoption.New=Runtime$1.Ctor(function()
+ },Obj,Editablejobitem);
+ Editablejobitem.New=Runtime$1.Ctor(function()
  {
   this.$init();
- },Searchoption);
- Vars$8=Searchoption.Vars=Runtime$1.Class({
+ },Editablejobitem);
+ Vars$8=Editablejobitem.Vars=Runtime$1.Class({
   $init:function()
   {
    this.instance=null;
@@ -1836,7 +2056,7 @@
   this.$init();
   this.instance=i;
  },Vars$8);
- Instance$8=Searchoption.Instance=Runtime$1.Class({
+ Instance$8=Editablejobitem.Instance=Runtime$1.Class({
   get_Vars:function()
   {
    return new Vars$8.New$1(this);
@@ -1846,6 +2066,222 @@
  {
   TemplateInstance.New.call(this,v,d);
  },Instance$8);
+ EditableJobItem=Editablejobitem.EditableJobItem=Runtime$1.Class({
+  Doc:function()
+  {
+   return this.Create().get_Doc();
+  },
+  Create:function()
+  {
+   var completed,doc;
+   completed=Handler.CompleteHoles(this.key,this.holes,[]);
+   doc=GlutenFree$OddJob$Manager$Presentation$WS_Templates.editablejobitem(completed[0]);
+   this.instance=new Instance$9.New(completed[1],doc);
+   return this.instance;
+  },
+  JobParameter:function(x)
+  {
+   this.holes.push({
+    $:2,
+    $0:"jobparameter",
+    $1:x
+   });
+   return this;
+  },
+  JobParameter$1:function(x)
+  {
+   this.holes.push({
+    $:1,
+    $0:"jobparameter",
+    $1:x
+   });
+   return this;
+  },
+  JobParameter$2:function(x)
+  {
+   x=x==void 0?[]:x;
+   this.holes.push({
+    $:0,
+    $0:"jobparameter",
+    $1:Doc.Concat(x)
+   });
+   return this;
+  },
+  JobParameter$3:function(x)
+  {
+   this.holes.push({
+    $:0,
+    $0:"jobparameter",
+    $1:Doc.Concat(x)
+   });
+   return this;
+  },
+  JobParameter$4:function(x)
+  {
+   this.holes.push({
+    $:0,
+    $0:"jobparameter",
+    $1:x
+   });
+   return this;
+  },
+  Status:function(x)
+  {
+   this.holes.push({
+    $:2,
+    $0:"status",
+    $1:x
+   });
+   return this;
+  },
+  Status$1:function(x)
+  {
+   this.holes.push({
+    $:1,
+    $0:"status",
+    $1:x
+   });
+   return this;
+  },
+  QueueName:function(x)
+  {
+   this.holes.push({
+    $:2,
+    $0:"queuename",
+    $1:x
+   });
+   return this;
+  },
+  QueueName$1:function(x)
+  {
+   this.holes.push({
+    $:1,
+    $0:"queuename",
+    $1:x
+   });
+   return this;
+  },
+  MethodName:function(x)
+  {
+   this.holes.push({
+    $:2,
+    $0:"methodname",
+    $1:x
+   });
+   return this;
+  },
+  MethodName$1:function(x)
+  {
+   this.holes.push({
+    $:1,
+    $0:"methodname",
+    $1:x
+   });
+   return this;
+  },
+  JobGuid:function(x)
+  {
+   this.holes.push({
+    $:2,
+    $0:"jobguid",
+    $1:x
+   });
+   return this;
+  },
+  JobGuid$1:function(x)
+  {
+   this.holes.push({
+    $:1,
+    $0:"jobguid",
+    $1:x
+   });
+   return this;
+  },
+  $init:function()
+  {
+   this.key=Guid.NewGuid();
+   this.holes=[];
+   this.instance=null;
+  }
+ },Obj,EditableJobItem);
+ EditableJobItem.New=Runtime$1.Ctor(function()
+ {
+  this.$init();
+ },EditableJobItem);
+ Vars$9=EditableJobItem.Vars=Runtime$1.Class({
+  $init:function()
+  {
+   this.instance=null;
+  }
+ },null,Vars$9);
+ Vars$9.New=Runtime$1.Ctor(function()
+ {
+  this.$init();
+ },Vars$9);
+ Vars$9.New$1=Runtime$1.Ctor(function(i)
+ {
+  this.$init();
+  this.instance=i;
+ },Vars$9);
+ Instance$9=EditableJobItem.Instance=Runtime$1.Class({
+  get_Vars:function()
+  {
+   return new Vars$9.New$1(this);
+  }
+ },TemplateInstance,Instance$9);
+ Instance$9.New=Runtime$1.Ctor(function(v,d)
+ {
+  TemplateInstance.New.call(this,v,d);
+ },Instance$9);
+ Searchoption=Template.Searchoption=Runtime$1.Class({
+  Doc:function()
+  {
+   return this.Create().get_Doc();
+  },
+  Create:function()
+  {
+   var completed,doc;
+   completed=Handler.CompleteHoles(this.key,this.holes,[]);
+   doc=GlutenFree$OddJob$Manager$Presentation$WS_Templates.t(completed[0]);
+   this.instance=new Instance$10.New(completed[1],doc);
+   return this.instance;
+  },
+  $init:function()
+  {
+   this.key=Guid.NewGuid();
+   this.holes=[];
+   this.instance=null;
+  }
+ },Obj,Searchoption);
+ Searchoption.New=Runtime$1.Ctor(function()
+ {
+  this.$init();
+ },Searchoption);
+ Vars$10=Searchoption.Vars=Runtime$1.Class({
+  $init:function()
+  {
+   this.instance=null;
+  }
+ },null,Vars$10);
+ Vars$10.New=Runtime$1.Ctor(function()
+ {
+  this.$init();
+ },Vars$10);
+ Vars$10.New$1=Runtime$1.Ctor(function(i)
+ {
+  this.$init();
+  this.instance=i;
+ },Vars$10);
+ Instance$10=Searchoption.Instance=Runtime$1.Class({
+  get_Vars:function()
+  {
+   return new Vars$10.New$1(this);
+  }
+ },TemplateInstance,Instance$10);
+ Instance$10.New=Runtime$1.Ctor(function(v,d)
+ {
+  TemplateInstance.New.call(this,v,d);
+ },Instance$10);
  SearchOption=Searchoption.SearchOption=Runtime$1.Class({
   Doc:function()
   {
@@ -1856,7 +2292,7 @@
    var completed,doc;
    completed=Handler.CompleteHoles(this.key,this.holes,[]);
    doc=GlutenFree$OddJob$Manager$Presentation$WS_Templates.searchoption(completed[0]);
-   this.instance=new Instance$9.New(completed[1],doc);
+   this.instance=new Instance$11.New(completed[1],doc);
    return this.instance;
   },
   JobParameter:function(x)
@@ -1988,31 +2424,31 @@
  {
   this.$init();
  },SearchOption);
- Vars$9=SearchOption.Vars=Runtime$1.Class({
+ Vars$11=SearchOption.Vars=Runtime$1.Class({
   $init:function()
   {
    this.instance=null;
   }
- },null,Vars$9);
- Vars$9.New=Runtime$1.Ctor(function()
+ },null,Vars$11);
+ Vars$11.New=Runtime$1.Ctor(function()
  {
   this.$init();
- },Vars$9);
- Vars$9.New$1=Runtime$1.Ctor(function(i)
+ },Vars$11);
+ Vars$11.New$1=Runtime$1.Ctor(function(i)
  {
   this.$init();
   this.instance=i;
- },Vars$9);
- Instance$9=SearchOption.Instance=Runtime$1.Class({
+ },Vars$11);
+ Instance$11=SearchOption.Instance=Runtime$1.Class({
   get_Vars:function()
   {
-   return new Vars$9.New$1(this);
+   return new Vars$11.New$1(this);
   }
- },TemplateInstance,Instance$9);
- Instance$9.New=Runtime$1.Ctor(function(v,d)
+ },TemplateInstance,Instance$11);
+ Instance$11.New=Runtime$1.Ctor(function(v,d)
  {
   TemplateInstance.New.call(this,v,d);
- },Instance$9);
+ },Instance$11);
  GlutenFree$OddJob$Manager$Presentation$WS_Templates.t=function(h)
  {
   return h?Templates.GetOrLoadTemplate("jobitem",null,function()
@@ -2030,13 +2466,13 @@
    $0:"jobitem"
   },function()
   {
-   return DomUtility.ParseHTMLIntoFakeRoot("<li>\r\n    <div class=\"Jobs\">\r\n        <div>JobGuid: <input value=\"${JobGuid}\" readonly=\"readonly\" size=\"40\"></div>\r\n        <div>MethodName: <input value=\"${MethodName}\" readonly=\"readonly\" size=\"40\"> </div>\r\n        <div>QueueName: <input value=\"${QueueName}\" readonly=\"readonly\" size=\"40\"></div>\r\n        <div>Status: <input value=\"${Status}\" readonly=\"readonly\" size=\"40\"></div>\r\n        <div ws-hole=\"JobParameter\"></div>\r\n    </div>\r\n</li>");
+   return DomUtility.ParseHTMLIntoFakeRoot("<span class=\"jobmetadata\" style=\"display: grid\">\r\n        <span>JobGuid: <input value=\"${JobGuid}\" readonly=\"readonly\" size=\"40\"></span>\r\n        <span>MethodName: <input value=\"${MethodName}\" readonly=\"readonly\" size=\"40\"> </span>\r\n        <span>QueueName: <input value=\"${QueueName}\" readonly=\"readonly\" size=\"40\"></span>\r\n        <span>Status: <input value=\"${Status}\" readonly=\"readonly\" size=\"40\"></span>\r\n</span>");
   },h):Templates.PrepareTemplate("jobitem",{
    $:1,
    $0:"jobitem"
   },function()
   {
-   return DomUtility.ParseHTMLIntoFakeRoot("<li>\r\n    <div class=\"Jobs\">\r\n        <div>JobGuid: <input value=\"${JobGuid}\" readonly=\"readonly\" size=\"40\"></div>\r\n        <div>MethodName: <input value=\"${MethodName}\" readonly=\"readonly\" size=\"40\"> </div>\r\n        <div>QueueName: <input value=\"${QueueName}\" readonly=\"readonly\" size=\"40\"></div>\r\n        <div>Status: <input value=\"${Status}\" readonly=\"readonly\" size=\"40\"></div>\r\n        <div ws-hole=\"JobParameter\"></div>\r\n    </div>\r\n</li>");
+   return DomUtility.ParseHTMLIntoFakeRoot("<span class=\"jobmetadata\" style=\"display: grid\">\r\n        <span>JobGuid: <input value=\"${JobGuid}\" readonly=\"readonly\" size=\"40\"></span>\r\n        <span>MethodName: <input value=\"${MethodName}\" readonly=\"readonly\" size=\"40\"> </span>\r\n        <span>QueueName: <input value=\"${QueueName}\" readonly=\"readonly\" size=\"40\"></span>\r\n        <span>Status: <input value=\"${Status}\" readonly=\"readonly\" size=\"40\"></span>\r\n</span>");
   });
  };
  GlutenFree$OddJob$Manager$Presentation$WS_Templates.jobparameter=function(h)
@@ -2046,13 +2482,13 @@
    $0:"jobparameter"
   },function()
   {
-   return DomUtility.ParseHTMLIntoFakeRoot("<li>\r\n    <div class=\"JobParameter\">\r\n        <div>Ordinal : <input readonly=\"readonly\" value=\"${Ordinal}\"> </div> <div>Name: <input value=\"${Name}\" readonly=\"readonly\"> </div> <div>Type: <input value=\"${Type}\" readonly=\"readonly\"> </div> <div>Value: <input value=\"${Value}\" readonly=\"readonly\"></div>\r\n    </div>\r\n</li>");
+   return DomUtility.ParseHTMLIntoFakeRoot("<div class=\"jobparameter\" ,=\"\" style=\"margin-left: 5%\">\r\n        <div>Ordinal : <input readonly=\"readonly\" value=\"${Ordinal}\"> </div> \r\n        <div>Name: <input value=\"${Name}\" readonly=\"readonly\"> </div> \r\n        <div>Type: <input value=\"${Type}\" readonly=\"readonly\"> </div> \r\n        <div>Value: <input value=\"${Value}\" readonly=\"readonly\"></div>\r\n</div>");
   },h):Templates.PrepareTemplate("jobparameter",{
    $:1,
    $0:"jobparameter"
   },function()
   {
-   return DomUtility.ParseHTMLIntoFakeRoot("<li>\r\n    <div class=\"JobParameter\">\r\n        <div>Ordinal : <input readonly=\"readonly\" value=\"${Ordinal}\"> </div> <div>Name: <input value=\"${Name}\" readonly=\"readonly\"> </div> <div>Type: <input value=\"${Type}\" readonly=\"readonly\"> </div> <div>Value: <input value=\"${Value}\" readonly=\"readonly\"></div>\r\n    </div>\r\n</li>");
+   return DomUtility.ParseHTMLIntoFakeRoot("<div class=\"jobparameter\" ,=\"\" style=\"margin-left: 5%\">\r\n        <div>Ordinal : <input readonly=\"readonly\" value=\"${Ordinal}\"> </div> \r\n        <div>Name: <input value=\"${Name}\" readonly=\"readonly\"> </div> \r\n        <div>Type: <input value=\"${Type}\" readonly=\"readonly\"> </div> \r\n        <div>Value: <input value=\"${Value}\" readonly=\"readonly\"></div>\r\n</div>");
   });
  };
  GlutenFree$OddJob$Manager$Presentation$WS_Templates.t$1=function(h)
@@ -2101,6 +2537,22 @@
  {
   Templates.LoadLocalTemplates("main");
   return h?Templates.NamedTemplate("main",null,h):void 0;
+ };
+ GlutenFree$OddJob$Manager$Presentation$WS_Templates.editablejobitem=function(h)
+ {
+  return h?Templates.GetOrLoadTemplate("editablejobitem",{
+   $:1,
+   $0:"editablejobitem"
+  },function()
+  {
+   return DomUtility.ParseHTMLIntoFakeRoot("<li>\r\n    <div class=\"Jobs\">\r\n        <div>JobGuid: <input value=\"${JobGuid}\" readonly=\"readonly\" size=\"40\"></div>\r\n        <div>MethodName: <input value=\"${MethodName}\" readonly=\"readonly\" size=\"40\"> </div>\r\n        <div>QueueName: <input value=\"${QueueName}\" readonly=\"readonly\" size=\"40\"></div>\r\n        <div>Status: <input value=\"${Status}\" readonly=\"readonly\" size=\"40\"></div>\r\n        <div ws-hole=\"JobParameter\"></div>\r\n    </div>\r\n</li>");
+  },h):Templates.PrepareTemplate("editablejobitem",{
+   $:1,
+   $0:"editablejobitem"
+  },function()
+  {
+   return DomUtility.ParseHTMLIntoFakeRoot("<li>\r\n    <div class=\"Jobs\">\r\n        <div>JobGuid: <input value=\"${JobGuid}\" readonly=\"readonly\" size=\"40\"></div>\r\n        <div>MethodName: <input value=\"${MethodName}\" readonly=\"readonly\" size=\"40\"> </div>\r\n        <div>QueueName: <input value=\"${QueueName}\" readonly=\"readonly\" size=\"40\"></div>\r\n        <div>Status: <input value=\"${Status}\" readonly=\"readonly\" size=\"40\"></div>\r\n        <div ws-hole=\"JobParameter\"></div>\r\n    </div>\r\n</li>");
+  });
  };
  GlutenFree$OddJob$Manager$Presentation$WS_Templates.searchoption=function(h)
  {

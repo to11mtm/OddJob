@@ -28,8 +28,9 @@ namespace GlutenFree.OddJob.Serializable
             {
                 JobId = job.JobId,
                 MethodName = job.MethodName,
-                JobArgs = job.JobArgs.Select(a => new OddJobSerializedParameter()
+                JobArgs = job.JobArgs.Select((a,i) => new OddJobSerializedParameter()
                 {
+                    Ordinal = i,
                     Name = a.Name,
                     Value = Newtonsoft.Json.JsonConvert.SerializeObject(a.Value),
                     TypeName = mySer.GetTypeName(a.Value.GetType())

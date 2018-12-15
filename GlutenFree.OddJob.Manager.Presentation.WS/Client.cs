@@ -8,6 +8,7 @@ using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
 using Microsoft.FSharp.Core;
 using WebSharper;
 using WebSharper.JavaScript;
+using WebSharper.JavaScript.Dom;
 using WebSharper.Sitelets;
 using WebSharper.UI;
 using WebSharper.UI.Client;
@@ -26,50 +27,80 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
         public static string TimeToString(DateTime time) =>
             $"{time.Hour}:{time.Minute}";
     }
-    [JavaScript]
-    public static class JobSearchClient
-    {
-        
 
+    [JavaScript]
+    public static class ElementCreators
+    {
         public static Elt TextSearch(string name, Var<string> criteriaLens, Var<bool> useCriteriaLens)
         {
-            return div(checkbox(useCriteriaLens), name, input(criteriaLens));
+            return span(checkbox(useCriteriaLens), name, input(criteriaLens));
         }
 
         public static Elt OptionSearch(string name, Var<string> criteriaLens, View<IEnumerable<string>> optionView,
-            Var<bool> useCriteriaLens, Action<WebSharper.JavaScript.Dom.Element,WebSharper.JavaScript.Dom.Event> changeAction)
+            Var<bool> useCriteriaLens, Action<WebSharper.JavaScript.Dom.Element, WebSharper.JavaScript.Dom.Event> changeAction)
         {
-            return div(checkbox(useCriteriaLens), name + ": ", @select(criteriaLens, optionView, (q) => q ?? "Please Select a " + name +"..."),
-                on.change(changeAction));
+            return span(checkbox(useCriteriaLens), name + ": ", @select(criteriaLens, optionView, (q) => q ?? "Please Select a " + name + "..."),
+                @on.change(changeAction));
         }
 
-        public static Elt DateRangeSearch(string name, Var<bool> useCriteriaLens,Var<string> beforeLens, Var<string> afterLens)
+        public static Elt DateRangeSearch(string name, Var<bool> useCriteriaLens, Var<string> beforeLens, Var<string> afterLens)
         {
-            return (div(checkbox(useCriteriaLens),name + ": ", input(beforeLens, attr.type("date")), input(afterLens,attr.type("date"))));
+            return (span(checkbox(useCriteriaLens), name + ": ", input(beforeLens, attr.type("date")), input(afterLens, attr.type("date"))));
         }
 
         public static Elt DateTimeRangeSearch(string name, Var<bool> useCriteriaLens, Var<string> beforeDateLens, Var<string> beforeTimeLens,
-            Var<string> afterDateLens, Var<string>afterTimeLens)
+            Var<string> afterDateLens, Var<string> afterTimeLens)
         {
-            return (div(style("float", "left"),checkbox(useCriteriaLens), name + ": ", br(),
-                div(style("float","left"), ClearableDateInput(beforeDateLens),ClearableTimeInput(beforeTimeLens)),
-                div(style("float", "left"),ClearableDateInput(afterDateLens), ClearableTimeInput(afterTimeLens))));
+            return (span(checkbox(useCriteriaLens), name + ": ", br(),
+                span( ClearableDateInput(beforeDateLens), ClearableTimeInput(beforeTimeLens)),
+                span( ClearableDateInput(afterDateLens), ClearableTimeInput(afterTimeLens))));
         }
 
         public static Elt ClearableDateInput(Var<string> dateLens)
         {
-            return div(input(dateLens, attr.type("date")), button("Clear", () => dateLens.Value = ""));
-        }
-        public static Elt ClearableTimeInput(Var<string> timeLens)
-        {
-            return div(input(timeLens, attr.type("time")), button("Clear", () => timeLens.Value = ""));
+            return span(input(dateLens, attr.type("date")), button("Clear", () => dateLens.Value = ""));
         }
 
+        public static Elt ClearableTimeInput(Var<string> timeLens)
+        {
+            return span(input(timeLens, attr.type("time")), button("Clear", () => timeLens.Value = ""));
+        }
+
+        public static Elt CheckableTextInput(string name,Var<bool>useInput, Var<string> valueLens)
+        {
+            return span(checkbox(useInput), name, input(valueLens));
+        }
+        public static Elt CheckableTextInput(string name, Var<bool> useInput, Var<string> valueLens,string defaultValue)
+        {
+            return span(checkbox(useInput), name, input(valueLens, attr.placeholder(defaultValue)));
+        }
+
+        public static Elt CheckableNumberInput(string name, Var<bool> useInput, Var<int> valueLens,
+            int defaultValue)
+        {
+            return span(checkbox(useInput), name,
+                input(attr.type("number"), valueLens, attr.placeholder(defaultValue.ToString())));
+        }
+    }
+    [JavaScript]
+    public static class JobSearchClient
+    {
+
+        public static Elt BuildUpdateForJob(JobUpdateViewModel juvm)
+        {
+            return div();
+        }
+        
         public static IControlBody Main()
         {
             
             //var myList = Var.Create<IEnumerable<string>>(Remoting.GetQueueNameList());
             var criteria = Var.Create(new JobSearchCriteria());
+            var useQueueLens = criteria.Lens(q => q.UseQueue, (a, b) =>
+            {
+                a.UseQueue = b;
+                return a;
+            });
             var statusLens = criteria.Lens(q => q.Status, (a, b) =>
             {
                 a.Status = b;
@@ -97,7 +128,7 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
             });
             var dummyQueueCriteriaFiller = Var.Create("");
             var criteriaFiller = Submitter.CreateOption(dummyQueueCriteriaFiller.View);
-
+            var updateSet = new ListModel<string, JobUpdateViewModel>(q => q.JobGuid.ToString());
             var queueNames = Var.Create<IEnumerable<string>>(new string[] {null});
             var queueNameView = criteriaFiller.View.MapAsync(async input =>
             {
@@ -105,8 +136,128 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
                 return queueNames.Value;
             });
             criteriaFiller.Trigger();
+
         var methodCriteria = Var.Create<IEnumerable<string>>(new string[] {null});
             var submit = Submitter.CreateOption(criteria.View);
+            var result = updateSet.Doc(juvm =>
+            {
+                var map = updateSet.Lens(juvm.JobGuid.ToString());
+                var updateSubmitter = Submitter.CreateOption(map.View);
+                var updateResult = updateSubmitter.View.MapAsync(async input =>
+                {
+                    if (input == null)
+                    {
+                        return div("");
+                    }
+                    var success = await Remoting.UpdateJob(input.Value);
+                    return div(success ? "Updated" : "Failed update");
+                });
+                var jobParamUpdate = juvm.UpdateDate.ParamUpdates.Select((updateDateParamUpdate,i) =>
+                {
+                    var updateParamTypeLens = map.Lens(
+                        uvm => uvm.UpdateDate.ParamUpdates[updateDateParamUpdate.Key].UpdateParamType,
+                        (a, b) =>
+                        {
+                            a.UpdateDate.ParamUpdates[updateDateParamUpdate.Key].UpdateParamType = b;
+                            return a;
+                        });
+                    var newParamTypeLens = map.Lens(
+                        uvm => uvm.UpdateDate.ParamUpdates[updateDateParamUpdate.Key].NewParamType,
+                        (a, b) =>
+                        {
+                            a.UpdateDate.ParamUpdates[updateDateParamUpdate.Key].NewParamType = b;
+                            return a;
+                        });
+                    var updateParamValueLens = map.Lens(
+                        uvm => uvm.UpdateDate.ParamUpdates[updateDateParamUpdate.Key].UpdateParamValue,
+                        (a, b) =>
+                        {
+                            a.UpdateDate.ParamUpdates[updateDateParamUpdate.Key].UpdateParamValue = b;
+                            return a;
+                        });
+                    var newParamValueLens = map.Lens(
+                        uvm => uvm.UpdateDate.ParamUpdates[updateDateParamUpdate.Key].NewParamValue,
+                        (a, b) =>
+                        {
+                            a.UpdateDate.ParamUpdates[updateDateParamUpdate.Key].NewParamValue = b;
+                            return a;
+                        });
+                    return div(
+                        ElementCreators.CheckableTextInput("Type", updateParamTypeLens, newParamTypeLens,
+                            juvm.MetaData.JobArgs[i].Type),
+                        ElementCreators.CheckableTextInput("Value",updateParamValueLens, newParamValueLens, juvm.MetaData.JobArgs[i].Value)
+                    );
+                }).ToArray();
+                var newMethodName = map.Lens(uvm => uvm.UpdateDate.NewMethodName, (a, b) =>
+                {
+                    a.UpdateDate.NewMethodName = b;
+                    return a;
+                });
+                var updateMethodName = map.Lens(uvm => uvm.UpdateDate.UpdateMethodName, (a, b) =>
+                {
+                    a.UpdateDate.UpdateMethodName = b;
+                    return a;
+                });
+                var updateStatus = map.Lens(uvm => uvm.UpdateDate.UpdateStatus, (a, b) =>
+                {
+                    a.UpdateDate.UpdateStatus = b;
+                    return a;
+                });
+                var newStatus = map.Lens(uvm => uvm.UpdateDate.NewStatus, (a, b) =>
+                {
+                    a.UpdateDate.NewStatus = b;
+                    return a;
+                });
+                var updateQueue = map.Lens(uvm => uvm.UpdateDate.UpdateQueueName, (a, b) =>
+                {
+                    a.UpdateDate.UpdateQueueName = b;
+                    return a;
+                });
+                var newQueue = map.Lens(uvm => uvm.UpdateDate.NewQueueName, (a, b) =>
+                {
+                    a.UpdateDate.NewQueueName = b;
+                    return a;
+                });
+                var updateMaxRetryCount = map.Lens(uvm => uvm.UpdateDate.UpdateRetryCount, (a, b) =>
+                {
+                    a.UpdateDate.UpdateRetryCount = b;
+                    return a;
+                });
+                var newMaxRetryCount = map.Lens(uvm => uvm.UpdateDate.NewMaxRetryCount, (a, b) =>
+                {
+                    a.UpdateDate.NewMaxRetryCount = b;
+                    return a;
+                });
+                return div(style("display", "grid"), style("grid-template-columns", "50% 50%"),
+                    div(
+                        new Jobitem.JobItem().MethodName(juvm.MetaData.MethodName).QueueName(juvm.MetaData.Queue)
+                            .Status(juvm.MetaData.Status)
+                            .JobGuid(juvm.MetaData.JobId.ToString()).Doc()
+                    ),
+                    div(
+                        div(
+                            div(ElementCreators.CheckableTextInput("Status", updateStatus, newStatus,
+                                juvm.MetaData.Status)),
+                            div(ElementCreators.CheckableTextInput("MethodName", updateMethodName, newMethodName,
+                                juvm.MetaData.MethodName)),
+                            div(ElementCreators.CheckableTextInput("QueueName", updateQueue, newQueue,
+                                juvm.MetaData.Queue)),
+                            div(ElementCreators.CheckableNumberInput("MaxRetryCount", updateMaxRetryCount,
+                                newMaxRetryCount,
+                                juvm.MetaData.RetryParameters.MaxRetries))
+                        )
+                    ),
+                    div(div(juvm.MetaData.JobArgs.Select((r, i) =>
+                            span(new Jobparameter.JobParameter().Type(r.Type).Name(r.Name).Value(r.Value)
+                                .Ordinal(i.ToString()).Doc())).ToArray())),
+                    div(jobParamUpdate),
+                    button("Update", () =>
+                    {
+                        updateSubmitter.Trigger();
+                    }),
+                    div(updateResult)
+                );
+            });
             var results = submit.View.MapAsync(async input =>
             {
                 if (input == null)
@@ -116,13 +267,33 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
                 methodCriteria.Value = awaitedMethodOptions;
                 var future = Remoting.SearchCriteria(input.Value);
                 var awaitedFuture = await future;
-                var result = awaitedFuture.Select(q => new Jobitem.JobItem().MethodName(q.MethodName).QueueName(q.Queue).Status(q.Status).JobGuid(q.JobId.ToString())
-                    .JobParameter(
-                        ul(q.JobArgs.Select((r, i) =>
-                            new Jobparameter.JobParameter().Type(r.Type).Name(r.Name).Value(r.Value)
-                                .Ordinal(i.ToString()).Doc()).ToArray())).Doc()
-                ).ToArray();
-                return div(h3("Results:"),br(), doc(ul(result)));
+
+
+
+               
+                updateSet.Set(awaitedFuture.Select(q =>
+                {
+                    return new JobUpdateViewModel()
+                    {
+                        JobGuid = q.JobId,
+                        MetaData = q,
+                        UpdateDate = new UpdateForJob()
+                        {
+                            JobGuid = q.JobId,
+                            OldStatus = q.Status,
+                            ParamUpdates = q.JobArgs.OrderBy(a => a.Ordinal)
+                                .Select((r, i) => new
+                                {
+                                    key = i.ToString(),
+                                    value = new UpdateForParam()
+                                }).ToDictionary(r => r.key, s => s.value)
+
+                        }
+                    };
+                }));
+                
+                
+                return div(h3("Results:"),br(), doc(result));
             });
 
             var queueNameLens = criteria.Lens(q => q.QueueName, (a, b) =>
@@ -180,23 +351,21 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
                 a.attemptedAfterDate = b;
                 return a;
             });
-           /* WebSharper.Html.Client.Operators.OnAfterRender(
-                f: FSharpConvert.Fun<Datepicker>(d =>
-                {
-                    d.SetDate(DateTime.Now.ToShortDateString());
-                }),
-                w: createdFilter);*/
-            var content = div(
-                    div("Queue Name: ",@select(queueNameLens, queueNameView, (q) => q ?? "Please Select a Queue..."),on.change((r,e)=> submit.Trigger()), attr.name("queueNameSelect")),
-                    TextSearch("Method Name", methodLens,useMethod),
-                    OptionSearch("Status", statusLens, statusOptions.View, useStatus, (a,b)=>submit.Trigger()),
-                    OptionSearch("Method", methodLens, methodCriteria.View, useMethod,(a,b)=> submit.Trigger()),
-                    DateTimeRangeSearch("Created", useCreatedLens, createdBeforeDateLens, createdBeforeTimeLens, createdAfterDateLens, createdAfterTimeLens),
-                    DateTimeRangeSearch("Attempt", useAttemptedDTLens, lastExecutedBeforeDateLens, lastExecutedBeforeTimeLens, lastExecutedAfterDateLens, lastExecutedAfterTimeLens),
-                    br(),
-                    button("Search", submit.Trigger),
-                    div(results)
-                );
+            var content = div(div(style("width","100%"),
+                div(ElementCreators.OptionSearch("Queue Name", queueNameLens, queueNameView,useQueueLens,(r,e)=> submit.Trigger()),
+                ElementCreators.TextSearch("Method Name", methodLens, useMethod),
+                ElementCreators.OptionSearch("Status", statusLens, statusOptions.View, useStatus,
+                    (a, b) => submit.Trigger()),
+                ElementCreators.OptionSearch("Method", methodLens, methodCriteria.View, useMethod,
+                    (a, b) => submit.Trigger()),
+                ElementCreators.DateTimeRangeSearch("Created", useCreatedLens, createdBeforeDateLens,
+                    createdBeforeTimeLens, createdAfterDateLens, createdAfterTimeLens),
+                ElementCreators.DateTimeRangeSearch("Attempt", useAttemptedDTLens, lastExecutedBeforeDateLens,
+                    lastExecutedBeforeTimeLens, lastExecutedAfterDateLens, lastExecutedAfterTimeLens),
+                div(button("Search", submit.Trigger)))),
+                div(br()),
+                div(results)
+            );
                 
             return content;
         }

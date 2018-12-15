@@ -9,10 +9,12 @@ using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Serializable;
 using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
 using GlutenFree.OddJob.Storage.SQL.SQLite;
+using Microsoft.FSharp.Core;
 using WebSharper;
 
 namespace GlutenFree.OddJob.Manager.Presentation.WS
 {
+    
     [JavaScript]
     public class JobSearchCriteria
     {
@@ -28,6 +30,8 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
         public string attemptedAfterTime = "";
         public string createdBeforeTime="";
         public string createdAfterTime = "";
+        public bool UseQueue = true;
+
         public string QueueName { get; set; }
         public string MethodName { get; set; }
         public string Status { get; set; }
@@ -35,34 +39,69 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
     }
 
     [JavaScript]
+    public class UpdateForJob
+    {
+        public Guid JobGuid;
+        public string OldStatus;
+        public bool UpdateRetryCount;
+        public int NewMaxRetryCount;
+        
+        public bool RequireOldStatus;
+        public bool UpdateMethodName;
+        public string NewMethodName;
+        public bool UpdateQueueName;
+        public string NewQueueName;
+        public bool UpdateStatus;
+        public string NewStatus;
+        public Dictionary<string, UpdateForParam> ParamUpdates;
+    }
+
+    [JavaScript]
+    public class UpdateForParam
+    {
+        public bool UpdateParamType;
+        public string NewParamType;
+        public bool UpdateParamValue;
+        public string NewParamValue;
+    }
+
+    [JavaScript]
     public class JobRetryParameters
     {
-        public int MaxRetries { get; set; }
-        public TimeSpan MinRetryWait { get; set; }
-        public int RetryCount { get; set; }
-        public DateTime? LastAttempt { get; set; }
+        public int MaxRetries;
+        public TimeSpan MinRetryWait;
+        public int RetryCount;
+        public DateTime? LastAttempt;
     }
 
     [JavaScript]
     public class JobParameterDto
     {
-        public string Type { get; set; }
-        public string Name { get; set; }
-        public string Value { get; set; }
+        public int Ordinal;
+        public string Type;
+        public string Name;
+        public string Value;
     }
 
     [JavaScript]
+    public class JobUpdateViewModel
+    {
+        public Guid JobGuid;
+        public UpdateForJob UpdateDate;
+        public JobMetadataResult MetaData;
+    }
+    [JavaScript]
     public class JobMetadataResult
     {
-        public Guid JobId { get; set; }
-        public JobParameterDto[] JobArgs { get; set; }
-        public string TypeExecutedOn { get; set; }
-        public string MethodName { get; set; }
-        public string Status { get; set; }
-        public string[] MethodGenericTypes { get; set; }
-        public string ExecutionTime { get; set; }
-        public JobRetryParameters RetryParameters { get; set; }
-        public string Queue { get; set; }
+        public Guid JobId;
+        public JobParameterDto[] JobArgs;
+        public string TypeExecutedOn;
+        public string MethodName;
+        public string Status;
+        public string[] MethodGenericTypes;
+        public string ExecutionTime;
+        public JobRetryParameters RetryParameters;
+        public string Queue;
     }
 
     public static class Remoting
@@ -129,21 +168,21 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
                        (lastExecutedNoEarlierThan == null || a.LastAttempt >= lastExecutedNoEarlierThan)
                    ), requireAll);
                    */
-            var result = expr == null ? new JobMetadataResult[]{} : manager.GetJobsByCriteria(expr).Select(q => new JobMetadataResult()
+            var result = expr == null ? new JobMetadataResult[]{} : manager.GetSerializableJobsByCriteria(expr).Select(q => new JobMetadataResult()
             {
                 ExecutionTime = q.ExecutionTime.ToString(),
                 JobArgs = q.JobArgs.Select(r => new JobParameterDto()
-                    {Name = r.Name, Type = r.Type, Value = r.Value.ToString()}).ToArray(),
+                    {Ordinal=r.Ordinal, Name = r.Name, Type = r.TypeName, Value = r.Value}).ToArray(),
                 JobId = q.JobId,
-                MethodGenericTypes = q.MethodGenericTypes.Select(r => r.AssemblyQualifiedName).ToArray(),
-                MethodName = q.MethodName, Queue = q.Queue,
+                MethodGenericTypes = q.MethodGenericTypes.ToArray(),
+                MethodName = q.MethodName, Queue = q.QueueName,
                 RetryParameters = new JobRetryParameters()
                 {
                     LastAttempt = q.RetryParameters.LastAttempt, RetryCount = q.RetryParameters.RetryCount,
                     MaxRetries = q.RetryParameters.MaxRetries, MinRetryWait = q.RetryParameters.MinRetryWait
                 },
 
-                Status = q.Status, TypeExecutedOn = q.TypeExecutedOn.AssemblyQualifiedName
+                Status = q.Status, TypeExecutedOn = q.TypeExecutedOn
             });
             return Task.FromResult(result.ToArray());
         }
@@ -169,6 +208,37 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
 
             
             return Task.FromResult(results);
+        }
+
+        [Remote]
+        public static Task<bool> UpdateJob(JobUpdateViewModel input)
+        {
+            var manager = new SQLiteJobQueueManager(new SQLiteJobQueueDataConnectionFactory(TempDevInfo.ConnString),
+                TempDevInfo.TableConfigurations["console"], new NullOnMissingTypeJobTypeResolver());
+            Dictionary<Expression<Func<SqlCommonDbOddJobMetaData, object>>, object> updateSet =
+                new Dictionary<Expression<Func<SqlCommonDbOddJobMetaData, object>>, object>();
+            if (input.UpdateDate.UpdateMethodName && !string.IsNullOrWhiteSpace(input.UpdateDate.NewQueueName))
+            {
+                updateSet.Add((a=>a.MethodName), input.UpdateDate.NewMethodName);
+            }
+
+            if (input.UpdateDate.UpdateQueueName && !string.IsNullOrWhiteSpace(input.UpdateDate.NewQueueName))
+            {
+                updateSet.Add(a=>a.QueueName, input.UpdateDate.NewQueueName);
+            }
+            if(input.UpdateDate.UpdateRetryCount)
+            {
+                updateSet.Add(a => a.MaxRetries, input.UpdateDate.NewMaxRetryCount);
+            }
+
+            if (input.UpdateDate.UpdateStatus && !string.IsNullOrWhiteSpace(input.UpdateDate.NewStatus))
+            {
+                updateSet.Add(a=>a.Status, input.UpdateDate.NewStatus);
+            }
+            string statusIfRequired = input.UpdateDate.RequireOldStatus ? input.UpdateDate.OldStatus : "";
+
+            
+            return Task.FromResult(manager.UpdateJobMetadataValues(updateSet, input.UpdateDate.JobGuid, statusIfRequired));
         }
     }
 }

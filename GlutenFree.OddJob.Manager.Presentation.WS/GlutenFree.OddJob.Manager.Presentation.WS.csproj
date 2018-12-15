@@ -134,6 +134,7 @@
     <Compile Include="Client.cs" />
     <Compile Include="Remoting.cs" />
     <Compile Include="Server.cs" />
+    <Content Include="EditableJobItem.html" />
     <Content Include="JobItem.html" />
     <Content Include="JobParameter.html" />
     <Content Include="JobSearch.html" />
@@ -148,6 +149,7 @@
     <Content Include="SearchOption.html" />
     <Content Include="Web.config" />
     <None Include="packages.config" />
+    <Content Include="Readme.MD" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

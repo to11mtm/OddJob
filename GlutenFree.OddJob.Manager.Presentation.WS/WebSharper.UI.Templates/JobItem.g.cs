@@ -55,11 +55,6 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS.Template
             public JobItem QueueName(View<string> x) { holes.Add(TemplateHole.NewTextView("queuename", x)); return this; }
             public JobItem Status(string x) { holes.Add(TemplateHole.NewText("status", x)); return this; }
             public JobItem Status(View<string> x) { holes.Add(TemplateHole.NewTextView("status", x)); return this; }
-            public JobItem JobParameter(Doc x) { holes.Add(TemplateHole.NewElt("jobparameter", x)); return this; }
-            public JobItem JobParameter(IEnumerable<Doc> x) { holes.Add(TemplateHole.NewElt("jobparameter", SDoc.Concat(x))); return this; }
-            public JobItem JobParameter(params Doc[] x) { holes.Add(TemplateHole.NewElt("jobparameter", SDoc.Concat(x))); return this; }
-            public JobItem JobParameter(string x) { holes.Add(TemplateHole.NewText("jobparameter", x)); return this; }
-            public JobItem JobParameter(View<string> x) { holes.Add(TemplateHole.NewTextView("jobparameter", x)); return this; }
             public struct Vars
             {
                 public Vars(Instance i) { instance = i; }
@@ -72,7 +67,7 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS.Template
             }
             public Instance Create() {
                 var completed = WebSharper.UI.Templating.Runtime.Server.Handler.CompleteHoles(key, holes, new Tuple<string, WebSharper.UI.Templating.Runtime.Server.ValTy>[] {  });
-                var doc = WebSharper.UI.Templating.Runtime.Server.Runtime.GetOrLoadTemplate("jobitem", FSharpOption<string>.Some("jobitem"), FSharpOption<string>.Some("JobItem.html"), "<li>\r\n    <div class=\"Jobs\">\r\n        <div>JobGuid: <input value=\"${JobGuid}\" readonly=\"readonly\" size=\"40\"></div>\r\n        <div>MethodName: <input value=\"${MethodName}\" readonly=\"readonly\" size=\"40\"> </div>\r\n        <div>QueueName: <input value=\"${QueueName}\" readonly=\"readonly\" size=\"40\"></div>\r\n        <div>Status: <input value=\"${Status}\" readonly=\"readonly\" size=\"40\"></div>\r\n        <div ws-hole=\"JobParameter\"></div>\r\n    </div>\r\n</li>", null, completed.Item1, null, ServerLoad.WhenChanged, new Tuple<string, FSharpOption<string>, string>[] {  }, null, true, false, false);
+                var doc = WebSharper.UI.Templating.Runtime.Server.Runtime.GetOrLoadTemplate("jobitem", FSharpOption<string>.Some("jobitem"), FSharpOption<string>.Some("JobItem.html"), "<span class=\"jobmetadata\" style=\"display: grid\">\r\n        <span>JobGuid: <input value=\"${JobGuid}\" readonly=\"readonly\" size=\"40\"></span>\r\n        <span>MethodName: <input value=\"${MethodName}\" readonly=\"readonly\" size=\"40\"> </span>\r\n        <span>QueueName: <input value=\"${QueueName}\" readonly=\"readonly\" size=\"40\"></span>\r\n        <span>Status: <input value=\"${Status}\" readonly=\"readonly\" size=\"40\"></span>\r\n</span>", null, completed.Item1, null, ServerLoad.WhenChanged, new Tuple<string, FSharpOption<string>, string>[] {  }, null, true, false, false);
                 instance = new Instance(completed.Item2, doc);
                 return instance;
             }

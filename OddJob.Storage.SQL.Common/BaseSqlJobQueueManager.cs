@@ -79,6 +79,17 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
             }
         }
 
+        public IEnumerable<SerializableOddJob> GetSerializableJobsByCriteria(
+            Expression<Func<SqlCommonDbOddJobMetaData, bool>> criteria)
+        {
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            {
+                var criteriaQuery = QueueTable(conn).Where(criteria);
+                var resultSet = ExecuteSerializableJoinQuery(criteriaQuery, conn);
+                return resultSet.ToList();
+            }
+        }
+
         public IEnumerable<IOddJobWithMetadata> GetJobsByCriteria(Expression<Func<SqlCommonDbOddJobMetaData, bool>> criteria)
         {
             using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
@@ -313,6 +324,46 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                 var resultSet = ExecuteJoinQuery(jobWithParamQuery, conn);
                 return resultSet.FirstOrDefault();
             }
+        }
+
+        private IEnumerable<SerializableOddJob> ExecuteSerializableJoinQuery(IQueryable<SqlCommonDbOddJobMetaData> jobWithParamQuery, DataConnection conn)
+        {
+            var newQuery = jobWithParamQuery.LeftJoin(ParamTable(conn)
+                , (job, param) => job.JobGuid == param.JobGuid
+                , (job, param) => new SqlQueueRowSet() { MetaData = job, ParamData = param }
+            ).LeftJoin(MethodGenericParameterTable(conn)
+            , (job_param, jobGeneric) => job_param.MetaData.JobGuid == jobGeneric.JobGuid
+            , (job_param, jobGeneric) => new { MetaData = job_param.MetaData, ParamData = job_param.ParamData, JobMethodGenericData = jobGeneric });
+            var resultSet = newQuery.ToList();
+            var finalSet = resultSet.GroupBy(q => q.MetaData.JobGuid)
+                .Select(group =>
+                    new SerializableOddJob()
+                    {
+                        JobId = group.Key,
+                        MethodName = group.First().MetaData.MethodName,
+                        TypeExecutedOn = group.First().MetaData.TypeExecutedOn,
+                        Status = group.First().MetaData.Status,
+                        ExecutionTime = group.First().MetaData.DoNotExecuteBefore,
+                        QueueName = group.First().MetaData.QueueName,
+                        JobArgs = group.OrderBy(p => p.ParamData.ParamOrdinal) //Order by for Reader paranoia
+                            .Select(q => q.ParamData).Where(s => s.SerializedType != null).GroupBy(q => q.ParamOrdinal)
+                            .Select(s => new OddJobSerializedParameter()
+                            {
+                                Ordinal = s.FirstOrDefault().ParamOrdinal,
+                                Name = s.FirstOrDefault().ParameterName,
+                                Value = s.FirstOrDefault().SerializedValue,
+                                TypeName    = s.FirstOrDefault().SerializedType
+                            }).ToArray(),
+                        RetryParameters = new RetryParameters(group.First().MetaData.MaxRetries,
+                            TimeSpan.FromSeconds(group.First().MetaData.MinRetryWait),
+                            group.First().MetaData.RetryCount, group.First().MetaData.LastAttempt),
+                        MethodGenericTypes = group.OrderBy(q => q.JobMethodGenericData.ParamOrder) //Order by for reader paranoia.
+                            .Where(t => t.JobMethodGenericData != null && t.JobMethodGenericData.ParamTypeName != null)
+                            .Select(q => q.JobMethodGenericData)
+                            .GroupBy(q => q.ParamOrder)
+                            .Select(t => t.FirstOrDefault().ParamTypeName).ToArray()
+                    });
+            return finalSet;
         }
 
         private IEnumerable<SqlDbOddJob> ExecuteJoinQuery(IQueryable<SqlCommonDbOddJobMetaData> jobWithParamQuery, DataConnection conn)

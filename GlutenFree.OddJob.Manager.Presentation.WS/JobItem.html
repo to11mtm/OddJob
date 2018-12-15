@@ -1,10 +1,7 @@
 ﻿<!-- ClientLoad = Inline -->
-<li ws-template="JobItem">
-    <div class="Jobs">
-        <div>JobGuid: <input value="${JobGuid}" readonly="readonly" size="40" /></div>
-        <div>MethodName: <input value="${MethodName}" readonly="readonly" size="40"/> </div>
-        <div>QueueName: <input value="${QueueName}" readonly="readonly" size="40"/></div>
-        <div>Status: <input value="${Status}" readonly="readonly" size="40"/></div>
-        <div ws-hole="JobParameter"></div>
-    </div>
-</li>
+<span ws-template="JobItem" class="jobmetadata" style="display: grid">
+        <span>JobGuid: <input value="${JobGuid}" readonly="readonly" size="40" /></span>
+        <span>MethodName: <input value="${MethodName}" readonly="readonly" size="40"/> </span>
+        <span>QueueName: <input value="${QueueName}" readonly="readonly" size="40"/></span>
+        <span>Status: <input value="${Status}" readonly="readonly" size="40"/></span>
+</span>

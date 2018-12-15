@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using GlutenFree.OddJob.Interfaces;
+using GlutenFree.OddJob.Serializable;
 using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
 
 namespace GlutenFree.OddJob.Storage.Sql.Common
@@ -25,7 +26,8 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
         IEnumerable<IOddJobWithMetadata> GetJobsByParameterAndMainCriteria(
             Expression<Func<SqlCommonDbOddJobMetaData, bool>> jobQueryable,
             Expression<Func<SqlCommonOddJobParamMetaData, bool>> paramQueryable);
-
+        IEnumerable<SerializableOddJob> GetSerializableJobsByCriteria(
+            Expression<Func<SqlCommonDbOddJobMetaData, bool>> criteria);
         IEnumerable<IOddJobWithMetadata> GetJobsByCriteria(
             Expression<Func<SqlCommonDbOddJobMetaData, bool>> criteria);
     }
