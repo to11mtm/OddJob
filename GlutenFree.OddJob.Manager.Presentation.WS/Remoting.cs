@@ -53,12 +53,13 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
         public string NewQueueName;
         public bool UpdateStatus;
         public string NewStatus;
-        public Dictionary<string, UpdateForParam> ParamUpdates;
+        public UpdateForParam[] ParamUpdates = new UpdateForParam[]{};
     }
 
     [JavaScript]
     public class UpdateForParam
     {
+        public int ParamOrdinal;
         public bool UpdateParamType;
         public string NewParamType;
         public bool UpdateParamValue;
@@ -87,7 +88,7 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
     public class JobUpdateViewModel
     {
         public Guid JobGuid;
-        public UpdateForJob UpdateDate;
+        public UpdateForJob UpdateData;
         public JobMetadataResult MetaData;
     }
     [JavaScript]
@@ -217,28 +218,28 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
                 TempDevInfo.TableConfigurations["console"], new NullOnMissingTypeJobTypeResolver());
             Dictionary<Expression<Func<SqlCommonDbOddJobMetaData, object>>, object> updateSet =
                 new Dictionary<Expression<Func<SqlCommonDbOddJobMetaData, object>>, object>();
-            if (input.UpdateDate.UpdateMethodName && !string.IsNullOrWhiteSpace(input.UpdateDate.NewQueueName))
+            if (input.UpdateData.UpdateMethodName && !string.IsNullOrWhiteSpace(input.UpdateData.NewQueueName))
             {
-                updateSet.Add((a=>a.MethodName), input.UpdateDate.NewMethodName);
+                updateSet.Add((a=>a.MethodName), input.UpdateData.NewMethodName);
             }
 
-            if (input.UpdateDate.UpdateQueueName && !string.IsNullOrWhiteSpace(input.UpdateDate.NewQueueName))
+            if (input.UpdateData.UpdateQueueName && !string.IsNullOrWhiteSpace(input.UpdateData.NewQueueName))
             {
-                updateSet.Add(a=>a.QueueName, input.UpdateDate.NewQueueName);
+                updateSet.Add(a=>a.QueueName, input.UpdateData.NewQueueName);
             }
-            if(input.UpdateDate.UpdateRetryCount)
+            if(input.UpdateData.UpdateRetryCount)
             {
-                updateSet.Add(a => a.MaxRetries, input.UpdateDate.NewMaxRetryCount);
+                updateSet.Add(a => a.MaxRetries, input.UpdateData.NewMaxRetryCount);
             }
 
-            if (input.UpdateDate.UpdateStatus && !string.IsNullOrWhiteSpace(input.UpdateDate.NewStatus))
+            if (input.UpdateData.UpdateStatus && !string.IsNullOrWhiteSpace(input.UpdateData.NewStatus))
             {
-                updateSet.Add(a=>a.Status, input.UpdateDate.NewStatus);
+                updateSet.Add(a=>a.Status, input.UpdateData.NewStatus);
             }
-            string statusIfRequired = input.UpdateDate.RequireOldStatus ? input.UpdateDate.OldStatus : "";
+            string statusIfRequired = input.UpdateData.RequireOldStatus ? input.UpdateData.OldStatus : "";
 
             
-            return Task.FromResult(manager.UpdateJobMetadataValues(updateSet, input.UpdateDate.JobGuid, statusIfRequired));
+            return Task.FromResult(manager.UpdateJobMetadataValues(updateSet, input.UpdateData.JobGuid, statusIfRequired));
         }
     }
 }

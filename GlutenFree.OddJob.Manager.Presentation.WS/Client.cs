@@ -13,6 +13,7 @@ using WebSharper.Sitelets;
 using WebSharper.UI;
 using WebSharper.UI.Client;
 using static WebSharper.UI.Client.Html;
+using Doc = WebSharper.UI.Doc;
 using Elt = WebSharper.UI.Elt;
 using Html = WebSharper.UI.Client.Html;
 
@@ -58,12 +59,12 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
 
         public static Elt ClearableDateInput(Var<string> dateLens)
         {
-            return span(input(dateLens, attr.type("date")), button("Clear", () => dateLens.Value = ""));
+            return span(input(dateLens, attr.type("date"), style("line-height", "unset")), button("Clear", () => dateLens.Value = ""));
         }
 
         public static Elt ClearableTimeInput(Var<string> timeLens)
         {
-            return span(input(timeLens, attr.type("time")), button("Clear", () => timeLens.Value = ""));
+            return span(input(timeLens, attr.type("time"), style("line-height", "unset")), button("Clear", () => timeLens.Value = ""));
         }
 
         public static Elt CheckableTextInput(string name,Var<bool>useInput, Var<string> valueLens)
@@ -86,11 +87,11 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
     public static class JobSearchClient
     {
 
-        public static Elt BuildUpdateForJob(JobUpdateViewModel juvm)
+
+        public static async Task<bool> PerformJobUpdate(JobUpdateViewModel juvm)
         {
-            return div();
+            return await Remoting.UpdateJob(juvm);
         }
-        
         public static IControlBody Main()
         {
             
@@ -142,93 +143,56 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
             var result = updateSet.Doc(juvm =>
             {
                 var map = updateSet.Lens(juvm.JobGuid.ToString());
-                var updateSubmitter = Submitter.CreateOption(map.View);
-                var updateResult = updateSubmitter.View.MapAsync(async input =>
+                var myUpdateItem = Var.Create(div());
+                var jobParamUpdate = juvm.UpdateData.ParamUpdates.Select((updateDateParamUpdate,i) =>
                 {
-                    if (input == null)
-                    {
-                        return div("");
-                    }
-                    var success = await Remoting.UpdateJob(input.Value);
-                    return div(success ? "Updated" : "Failed update");
-                });
-                var jobParamUpdate = juvm.UpdateDate.ParamUpdates.Select((updateDateParamUpdate,i) =>
-                {
-                    var updateParamTypeLens = map.Lens(
-                        uvm => uvm.UpdateDate.ParamUpdates[updateDateParamUpdate.Key].UpdateParamType,
-                        (a, b) =>
-                        {
-                            a.UpdateDate.ParamUpdates[updateDateParamUpdate.Key].UpdateParamType = b;
-                            return a;
-                        });
-                    var newParamTypeLens = map.Lens(
-                        uvm => uvm.UpdateDate.ParamUpdates[updateDateParamUpdate.Key].NewParamType,
-                        (a, b) =>
-                        {
-                            a.UpdateDate.ParamUpdates[updateDateParamUpdate.Key].NewParamType = b;
-                            return a;
-                        });
-                    var updateParamValueLens = map.Lens(
-                        uvm => uvm.UpdateDate.ParamUpdates[updateDateParamUpdate.Key].UpdateParamValue,
-                        (a, b) =>
-                        {
-                            a.UpdateDate.ParamUpdates[updateDateParamUpdate.Key].UpdateParamValue = b;
-                            return a;
-                        });
-                    var newParamValueLens = map.Lens(
-                        uvm => uvm.UpdateDate.ParamUpdates[updateDateParamUpdate.Key].NewParamValue,
-                        (a, b) =>
-                        {
-                            a.UpdateDate.ParamUpdates[updateDateParamUpdate.Key].NewParamValue = b;
-                            return a;
-                        });
-                    return div(
-                        ElementCreators.CheckableTextInput("Type", updateParamTypeLens, newParamTypeLens,
-                            juvm.MetaData.JobArgs[i].Type),
-                        ElementCreators.CheckableTextInput("Value",updateParamValueLens, newParamValueLens, juvm.MetaData.JobArgs[i].Value)
-                    );
+                    return CreateParamterUpdateElement(map, i, juvm);
                 }).ToArray();
-                var newMethodName = map.Lens(uvm => uvm.UpdateDate.NewMethodName, (a, b) =>
+                var newMethodName = map.Lens(uvm => uvm.UpdateData.NewMethodName, (a, b) =>
                 {
-                    a.UpdateDate.NewMethodName = b;
+                    a.UpdateData.NewMethodName = b;
                     return a;
                 });
-                var updateMethodName = map.Lens(uvm => uvm.UpdateDate.UpdateMethodName, (a, b) =>
+                var updateMethodName = map.Lens(uvm => uvm.UpdateData.UpdateMethodName, (a, b) =>
                 {
-                    a.UpdateDate.UpdateMethodName = b;
+                    a.UpdateData.UpdateMethodName = b;
                     return a;
                 });
-                var updateStatus = map.Lens(uvm => uvm.UpdateDate.UpdateStatus, (a, b) =>
+                var updateStatus = map.Lens(uvm => uvm.UpdateData.UpdateStatus, (a, b) =>
                 {
-                    a.UpdateDate.UpdateStatus = b;
+                    a.UpdateData.UpdateStatus = b;
                     return a;
                 });
-                var newStatus = map.Lens(uvm => uvm.UpdateDate.NewStatus, (a, b) =>
+                var newStatus = map.Lens(uvm => uvm.UpdateData.NewStatus, (a, b) =>
                 {
-                    a.UpdateDate.NewStatus = b;
+                    a.UpdateData.NewStatus = b;
                     return a;
                 });
-                var updateQueue = map.Lens(uvm => uvm.UpdateDate.UpdateQueueName, (a, b) =>
+                var updateQueue = map.Lens(uvm => uvm.UpdateData.UpdateQueueName, (a, b) =>
                 {
-                    a.UpdateDate.UpdateQueueName = b;
+                    a.UpdateData.UpdateQueueName = b;
                     return a;
                 });
-                var newQueue = map.Lens(uvm => uvm.UpdateDate.NewQueueName, (a, b) =>
+                var newQueue = map.Lens(uvm => uvm.UpdateData.NewQueueName, (a, b) =>
                 {
-                    a.UpdateDate.NewQueueName = b;
+                    a.UpdateData.NewQueueName = b;
                     return a;
                 });
-                var updateMaxRetryCount = map.Lens(uvm => uvm.UpdateDate.UpdateRetryCount, (a, b) =>
+                var updateMaxRetryCount = map.Lens(uvm => uvm.UpdateData.UpdateRetryCount, (a, b) =>
                 {
-                    a.UpdateDate.UpdateRetryCount = b;
+                    a.UpdateData.UpdateRetryCount = b;
                     return a;
                 });
-                var newMaxRetryCount = map.Lens(uvm => uvm.UpdateDate.NewMaxRetryCount, (a, b) =>
+                var newMaxRetryCount = map.Lens(uvm => uvm.UpdateData.NewMaxRetryCount, (a, b) =>
                 {
-                    a.UpdateDate.NewMaxRetryCount = b;
+                    a.UpdateData.NewMaxRetryCount = b;
                     return a;
                 });
-                return div(style("display", "grid"), style("grid-template-columns", "50% 50%"),
+                var blurFilter = Var.Create("");
+                var disableUpdate = Var.Create(false);
+                var disabledVar = Var.Create("Disabled");
+                var disabledColor = Var.Create("");
+                return div(style("display", "grid"), style("grid-template-columns", "50% 50%"), style("filter",blurFilter.View), style("background",disabledColor.View),
                     div(
                         new Jobitem.JobItem().MethodName(juvm.MetaData.MethodName).QueueName(juvm.MetaData.Queue)
                             .Status(juvm.MetaData.Status)
@@ -251,49 +215,34 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
                             span(new Jobparameter.JobParameter().Type(r.Type).Name(r.Name).Value(r.Value)
                                 .Ordinal(i.ToString()).Doc())).ToArray())),
                     div(jobParamUpdate),
-                    button("Update", () =>
+                    button("Update", async () =>
                     {
-                        updateSubmitter.Trigger();
-                    }),
-                    div(updateResult)
+                            if (juvm == null)
+                            {
+                                myUpdateItem.Value = div("");
+                            }
+
+                            var success = await PerformJobUpdate(juvm);
+                        if (success)
+                        {
+                            myUpdateItem.Value = div("Updated");
+                            blurFilter.Value = "blur(1px)";
+                            disabledColor.Value = "lightgrey";
+                            disableUpdate.Value = true;
+                        }
+                        else
+                        {
+                            myUpdateItem.Value = div("Failed update");
+                        }
+                            
+                        
+                    }, attr.disabled(disabledVar.View, disableUpdate.View)),
+                    div(myUpdateItem)
                 );
             });
             var results = submit.View.MapAsync(async input =>
             {
-                if (input == null)
-                    return div("");
-                var methodOptionFuture = Remoting.GetMethods(input.Value.QueueName);
-                var awaitedMethodOptions = await methodOptionFuture;
-                methodCriteria.Value = awaitedMethodOptions;
-                var future = Remoting.SearchCriteria(input.Value);
-                var awaitedFuture = await future;
-
-
-
-               
-                updateSet.Set(awaitedFuture.Select(q =>
-                {
-                    return new JobUpdateViewModel()
-                    {
-                        JobGuid = q.JobId,
-                        MetaData = q,
-                        UpdateDate = new UpdateForJob()
-                        {
-                            JobGuid = q.JobId,
-                            OldStatus = q.Status,
-                            ParamUpdates = q.JobArgs.OrderBy(a => a.Ordinal)
-                                .Select((r, i) => new
-                                {
-                                    key = i.ToString(),
-                                    value = new UpdateForParam()
-                                }).ToDictionary(r => r.key, s => s.value)
-
-                        }
-                    };
-                }));
-                
-                
-                return div(h3("Results:"),br(), doc(result));
+                return await CreateSearchResults(input, methodCriteria, updateSet, result);
             });
 
             var queueNameLens = criteria.Lens(q => q.QueueName, (a, b) =>
@@ -364,11 +313,81 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
                     lastExecutedBeforeTimeLens, lastExecutedAfterDateLens, lastExecutedAfterTimeLens),
                 div(button("Search", submit.Trigger)))),
                 div(br()),
-                div(results)
+                div(style("overflow-y","scroll"), results)
             );
                 
             return content;
         }
+
+        private static Elt CreateParamterUpdateElement(Var<JobUpdateViewModel> map, int i, JobUpdateViewModel juvm)
+        {
+            var updateParamTypeLens = map.Lens(
+                uvm => uvm.UpdateData.ParamUpdates[i].UpdateParamType,
+                (a, b) =>
+                {
+                    a.UpdateData.ParamUpdates[i].UpdateParamType = b;
+                    return a;
+                });
+            var newParamTypeLens = map.Lens(
+                uvm => uvm.UpdateData.ParamUpdates[i].NewParamType,
+                (a, b) =>
+                {
+                    a.UpdateData.ParamUpdates[i].NewParamType = b;
+                    return a;
+                });
+            var updateParamValueLens = map.Lens(
+                uvm => uvm.UpdateData.ParamUpdates[i].UpdateParamValue,
+                (a, b) =>
+                {
+                    a.UpdateData.ParamUpdates[i].UpdateParamValue = b;
+                    return a;
+                });
+            var newParamValueLens = map.Lens(
+                uvm => uvm.UpdateData.ParamUpdates[i].NewParamValue,
+                (a, b) =>
+                {
+                    a.UpdateData.ParamUpdates[i].NewParamValue = b;
+                    return a;
+                });
+            return div(
+                ElementCreators.CheckableTextInput("Type", updateParamTypeLens, newParamTypeLens,
+                    juvm.MetaData.JobArgs[i].Type),
+                ElementCreators.CheckableTextInput("Value", updateParamValueLens, newParamValueLens,
+                    juvm.MetaData.JobArgs[i].Value)
+            );
+        }
+
+        private static async Task<Elt> CreateSearchResults(FSharpOption<JobSearchCriteria> input, Var<IEnumerable<string>> methodCriteria, ListModel<string, JobUpdateViewModel> updateSet, Doc result)
+        {
+            if (input == null)
+                return div("");
+            var methodOptionFuture = Remoting.GetMethods(input.Value.QueueName);
+            var awaitedMethodOptions = await methodOptionFuture;
+            methodCriteria.Value = awaitedMethodOptions;
+            var future = Remoting.SearchCriteria(input.Value);
+            var awaitedFuture = await future;
+
+
+            updateSet.Set(awaitedFuture.Select(q =>
+            {
+                return new JobUpdateViewModel()
+                {
+                    JobGuid = q.JobId,
+                    MetaData = q,
+                    UpdateData = new UpdateForJob()
+                    {
+                        JobGuid = q.JobId,
+                        OldStatus = q.Status,
+                        ParamUpdates = q.JobArgs.Select(r=> new UpdateForParam(){ ParamOrdinal = r.Ordinal}).ToArray()
+                    }
+                };
+            }));
+
+
+            return div(h3("Results:"), br(), doc(result));
+        }
+
+        
     }
     [JavaScript]
     public static class Client
