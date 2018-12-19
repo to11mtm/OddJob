@@ -7,6 +7,7 @@ using System.Web;
 using GlutenFree.Linq2Db.Helpers;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Serializable;
+using GlutenFree.OddJob.Storage.SQL.Common;
 using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
 using GlutenFree.OddJob.Storage.SQL.SQLite;
 using Microsoft.FSharp.Core;
@@ -218,6 +219,9 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
                 TempDevInfo.TableConfigurations["console"], new NullOnMissingTypeJobTypeResolver());
             Dictionary<Expression<Func<SqlCommonDbOddJobMetaData, object>>, object> updateSet =
                 new Dictionary<Expression<Func<SqlCommonDbOddJobMetaData, object>>, object>();
+            Dictionary<int, Dictionary<Expression<Func<SqlCommonOddJobParamMetaData, object>>, object>> updateParamSet =
+                new Dictionary<int, Dictionary<Expression<Func<SqlCommonOddJobParamMetaData, object>>, object>>();
+                
             if (input.UpdateData.UpdateMethodName && !string.IsNullOrWhiteSpace(input.UpdateData.NewQueueName))
             {
                 updateSet.Add((a=>a.MethodName), input.UpdateData.NewMethodName);
@@ -238,8 +242,38 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
             }
             string statusIfRequired = input.UpdateData.RequireOldStatus ? input.UpdateData.OldStatus : "";
 
+            updateParamSet = input.UpdateData.ParamUpdates.Select(q => BuildParamUpdateSet(q)).ToDictionary(q=>q.Key,q=>q.Value);
+
+            var result = manager.UpdateJobMetadataAndParameters(new JobUpdateCommand()
+            {
+                JobGuid = input.UpdateData.JobGuid, OldStatusIfRequired = statusIfRequired,
+                SetJobParameters = updateParamSet, SetJobMetadata = updateSet
+            });
             
-            return Task.FromResult(manager.UpdateJobMetadataValues(updateSet, input.UpdateData.JobGuid, statusIfRequired));
+            
+            
+            return Task.FromResult(result);
+        }
+
+        private static KeyValuePair<int, Dictionary<Expression<Func<SqlCommonOddJobParamMetaData, object>>, object>>
+            BuildParamUpdateSet(UpdateForParam updateForParam)
+        {
+            Dictionary<Expression<Func<SqlCommonOddJobParamMetaData, object>>, object> updateDict =
+                new Dictionary<Expression<Func<SqlCommonOddJobParamMetaData, object>>, object>();
+            if (updateForParam.UpdateParamType == true)
+            {
+                updateDict.Add(q => q.SerializedType, updateForParam.NewParamType);
+            }
+
+            if (updateForParam.UpdateParamValue == true)
+            {
+                updateDict.Add(q => q.SerializedValue, updateForParam.NewParamValue);
+            }
+
+            return new KeyValuePair<int, Dictionary<Expression<Func<SqlCommonOddJobParamMetaData, object>>, object>>(
+                updateForParam.ParamOrdinal, updateDict);
+
+
         }
     }
 }

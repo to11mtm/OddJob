@@ -211,10 +211,11 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
                                 juvm.MetaData.RetryParameters.MaxRetries))
                         )
                     ),
+                    //TODO: This looks bad with lots of Parameters.
                     div(div(juvm.MetaData.JobArgs.Select((r, i) =>
-                            span(new Jobparameter.JobParameter().Type(r.Type).Name(r.Name).Value(r.Value)
+                            div(new Jobparameter.JobParameter().Type(r.Type).Name(r.Name).Value(r.Value)
                                 .Ordinal(i.ToString()).Doc())).ToArray())),
-                    div(jobParamUpdate),
+                    div(style("margin-left","5%"), div(jobParamUpdate)),
                     button("Update", async () =>
                     {
                             if (juvm == null)
@@ -350,10 +351,11 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
                     return a;
                 });
             return div(
-                ElementCreators.CheckableTextInput("Type", updateParamTypeLens, newParamTypeLens,
-                    juvm.MetaData.JobArgs[i].Type),
-                ElementCreators.CheckableTextInput("Value", updateParamValueLens, newParamValueLens,
-                    juvm.MetaData.JobArgs[i].Value)
+                div(ElementCreators.CheckableTextInput("Type", updateParamTypeLens, newParamTypeLens,
+                    juvm.MetaData.JobArgs[i].Type)),
+                //TODO: Make this a TextArea for larger Parameters
+                div(ElementCreators.CheckableTextInput("Value", updateParamValueLens, newParamValueLens,
+                    juvm.MetaData.JobArgs[i].Value))
             );
         }
 

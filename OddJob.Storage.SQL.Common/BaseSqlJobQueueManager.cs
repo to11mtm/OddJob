@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Transactions;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Serializable;
 using GlutenFree.OddJob.Storage.Sql.Common;
@@ -16,8 +17,6 @@ using LinqToDB.Tools;
 
 namespace GlutenFree.OddJob.Storage.SQL.Common
 {
-    
-
     public abstract class BaseSqlJobQueueManager : IJobQueueManager , IJobSearchProvider
     {
         private readonly ISqlDbJobQueueTableConfiguration _jobQueueTableConfiguration;
@@ -162,6 +161,75 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 
             return true;
         }
+
+        /// <summary>
+        /// Update Job Metadata and Parameters via a Built command.
+        /// </summary>
+        /// <param name="commandData">A <see cref="JobUpdateCommand"/> with Criteria for updating.</param>
+        /// <returns></returns>
+        /// <remarks>This is designed to be a 'safe-ish' update. If done in a <see cref="TransactionScope"/>,
+        /// You can roll-back if this returns false. If no <see cref="TransactionScope"/> is active,
+        /// you could get dirty writes under some very edgy cases.
+        /// </remarks>
+        public bool UpdateJobMetadataAndParameters(JobUpdateCommand commandData)
+        {
+            //TODO: Make this even safer.
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            {
+                bool ableToUpdateJob = true;
+                var updatable = QueueTable(conn)
+                    .Where(q => q.JobGuid == commandData.JobGuid);
+                if (String.IsNullOrWhiteSpace(commandData.OldStatusIfRequired) == false)
+                {
+                    updatable = updatable.Where(q => q.Status == commandData.OldStatusIfRequired);
+                }
+
+                IUpdatable<SqlCommonDbOddJobMetaData> updateCommand = null;
+                foreach (var set in commandData.SetJobMetadata)
+                {
+                    updateCommand = (updateCommand == null)
+                        ? updatable.Set(set.Key, set.Value)
+                        : updateCommand.Set(set.Key, set.Value);
+                }
+                if (updateCommand != null)
+                {
+                    ableToUpdateJob = updateCommand.Update() > 0;
+                }
+                else
+                {
+                    ableToUpdateJob = updatable.Any();
+                }
+
+                if (ableToUpdateJob && commandData.SetJobParameters != null && commandData.SetJobParameters.Count > 0)
+                {
+                    foreach (var jobParameter in commandData.SetJobParameters)
+                    {
+                        var updatableParam = ParamTable(conn)
+                            .Where(q => q.JobGuid == commandData.JobGuid && q.ParamOrdinal == jobParameter.Key
+                                        && ableToUpdateJob);
+                        IUpdatable<SqlCommonOddJobParamMetaData> updateParamCommand = null;
+                        foreach (var updatePair in jobParameter.Value)
+                        {
+                            updateParamCommand = (updateParamCommand == null)
+                                ? updatableParam.Set(updatePair.Key, updatePair.Value)
+                                : updateParamCommand.Set(updatePair.Key, updatePair.Value);
+                        }
+
+                        if (updateParamCommand != null)
+                        {
+                            var updatedRows = updateParamCommand.Update();
+                            if (updatedRows == 0)
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                }
+
+                return ableToUpdateJob;
+            }
+        }
+        
 
         public bool UpdateJobMetadataValues(
             IDictionary<Expression<Func<SqlCommonDbOddJobMetaData, object>>, object> setters, Guid jobGuid,

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Serializable;
+using GlutenFree.OddJob.Storage.SQL.Common;
 using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
 
 namespace GlutenFree.OddJob.Storage.Sql.Common
@@ -15,6 +16,8 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
         bool UpdateJobMetadataValues(
             IDictionary<Expression<Func<SqlCommonDbOddJobMetaData, object>>, object> setters, Guid jobGuid,
             string oldStatusIfRequired);
+
+        bool UpdateJobMetadataAndParameters(JobUpdateCommand updateCommand);
 
         bool UpdateJobMetadataFull(SqlCommonDbOddJobMetaData metaDataToUpdate, string oldStatusIfRequired);
         bool UpdateJobParameterValues(IEnumerable<SqlCommonOddJobParamMetaData> metaDatas);
