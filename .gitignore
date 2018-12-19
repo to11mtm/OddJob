@@ -328,3 +328,4 @@ ASALocalRun/
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
 *.nupkg
+GlutenFree.OddJob.Manager.Presentation.WS/Scripts/WebSharper/
