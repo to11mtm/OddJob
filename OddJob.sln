@@ -74,6 +74,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GlutenFree.Linq2Db.Helpers"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Manager.Presentation.WS", "GlutenFree.OddJob.Manager.Presentation.WS\GlutenFree.OddJob.Manager.Presentation.WS.csproj", "{561043AC-7E1E-48DA-B544-480EADE8C0E1}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore", "GlutenFree.OddJob.Manager.Presentation.WS-AspnetCore\GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore.csproj", "{6B8C993B-D075-4DD5-9E69-26BD0D85C946}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -454,6 +456,22 @@ Global
 		{561043AC-7E1E-48DA-B544-480EADE8C0E1}.Release|x64.Build.0 = Release|Any CPU
 		{561043AC-7E1E-48DA-B544-480EADE8C0E1}.Release|x86.ActiveCfg = Release|Any CPU
 		{561043AC-7E1E-48DA-B544-480EADE8C0E1}.Release|x86.Build.0 = Release|Any CPU
+		{6B8C993B-D075-4DD5-9E69-26BD0D85C946}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B8C993B-D075-4DD5-9E69-26BD0D85C946}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B8C993B-D075-4DD5-9E69-26BD0D85C946}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{6B8C993B-D075-4DD5-9E69-26BD0D85C946}.Debug|ARM.Build.0 = Debug|Any CPU
+		{6B8C993B-D075-4DD5-9E69-26BD0D85C946}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6B8C993B-D075-4DD5-9E69-26BD0D85C946}.Debug|x64.Build.0 = Debug|Any CPU
+		{6B8C993B-D075-4DD5-9E69-26BD0D85C946}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6B8C993B-D075-4DD5-9E69-26BD0D85C946}.Debug|x86.Build.0 = Debug|Any CPU
+		{6B8C993B-D075-4DD5-9E69-26BD0D85C946}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B8C993B-D075-4DD5-9E69-26BD0D85C946}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B8C993B-D075-4DD5-9E69-26BD0D85C946}.Release|ARM.ActiveCfg = Release|Any CPU
+		{6B8C993B-D075-4DD5-9E69-26BD0D85C946}.Release|ARM.Build.0 = Release|Any CPU
+		{6B8C993B-D075-4DD5-9E69-26BD0D85C946}.Release|x64.ActiveCfg = Release|Any CPU
+		{6B8C993B-D075-4DD5-9E69-26BD0D85C946}.Release|x64.Build.0 = Release|Any CPU
+		{6B8C993B-D075-4DD5-9E69-26BD0D85C946}.Release|x86.ActiveCfg = Release|Any CPU
+		{6B8C993B-D075-4DD5-9E69-26BD0D85C946}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
