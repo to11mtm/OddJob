@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using GlutenFree.Linq2Db.Helpers;
 using GlutenFree.OddJob.Serializable;
+using GlutenFree.OddJob.Storage.Sql.Common;
 using GlutenFree.OddJob.Storage.SQL.Common;
 using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
 using GlutenFree.OddJob.Storage.SQL.SQLite;
@@ -103,23 +104,24 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
         public string Queue;
     }
 
-    public static class Remoting
+    public class OddJobRemoting
     {
+        private IJobSearchProvider _provider;
+        public OddJobRemoting(IJobSearchProvider provider)
+        {
+            _provider = provider;
+        }
 
         [Remote]
-        public static Task<string[]> GetQueueNameList()
+        public Task<string[]> GetQueueNameList()
         {
-            var manager = new SQLiteJobQueueManager(new SQLiteJobQueueDataConnectionFactory(TempDevInfo.ConnString),
-                TempDevInfo.TableConfigurations["console"], new NullOnMissingTypeJobTypeResolver());
-            var result = (new string[]{null}).Concat(manager.GetJobCriteriaValues(q => q.QueueName).ToList()).ToArray();
+            var result = (new string[]{null}).Concat(_provider.GetJobCriteriaValues(q => q.QueueName).ToList()).ToArray();
             return Task.FromResult(result);
         }
 
         [Remote]
-        public static Task<JobMetadataResult[]> SearchCriteria(JobSearchCriteria criteria )
+        public Task<JobMetadataResult[]> SearchCriteria(JobSearchCriteria criteria )
         {
-            var manager = new SQLiteJobQueueManager(new SQLiteJobQueueDataConnectionFactory(TempDevInfo.ConnString),
-                TempDevInfo.TableConfigurations["console"], new NullOnMissingTypeJobTypeResolver());
             Expression<Func<SqlCommonDbOddJobMetaData, bool>> expr = null;
             if (!string.IsNullOrWhiteSpace(criteria.QueueName))
             {
@@ -167,7 +169,7 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
                        (lastExecutedNoEarlierThan == null || a.LastAttempt >= lastExecutedNoEarlierThan)
                    ), requireAll);
                    */
-            var result = expr == null ? new JobMetadataResult[]{} : manager.GetSerializableJobsByCriteria(expr).Select(q => new JobMetadataResult()
+            var result = expr == null ? new JobMetadataResult[]{} : _provider.GetSerializableJobsByCriteria(expr).Select(q => new JobMetadataResult()
             {
                 ExecutionTime = q.ExecutionTime.ToString(),
                 JobArgs = q.JobArgs.Select(r => new JobParameterDto()
@@ -187,22 +189,21 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
         }
 
         [Remote]
-        public static Task<string> DoSomething(JobSearchCriteria input)
+        public Task<string> DoSomething(JobSearchCriteria input)
         {
             return Task.FromResult(new String(input.ToString().ToCharArray().Reverse().ToArray()));
         }
         [Remote]
-        public static Task<string[]> GetMethods(string queueName)
+        public Task<string[]> GetMethods(string queueName)
         {
-            var manager = new SQLiteJobQueueManager(new SQLiteJobQueueDataConnectionFactory(TempDevInfo.ConnString),
-                TempDevInfo.TableConfigurations["console"], new NullOnMissingTypeJobTypeResolver());
+            
             Expression<Func<SqlCommonDbOddJobMetaData, bool>> expr = null;
             var results = new string[]{null};
             if (!string.IsNullOrWhiteSpace(queueName))
             {
                 expr = ExpressionHelpers.CombineBinaryExpression(expr,
                     (a) => a.QueueName.ToLower().Contains(queueName.ToLower()), false);
-                results = results.Concat(manager.GetJobCriteriaByCriteria(expr, q => q.MethodName)).ToArray();
+                results = results.Concat(_provider.GetJobCriteriaByCriteria(expr, q => q.MethodName)).ToArray();
             }
 
             
@@ -210,10 +211,8 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
         }
 
         [Remote]
-        public static Task<bool> UpdateJob(JobUpdateViewModel input)
+        public Task<bool> UpdateJob(JobUpdateViewModel input)
         {
-            var manager = new SQLiteJobQueueManager(new SQLiteJobQueueDataConnectionFactory(TempDevInfo.ConnString),
-                TempDevInfo.TableConfigurations["console"], new NullOnMissingTypeJobTypeResolver());
             Dictionary<Expression<Func<SqlCommonDbOddJobMetaData, object>>, object> updateSet =
                 new Dictionary<Expression<Func<SqlCommonDbOddJobMetaData, object>>, object>();
             Dictionary<int, Dictionary<Expression<Func<SqlCommonOddJobParamMetaData, object>>, object>> updateParamSet =
@@ -241,7 +240,7 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
 
             updateParamSet = input.UpdateData.ParamUpdates.Select(q => BuildParamUpdateSet(q)).ToDictionary(q=>q.Key,q=>q.Value);
 
-            var result = manager.UpdateJobMetadataAndParameters(new JobUpdateCommand()
+            var result = _provider.UpdateJobMetadataAndParameters(new JobUpdateCommand()
             {
                 JobGuid = input.UpdateData.JobGuid, OldStatusIfRequired = statusIfRequired,
                 SetJobParameters = updateParamSet, SetJobMetadata = updateSet

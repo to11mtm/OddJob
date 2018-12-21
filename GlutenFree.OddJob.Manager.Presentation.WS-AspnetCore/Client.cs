@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore.Template;
+using WebSharper.JavaScript;
 using Microsoft.FSharp.Core;
 using WebSharper;
 using WebSharper.UI;
 using Doc = WebSharper.UI.Doc;
 using Elt = WebSharper.UI.Elt;
 using Html = WebSharper.UI.Client.Html;
+using Pervasives = WebSharper.JavaScript.Pervasives;
 
 namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
 {
@@ -83,12 +85,12 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
 
         public static async Task<bool> PerformJobUpdate(JobUpdateViewModel juvm)
         {
-            return await Remoting.UpdateJob(juvm);
+            return await WebSharper.JavaScript.Pervasives.Remote<OddJobRemoting>().UpdateJob(juvm);
         }
         public static IControlBody Main()
         {
             
-            //var myList = Var.Create<IEnumerable<string>>(Remoting.GetQueueNameList());
+            //var myList = Var.Create<IEnumerable<string>>(OddJobRemoting.GetQueueNameList());
             var criteria = Var.Create(new JobSearchCriteria());
             var useQueueLens = criteria.Lens(q => q.UseQueue, (a, b) =>
             {
@@ -126,7 +128,7 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
             var queueNames = Var.Create<IEnumerable<string>>(new string[] {null});
             var queueNameView = criteriaFiller.View.MapAsync(async input =>
             {
-                queueNames.Value=  await Remoting.GetQueueNameList();
+                queueNames.Value=  await WebSharper.JavaScript.Pervasives.Remote<OddJobRemoting>().GetQueueNameList();
                 return queueNames.Value;
             });
             criteriaFiller.Trigger();
@@ -356,10 +358,10 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
         {
             if (input == null)
                 return Html.div("");
-            var methodOptionFuture = Remoting.GetMethods(input.Value.QueueName);
+            var methodOptionFuture = Pervasives.Remote<OddJobRemoting>().GetMethods(input.Value.QueueName);
             var awaitedMethodOptions = await methodOptionFuture;
             methodCriteria.Value = awaitedMethodOptions;
-            var future = Remoting.SearchCriteria(input.Value);
+            var future = Pervasives.Remote<OddJobRemoting>().SearchCriteria(input.Value);
             var awaitedFuture = await future;
 
 
@@ -397,7 +399,7 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
                 {
                     if (input == null)
                         return Task.FromResult("");
-                    return Remoting.DoSomething(input.Value);
+                    return Pervasives.Remote<OddJobRemoting>().DoSomething(input.Value);
                 });
             return Html.div(
                 Html.input(rvInput),
@@ -422,7 +424,7 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
                 {
                     if (input == null)
                         return Task.FromResult("");
-                    return Remoting.DoSomething(input.Value);
+                    return OddJobRemoting.DoSomething(input.Value);
                 });
             return div(
                 input(rvInput),
