@@ -1,0 +1,200 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{53A4B2AB-5E3E-424B-B984-354A518A0744}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <WebSharperProject>Site</WebSharperProject>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>GlutenFree.OddJob.Manager.Presentation.WS</RootNamespace>
+    <AssemblyName>GlutenFree.OddJob.Manager.Presentation.WS</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>15.0</OldToolsVersion>
+    <Use64BitIISExpress />
+    <UpgradeBackupLocation />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="FSharp.Core, Version=4.4.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\FSharp.Core.4.2.3\lib\net45\FSharp.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.ValueTuple, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.4.0\lib\net47\System.ValueTuple.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.EnterpriseServices" />
+    <Reference Include="WebSharper.Collections, Version=4.5.0.0, Culture=neutral, PublicKeyToken=dcd983dec8f76a71, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebSharper.4.5.5.319\lib\net461\WebSharper.Collections.dll</HintPath>
+    </Reference>
+    <Reference Include="WebSharper.Control, Version=4.5.0.0, Culture=neutral, PublicKeyToken=dcd983dec8f76a71, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebSharper.4.5.5.319\lib\net461\WebSharper.Control.dll</HintPath>
+    </Reference>
+    <Reference Include="WebSharper.Core, Version=4.5.0.0, Culture=neutral, PublicKeyToken=dcd983dec8f76a71, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebSharper.4.5.5.319\lib\net461\WebSharper.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="WebSharper.Core.JavaScript, Version=4.5.0.0, Culture=neutral, PublicKeyToken=dcd983dec8f76a71, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebSharper.4.5.5.319\lib\net461\WebSharper.Core.JavaScript.dll</HintPath>
+    </Reference>
+    <Reference Include="WebSharper.InterfaceGenerator, Version=4.5.0.0, Culture=neutral, PublicKeyToken=dcd983dec8f76a71, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebSharper.4.5.5.319\lib\net461\WebSharper.InterfaceGenerator.dll</HintPath>
+    </Reference>
+    <Reference Include="WebSharper.JavaScript, Version=4.5.0.0, Culture=neutral, PublicKeyToken=dcd983dec8f76a71, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebSharper.4.5.5.319\lib\net461\WebSharper.JavaScript.dll</HintPath>
+    </Reference>
+    <Reference Include="WebSharper.JQuery, Version=4.5.0.0, Culture=neutral, PublicKeyToken=dcd983dec8f76a71, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebSharper.4.5.5.319\lib\net461\WebSharper.JQuery.dll</HintPath>
+    </Reference>
+    <Reference Include="WebSharper.Main, Version=4.5.0.0, Culture=neutral, PublicKeyToken=dcd983dec8f76a71, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebSharper.4.5.5.319\lib\net461\WebSharper.Main.dll</HintPath>
+    </Reference>
+    <Reference Include="WebSharper.Sitelets, Version=4.5.0.0, Culture=neutral, PublicKeyToken=dcd983dec8f76a71, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebSharper.4.5.5.319\lib\net461\WebSharper.Sitelets.dll</HintPath>
+    </Reference>
+    <Reference Include="WebSharper.UI, Version=4.5.0.0, Culture=neutral, PublicKeyToken=dcd983dec8f76a71, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebSharper.UI.4.5.6.156\lib\net461\WebSharper.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="WebSharper.UI.CSharp, Version=4.5.0.0, Culture=neutral, PublicKeyToken=dcd983dec8f76a71, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebSharper.UI.CSharp.4.5.6.156\lib\net461\WebSharper.UI.CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="WebSharper.UI.Templating, Version=4.5.0.0, Culture=neutral, PublicKeyToken=dcd983dec8f76a71, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebSharper.UI.4.5.6.156\lib\net461\WebSharper.UI.Templating.dll</HintPath>
+    </Reference>
+    <Reference Include="WebSharper.UI.Templating.Common, Version=4.5.0.0, Culture=neutral, PublicKeyToken=dcd983dec8f76a71, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebSharper.UI.4.5.6.156\lib\net461\WebSharper.UI.Templating.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="WebSharper.UI.Templating.Runtime, Version=4.5.0.0, Culture=neutral, PublicKeyToken=dcd983dec8f76a71, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebSharper.UI.4.5.6.156\lib\net461\WebSharper.UI.Templating.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="WebSharper.Web, Version=4.5.0.0, Culture=neutral, PublicKeyToken=dcd983dec8f76a71, processorArchitecture=MSIL">
+      <HintPath>..\packages\WebSharper.4.5.5.319\lib\net461\WebSharper.Web.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Client.cs" />
+    <Compile Include="Remoting.cs" />
+    <Compile Include="Server.cs" />
+    <Content Include="Main.html" />
+    <Compile Include="WebSharper.UI.Templates\Main.g.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Content Include="Web.config" />
+    <None Include="packages.config" />
+    <None Include="Web.Debug.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </None>
+    <None Include="Web.Release.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </None>
+    <None Include="wsconfig.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\packages\WebSharper.CSharp.4.5.5.319\analyzers\dotnet\cs\FSharp.Core.dll" />
+    <Analyzer Include="..\packages\WebSharper.CSharp.4.5.5.319\analyzers\dotnet\cs\Microsoft.DotNet.PlatformAbstractions.dll" />
+    <Analyzer Include="..\packages\WebSharper.CSharp.4.5.5.319\analyzers\dotnet\cs\Microsoft.Extensions.DependencyModel.dll" />
+    <Analyzer Include="..\packages\WebSharper.CSharp.4.5.5.319\analyzers\dotnet\cs\Mono.Cecil.dll" />
+    <Analyzer Include="..\packages\WebSharper.CSharp.4.5.5.319\analyzers\dotnet\cs\Mono.Cecil.Mdb.dll" />
+    <Analyzer Include="..\packages\WebSharper.CSharp.4.5.5.319\analyzers\dotnet\cs\Mono.Cecil.Pdb.dll" />
+    <Analyzer Include="..\packages\WebSharper.CSharp.4.5.5.319\analyzers\dotnet\cs\netstandard.dll" />
+    <Analyzer Include="..\packages\WebSharper.CSharp.4.5.5.319\analyzers\dotnet\cs\WebSharper.Compiler.CSharp.dll" />
+    <Analyzer Include="..\packages\WebSharper.CSharp.4.5.5.319\analyzers\dotnet\cs\WebSharper.Compiler.dll" />
+    <Analyzer Include="..\packages\WebSharper.CSharp.4.5.5.319\analyzers\dotnet\cs\WebSharper.Core.dll" />
+    <Analyzer Include="..\packages\WebSharper.CSharp.4.5.5.319\analyzers\dotnet\cs\WebSharper.Core.JavaScript.dll" />
+    <Analyzer Include="..\packages\WebSharper.CSharp.4.5.5.319\analyzers\dotnet\cs\WebSharper.CSharp.Analyzer.dll" />
+    <Analyzer Include="..\packages\WebSharper.CSharp.4.5.5.319\analyzers\dotnet\cs\WebSharper.InterfaceGenerator.dll" />
+    <Analyzer Include="..\packages\WebSharper.UI.CSharp.4.5.6.156\analyzers\dotnet\cs\HtmlAgilityPack.dll" />
+    <Analyzer Include="..\packages\WebSharper.UI.CSharp.4.5.6.156\analyzers\dotnet\cs\WebSharper.UI.CSharp.Templating.Analyzer.dll" />
+    <Analyzer Include="..\packages\WebSharper.UI.CSharp.4.5.6.156\analyzers\dotnet\cs\WebSharper.UI.CSharp.Templating.dll" />
+    <Analyzer Include="..\packages\WebSharper.UI.CSharp.4.5.6.156\analyzers\dotnet\cs\WebSharper.UI.Templating.Common.dll" />
+  </ItemGroup>
+  <Target Name="IncludeContent" BeforeTargets="Compile">
+    <ItemGroup>
+      <Content Include="Content/**/*.*" />
+      <Content Include="Scripts/**/*.*" />
+    </ItemGroup>
+  </Target>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v15.0\WebApplications\Microsoft.WebApplication.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>49575</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:49575/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <Import Project="..\packages\WebSharper.CSharp.4.5.5.319\build\WebSharper.CSharp.targets" Condition="Exists('..\packages\WebSharper.CSharp.4.5.5.319\build\WebSharper.CSharp.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\WebSharper.CSharp.4.5.5.319\build\WebSharper.CSharp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\WebSharper.CSharp.4.5.5.319\build\WebSharper.CSharp.targets'))" />
+    <Error Condition="!Exists('..\packages\WebSharper.UI.CSharp.4.5.6.156\build\WebSharper.UI.CSharp.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\WebSharper.UI.CSharp.4.5.6.156\build\WebSharper.UI.CSharp.targets'))" />
+  </Target>
+  <Import Project="..\packages\WebSharper.UI.CSharp.4.5.6.156\build\WebSharper.UI.CSharp.targets" Condition="Exists('..\packages\WebSharper.UI.CSharp.4.5.6.156\build\WebSharper.UI.CSharp.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

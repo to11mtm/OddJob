@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SimpleInjector;
 using SimpleInjector.Lifestyles;
 using WebSharper.AspNetCore;
+using WebSharper.Sitelets;
 
 namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
 {
@@ -32,8 +33,13 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
         {
             InitializeContainer(app);
             if (env.IsDevelopment()) { app.UseDeveloperExceptionPage(); }
-            
-            WebSharper.Core.Remoting.AddHandler(typeof(OddJobRemoting), container.GetService<OddJobRemoting>());
+            WebSharper.Core.Remoting.AddHandler(typeof(IJobRequestHandler),typeof(IRemotingHandler<QueueNameListRequest, string[]>));
+            WebSharper.Core.Remoting.AddHandler(typeof(IRemotingHandler<JobSearchCriteria, JobMetadataResult[]>), typeof(IRemotingHandler<JobSearchCriteria, JobMetadataResult[]>));
+            WebSharper.Core.Remoting.AddHandler(typeof(IRemotingHandler<GetMethodsForQueueNameRequest, string[]>), typeof(IRemotingHandler<GetMethodsForQueueNameRequest, string[]>));
+            WebSharper.Core.Remoting.AddHandler(typeof(IRemotingHandler<JobUpdateViewModel, bool>), typeof(IRemotingHandler<JobUpdateViewModel, bool>));
+
+            //WebSharper.Core.Remoting.AddHandler(typeof(IRemotingHandler<,>), container.GetRequiredService(typeof(IRemotingHandler<,>)));
+            //WebSharper.Core.Remoting.AddHandler(typeof(IRemotingHandler<>(OddJobRemoting), container.GetService<OddJobRemoting>());
             app.UseAuthentication()
                 .UseStaticFiles()
                 .UseWebSharper()
@@ -96,8 +102,9 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
             {
                 return new SQLiteJobQueueManager(new SQLiteJobQueueDataConnectionFactory(TempDevInfo.ConnString),
                     TempDevInfo.TableConfigurations["console"], new NullOnMissingTypeJobTypeResolver());
-            }, Lifestyle.Singleton);
-            container.Register<OddJobRemoting>(Lifestyle.Singleton);
+            }, Lifestyle.Scoped);
+            container.Register(typeof(OddJobRemotingHandler));
+            container.RegisterDecorator(typeof(IRemotingHandler<,>), typeof(AsyncOddJobRemotingHandlerDecorator<,>));
             // Add application presentation components:
             //container.RegisterMvcControllers(app);
             //container.RegisterMvcViewComponents(app);
