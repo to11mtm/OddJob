@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Reflection;
 using System.Threading;
 using Akka.DI.SimpleInjector;
@@ -12,8 +13,9 @@ using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Serializable;
 using GlutenFree.OddJob.Storage.SQL.Common;
 using GlutenFree.OddJob.Storage.SQL.SQLite;
-using SimpleInjector;
 using Xunit;
+using Container = SimpleInjector.Container;
+
 
 namespace GlutenFree.OddJob.Execution.Akka.Test
 {
@@ -28,6 +30,10 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
         public object CreateInstance(Type typeToCreate)
         {
             return _container.GetInstance(typeToCreate);
+        }
+
+        public void Relase(object usedInstance)
+        {
         }
     }
 

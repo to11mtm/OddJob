@@ -85,7 +85,7 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
 
         public static async Task<bool> PerformJobUpdate(JobUpdateViewModel juvm)
         {
-            return await WebSharper.JavaScript.Pervasives.Remote<IJobUpdateHandler>().Handle(juvm);
+            return await WebSharper.JavaScript.Pervasives.Remote<OddJobRemotingWrapper>().Handle(juvm);
         }
         public static IControlBody Main()
         {
@@ -129,7 +129,7 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
             var queueNameView = criteriaFiller.View.MapAsync(async input =>
             {
                 queueNames.Value = await WebSharper.JavaScript.Pervasives
-                    .Remote<IJobRequestHandler>().Handle(new QueueNameListRequest());
+                    .Remote<OddJobRemotingWrapper>().Handle(new QueueNameListRequest());
                 return queueNames.Value;
             });
             criteriaFiller.Trigger();
@@ -359,11 +359,11 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
         {
             if (input == null)
                 return Html.div("");
-            var methodOptionFuture = Pervasives.Remote<IJobQueueMethodNameHandler>()
+            var methodOptionFuture = Pervasives.Remote<OddJobRemotingWrapper>()
                 .Handle(new GetMethodsForQueueNameRequest() {QueueName = input.Value.QueueName});
             var awaitedMethodOptions = await methodOptionFuture;
             methodCriteria.Value = awaitedMethodOptions;
-            var future = Pervasives.Remote<IJobSearchHandler>().Handle(input.Value);
+            var future = Pervasives.Remote<OddJobRemotingWrapper>().Handle(input.Value);
             var awaitedFuture = await future;
 
 

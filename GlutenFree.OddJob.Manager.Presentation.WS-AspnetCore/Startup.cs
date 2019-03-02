@@ -33,10 +33,11 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
         {
             InitializeContainer(app);
             if (env.IsDevelopment()) { app.UseDeveloperExceptionPage(); }
-            WebSharper.Core.Remoting.AddHandler(typeof(IJobRequestHandler),typeof(IRemotingHandler<QueueNameListRequest, string[]>));
-            WebSharper.Core.Remoting.AddHandler(typeof(IRemotingHandler<JobSearchCriteria, JobMetadataResult[]>), typeof(IRemotingHandler<JobSearchCriteria, JobMetadataResult[]>));
-            WebSharper.Core.Remoting.AddHandler(typeof(IRemotingHandler<GetMethodsForQueueNameRequest, string[]>), typeof(IRemotingHandler<GetMethodsForQueueNameRequest, string[]>));
-            WebSharper.Core.Remoting.AddHandler(typeof(IRemotingHandler<JobUpdateViewModel, bool>), typeof(IRemotingHandler<JobUpdateViewModel, bool>));
+            WebSharper.Core.Remoting.AddHandler(typeof(OddJobRemotingWrapper), container.GetService< OddJobRemotingWrapper>());
+            //WebSharper.Core.Remoting.AddHandler(typeof(IRemotingHandler<QueueNameListRequest, string[]>),container.GetService<IRemotingHandler<QueueNameListRequest, string[]>>());
+            //WebSharper.Core.Remoting.AddHandler(typeof(IRemotingHandler<JobSearchCriteria, JobMetadataResult[]>), container.GetService<IRemotingHandler<JobSearchCriteria, JobMetadataResult[]>>());
+            //WebSharper.Core.Remoting.AddHandler(typeof(IRemotingHandler<GetMethodsForQueueNameRequest, string[]>), container.GetService <IRemotingHandler<GetMethodsForQueueNameRequest, string[]>>());
+            //WebSharper.Core.Remoting.AddHandler(typeof(IRemotingHandler<JobUpdateViewModel, bool>), container.GetService<IRemotingHandler<JobUpdateViewModel, bool>>());
 
             //WebSharper.Core.Remoting.AddHandler(typeof(IRemotingHandler<,>), container.GetRequiredService(typeof(IRemotingHandler<,>)));
             //WebSharper.Core.Remoting.AddHandler(typeof(IRemotingHandler<>(OddJobRemoting), container.GetService<OddJobRemoting>());
@@ -103,8 +104,10 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
                 return new SQLiteJobQueueManager(new SQLiteJobQueueDataConnectionFactory(TempDevInfo.ConnString),
                     TempDevInfo.TableConfigurations["console"], new NullOnMissingTypeJobTypeResolver());
             }, Lifestyle.Scoped);
-            container.Register(typeof(OddJobRemotingHandler));
+            container.Register(typeof(IRemotingHandler<,>), new[] {typeof(OddJobRemotingHandler)});
+            //container.Register(typeof(OddJobRemotingHandler));
             container.RegisterDecorator(typeof(IRemotingHandler<,>), typeof(AsyncOddJobRemotingHandlerDecorator<,>));
+            container.Register(typeof(OddJobRemotingWrapper));
             // Add application presentation components:
             //container.RegisterMvcControllers(app);
             //container.RegisterMvcViewComponents(app);

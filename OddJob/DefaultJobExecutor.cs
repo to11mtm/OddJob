@@ -35,6 +35,7 @@ namespace GlutenFree.OddJob
             }
             //var method = expr.TypeExecutedOn.GetMethod(expr.MethodName, expr.JobArgs.Select(q=>q.Value.GetType()).ToArray());
             method.Invoke(instance, expr.JobArgs.Select(q=>q.Value).ToArray());
+            _containerFactory.Relase(instance);
         }
     }
 }

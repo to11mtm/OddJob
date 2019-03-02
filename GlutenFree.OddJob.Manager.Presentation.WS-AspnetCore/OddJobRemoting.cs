@@ -1,16 +1,12 @@
+using GlutenFree.Linq2Db.Helpers;
+using GlutenFree.OddJob.Storage.Sql.Common;
+using GlutenFree.OddJob.Storage.SQL.Common;
+using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using GlutenFree.Linq2Db.Helpers;
-using GlutenFree.OddJob.Serializable;
-using GlutenFree.OddJob.Storage.Sql.Common;
-using GlutenFree.OddJob.Storage.SQL.Common;
-using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
-using GlutenFree.OddJob.Storage.SQL.SQLite;
-using SimpleInjector;
-using SimpleInjector.Lifestyles;
 using WebSharper;
 
 namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
@@ -106,10 +102,16 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
         public string Queue;
     }
 
+    //TODO: Figure out how to get Handler Interface pattern working with Websharper.
     public interface IRemotingHandler<TRemotingCommand, TRemotingTaskResultType>
     {
         [Remote]
         Task<TRemotingTaskResultType> Handle(TRemotingCommand command);
+    }
+
+    public class OddJobRemotingHelper
+    {
+        
     }
 
     [JavaScript]
@@ -124,46 +126,9 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
         public string QueueName;
     }
 
-    public interface IJobRequestHandler
-    {
-        Task<string[]> Handle(QueueNameListRequest req);
-    }
 
-    public interface IJobSearchHandler
-    {
-        Task<JobMetadataResult[]> Handle(JobSearchCriteria criteria);
-    }
-
-    public interface IJobQueueMethodNameHandler
-    {
-        Task<string[]> Handle(GetMethodsForQueueNameRequest queueNameRequest);
-    }
-
-    public interface IJobUpdateHandler
-    {
-        Task<bool> Handle(JobUpdateViewModel input);
-    }
-
-    public class AsyncOddJobRemotingHandlerDecorator<TRequest,TResult> : IRemotingHandler<TRequest,TResult>
-    {
-        private readonly Func<IRemotingHandler<TRequest,TResult>> _decorateeFactory;
-        private readonly Container _container;
-        public AsyncOddJobRemotingHandlerDecorator(Container container, Func<IRemotingHandler<TRequest,TResult>> decorateeFactory)
-        {
-            _container = container;
-            _decorateeFactory = decorateeFactory;
-        }
-
-        public Task<TResult> Handle(TRequest command)
-        {
-            using (AsyncScopedLifestyle.BeginScope(_container))
-            {
-                var handler = _decorateeFactory.Invoke();
-                return handler.Handle(command);
-            }
-        }
-    }
-    public class OddJobRemotingHandler : IJobSearchHandler, IJobRequestHandler, IJobUpdateHandler, IJobQueueMethodNameHandler
+    public class OddJobRemotingHandler : IRemotingHandler<JobUpdateViewModel, bool>, IRemotingHandler<QueueNameListRequest,string[]>, 
+        IRemotingHandler<JobSearchCriteria,JobMetadataResult[]>, IRemotingHandler<GetMethodsForQueueNameRequest,string[]>
     {
         private IJobSearchProvider _provider;
         public OddJobRemotingHandler(IJobSearchProvider provider)
