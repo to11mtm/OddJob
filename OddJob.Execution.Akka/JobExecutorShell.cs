@@ -1,25 +1,25 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using Akka.Actor;
 using Akka.Configuration;
-using Akka.Dispatch;
-using Akka.Event;
 using Akka.Routing;
 using GlutenFree.OddJob.Execution.Akka.Messages;
+using GlutenFree.OddJob.Interfaces;
 
 [assembly: InternalsVisibleTo("GlutenFree.OddJob.Execution.Akka.Test")]
 namespace GlutenFree.OddJob.Execution.Akka
 {
-    
     public abstract class BaseJobExecutorShell : IDisposable
     {
         protected ActorSystem _actorSystem { get; private set; }
         
-        internal  Dictionary<string, IActorRef> coordinatorPool = new Dictionary<string, IActorRef>();
-        internal  Dictionary<string, ICancelable> cancelPulsePool = new Dictionary<string, ICancelable>();
-        string hoconString
+        protected internal Dictionary<string, IActorRef> coordinatorPool = new Dictionary<string, IActorRef>();
+        protected Dictionary<string, ICancelable> cancelPulsePool = new Dictionary<string, ICancelable>();
+        string mailboxString
         {
             get
             {
@@ -29,21 +29,35 @@ namespace GlutenFree.OddJob.Execution.Akka
 ", typeof(ShutdownPriorityMailbox).AssemblyQualifiedName);
             }
         }
-        protected BaseJobExecutorShell(Func<IRequiresMessageQueue<ILoggerMessageQueueSemantics>> loggerTypeFactory)
+
+        protected string CustomHoconString
+        {
+            get { return ""; }
+        }
+        protected BaseJobExecutorShell(IExecutionEngineLoggerConfig loggerConfig)
         {
             string loggerConfigString = string.Empty;
-            if (loggerTypeFactory != null)
+            if (loggerConfig != null)
             {
-                    loggerConfigString = loggerTypeFactory == null
-                        ? ""
-                        : string.Format(@"akka.loglevel = DEBUG
-                    akka.loggers=[""{0}.{1}, {2}""]", loggerTypeFactory.Method.ReturnType.Namespace, loggerTypeFactory.Method.ReturnType.Name,
-                            loggerTypeFactory.Method.ReturnType.Assembly.GetName().Name);
+                if (loggerConfig.LogLevel != null)
+                {
+                    loggerConfigString = loggerConfigString +
+                                         string.Format("akka.loglevel = {0}", loggerConfig.LogLevel.ToUpper());
+                }
+                if (loggerConfig.LoggerTypeFactory != null)
+                {
+                    loggerConfigString = loggerConfigString + string.Format(@"
+                    akka.loggers=[""{0}.{1}, {2}""]", loggerConfig.LoggerTypeFactory.Method.ReturnType.Namespace,
+                                             loggerConfig.LoggerTypeFactory.Method.ReturnType.Name,
+                                             loggerConfig.LoggerTypeFactory.Method.ReturnType.Assembly.GetName().Name);
+                }
+                
+                    
             }
 
-            var hocon = global::Akka.Configuration.ConfigurationFactory.Default().ToString() +
-                        hoconString + Environment.NewLine + loggerConfigString;
-            _actorSystem = ActorSystem.Create("Oddjob-Akka", ConfigurationFactory.ParseString(hocon));
+            var hocon = CustomHoconString + Environment.NewLine + 
+                        mailboxString + Environment.NewLine + loggerConfigString;
+            _actorSystem = ActorSystem.Create("Oddjob-Akka-"+ Guid.NewGuid(), ConfigurationFactory.ParseString(hocon));
             
         }
 
@@ -55,21 +69,74 @@ namespace GlutenFree.OddJob.Execution.Akka
         /// <param name="numWorkers">The number of Workers for the Queue</param>
         /// <param name="pulseDelayInSeconds">The Delay in seconds between 'pulses'.</param>
         /// <param name="firstPulseDelayInSeconds">The time to wait before the first pulse delay. Default is 5. Can use any value greater than 0</param>
-        public void StartJobQueue(string queueName, int numWorkers, int pulseDelayInSeconds, int firstPulseDelayInSeconds = 5)
+        /// <param name="priorityExpresssion">An expression to use for setting retrieval priority. Default is most recent Attempt/Creation</param>
+        /// <param name="aggressiveSweep">If true, when queues are saturated, a silent 'resweep' will be repeatedly sent for each saturated pulse, until the saturation condition has ended. These repeated attempts will not trigger the 'OnJobQueueSaturated' method or further increment the counters.</param>
+        public void StartJobQueue(string queueName, int numWorkers, int pulseDelayInSeconds, int firstPulseDelayInSeconds = 5, Expression<Func<JobLockData,object>> priorityExpresssion = null, bool aggressiveSweep = false)
         {
             if (coordinatorPool.ContainsKey(queueName) == false)
             {
-                var workerProps = WorkerProps.WithRouter(new RoundRobinPool(numWorkers));
-                var jobQueueProps = JobQueueProps;
-                var jobCoordinator = _actorSystem.ActorOf(Props.Create(() => new JobQueueCoordinator(workerProps, jobQueueProps, queueName, numWorkers)).WithMailbox("shutdown-priority-mailbox"), queueName);
-                coordinatorPool.Add(queueName, jobCoordinator);
-                var cancelToken = _actorSystem.Scheduler.ScheduleTellRepeatedlyCancelable((int)TimeSpan.FromSeconds(firstPulseDelayInSeconds).TotalMilliseconds, (int)TimeSpan.FromSeconds(pulseDelayInSeconds).TotalMilliseconds, jobCoordinator, new JobSweep(), null);
-                cancelPulsePool.Add(queueName, cancelToken);
+
+                var priExpr = priorityExpresssion;
+                if (priExpr == null)
+                {
+                    priExpr = DefaultJobQueueManagerPriority.Expression;
+                }
+
+                var jobCoordinator = _actorSystem.ActorOf(CoordinatorProps.WithMailbox("shutdown-priority-mailbox"),
+                    queueName);
+                var result = jobCoordinator.Ask(new SetJobQueueConfiguration(WorkerProps, JobQueueProps, queueName,
+                            numWorkers,
+                            pulseDelayInSeconds, firstPulseDelayInSeconds, priExpr, aggressiveSweep),
+                        TimeSpan.FromSeconds(10))
+                    .Result;
+                if (result is Configured)
+                {
+                    coordinatorPool.Add(queueName, jobCoordinator);
+                    var cancelToken = _actorSystem.Scheduler.ScheduleTellRepeatedlyCancelable(
+                        (int) TimeSpan.FromSeconds(firstPulseDelayInSeconds).TotalMilliseconds,
+                        (int) TimeSpan.FromSeconds(pulseDelayInSeconds).TotalMilliseconds, jobCoordinator,
+                        new JobSweep(), null);
+                    cancelPulsePool.Add(queueName, cancelToken);
+                }
+                else
+                {
+                    throw new InvalidOperationException("Unexpected Result from Configuration Set!");
+                }
+
             }
+        }
+
+        /// <summary>
+        /// This allows for an extension point on your Coordinator, to perhaps set special configurations if needed after start,
+        /// or for creating advanced pipeline scenarios.
+        /// </summary>
+        /// <param name="queueName">The name of the queue that is about to start.</param>
+        /// <param name="coordinatorRef">A Thread-safe <see cref="IActorRef"/>that can be used to communicate with a custom coordinator.</param>
+        /// <remarks>This may be useful for some special scenarios where you wish to set configurations before anything else is configured.</remarks>
+        protected virtual void BeforeQueueStart(string queueName, IActorRef coordinatorRef)
+        {
+
+        }
+
+        /// <summary>
+        /// This allows for an extension point on your Coordinator, to perhaps set special configurations if needed after start,
+        /// or for creating advanced pipeline scenarios.
+        /// </summary>
+        /// <param name="queueName">The name of the queue that has been started.</param>
+        /// <param name="coordinatorRef">A Thread-safe <see cref="IActorRef"/>that can be used to communicate with a custom coordinator.</param>
+        /// <param name="cancelToken">A Cancellation token for the initial worker</param>
+        /// <remarks>
+        /// This can be useful for highly-responsive scenarios. Consider where a SQL Server queue or RabbitMQ could be set to wait for messages,
+        /// then telling the coordinator to sweep immediately. This can greatly simplify the complexities of working with such a bus.
+        /// </remarks>
+        protected virtual void OnQueueStart(string queueName, IActorRef coordinatorRef, ICancelable cancelToken)
+        {
+
         }
 
         protected abstract Props WorkerProps { get; }
         protected abstract Props JobQueueProps { get; }
+        protected abstract Props CoordinatorProps { get; }
         /// <summary>
         /// Shuts down a Queue.
         /// </summary>
@@ -79,10 +146,21 @@ namespace GlutenFree.OddJob.Execution.Akka
         {
             try
             {
-                cancelPulsePool[queueName].Cancel();
-                var result =
-                    coordinatorPool[queueName].Ask(new ShutDownQueues(), TimeSpan.FromSeconds(timeoutInSeconds))
-                        .Result as QueueShutDown;
+                if (cancelPulsePool.ContainsKey(queueName))
+                {
+                    if (cancelPulsePool[queueName].IsCancellationRequested == false)
+                    {
+                        cancelPulsePool[queueName].Cancel();
+                    }
+                }
+
+                if (coordinatorPool.ContainsKey(queueName))
+                {
+                    var result =
+                        coordinatorPool[queueName].Ask(new ShutDownQueues(), TimeSpan.FromSeconds(timeoutInSeconds))
+                            .Result as QueueShutDown;
+                }
+                
                 coordinatorPool[queueName].Tell(PoisonPill.Instance);
             }
             finally

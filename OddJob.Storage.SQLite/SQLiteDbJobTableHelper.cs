@@ -4,7 +4,7 @@ namespace GlutenFree.OddJob.Storage.Sql.SQLite
 {
     public static class SQLiteDbJobTableHelper
     {
-        public static string JobTableCreateScript(SqlDbJobQueueDefaultTableConfiguration configuration)
+        public static string JobTableCreateScript(ISqlDbJobQueueTableConfiguration configuration)
         {
             return string.Format(@"
 
@@ -27,16 +27,17 @@ CreatedDate datetime not null)
 ", configuration.QueueTableName);
         }
 
-        public static string JobQueueParamTableCreateScript(SqlDbJobQueueDefaultTableConfiguration config)
+        public static string JobQueueParamTableCreateScript(ISqlDbJobQueueTableConfiguration config)
         {
             return string.Format(@"
 Create table {0}
 (
-JobParamId INTEGER PRIMARY KEY,
+Id INTEGER PRIMARY KEY,
 JobGuid uniqueidentifier not null, 
 ParamOrdinal int not null,
 SerializedValue text null,
-SerializedType nvarchar(255) null
+SerializedType nvarchar(255) null,
+ParameterName nvarchar(255) null
 )", config.ParamTableName);
         }
 
@@ -50,6 +51,15 @@ JobGuid UniqueIdentifier not null,
 ParamOrder int not null,
 ParamTypeName text not null
 )", config.JobMethodGenericParamTableName);
+        }
+
+        public static string SuggestedIndexes(ISqlDbJobQueueTableConfiguration config)
+        {
+            return string.Format(@"
+create index {2}_jobguid_idx on {2}(JobGuid);
+create index {1}_jobguid_idx on {1}(JobGuid);
+create unique  index {0}_jobguid_idx on {0}(JobGuid);
+", config.QueueTableName, config.ParamTableName, config.JobMethodGenericParamTableName);
         }
     }
 }

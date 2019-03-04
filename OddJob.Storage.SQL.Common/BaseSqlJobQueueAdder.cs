@@ -1,78 +1,180 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using GlutenFree.OddJob.Interfaces;
+using GlutenFree.OddJob.Serializable;
 using GlutenFree.OddJob.Storage.Sql.Common.DbDtos;
 using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
 using LinqToDB;
+using LinqToDB.Data;
 using LinqToDB.Mapping;
 
 namespace GlutenFree.OddJob.Storage.SQL.Common
 {
-    public abstract class BaseSqlJobQueueAdder : IJobQueueAdder
+    public abstract class BaseSqlJobQueueAdder : IJobQueueAdder, ISerializedJobQueueAdder
     {
-        private readonly MappingSchema _mappingSchema;
-        
-        protected BaseSqlJobQueueAdder(IJobQueueDataConnectionFactory jobQueueDataConnectionFactory, ISqlDbJobQueueTableConfiguration jobQueueTableConfiguration)
+        private readonly FluentMappingBuilder _mappingSchema;
+        private readonly IJobAdderQueueTableResolver _tableResolver;
+
+        protected BaseSqlJobQueueAdder(IJobQueueDataConnectionFactory jobQueueDataConnectionFactory,
+            IJobAdderQueueTableResolver tableResolver)
         {
             _jobQueueConnectionFactory = jobQueueDataConnectionFactory;
 
-            _mappingSchema = Mapping.BuildMappingSchema(jobQueueTableConfiguration);
+            _mappingSchema = MappingSchema.Default.GetFluentMappingBuilder();
+            _tableResolver = tableResolver;
         }
 
-        
-        
+
+
         private IJobQueueDataConnectionFactory _jobQueueConnectionFactory { get; set; }
+
+
+        public virtual void AddJobs(IEnumerable<SerializableOddJob> jobDatas)
+        {
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            {
+                foreach (var job in jobDatas)
+                {
+                    _addJobImpl(job, conn);
+                }
+            }
+        }
+
+        public virtual void AddJob(SerializableOddJob jobData)
+        {
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            {
+                _addJobImpl(jobData, conn);
+            }
+
+        }
+
+        /*
+        public void AddJob_Idempotent(SerializableOddJob jobData, DataConnection conn)
+        {
+            var mergeSource1 = new[] {GetMetaDataForJob(jobData)};
+            var mergeSource2 = GetParamDataForJob(jobData);
+            var mergeSource3 = GetGenericDataForJob(jobData);
+            var table = _tableResolver.GetConfigurationForJob(jobData);
+            conn.GetTable<SqlCommonDbOddJobMetaData>().TableName(table.QueueTableName).Merge()
+                .Using(mergeSource1)
+                .On((q, s) => q.QueueName == s.QueueName && q.MethodName == s.MethodName &&
+                              q.TypeExecutedOn == s.TypeExecutedOn)
+                .InsertWhenNotMatched();
+            conn.GetTable<SqlCommonOddJobParamMetaData>().TableName(table.ParamTableName).Merge()
+                .Using(mergeSource2)
+                .On((q, s) => q.JobGuid == s.JobGuid && q.ParamOrdinal == s.ParamOrdinal)
+                .InsertWhenNotMatched();
+            conn.GetTable<SqlDbOddJobMethodGenericInfo>().TableName(table.JobMethodGenericParamTableName).Merge()
+                .Using(mergeSource3)
+                .On((q, s) => q.JobGuid == s.JobGuid && q.ParamOrder == s.ParamOrder)
+                .InsertWhenNotMatched();
+        }
+        */
+
+        public SqlCommonDbOddJobMetaData GetMetaDataForJob(SerializableOddJob jobData)
+        {
+            return new SqlCommonDbOddJobMetaData()
+            {
+                QueueName = jobData.QueueName,
+                TypeExecutedOn = jobData.TypeExecutedOn,
+                MethodName = jobData.MethodName,
+                DoNotExecuteBefore = jobData.ExecutionTime,
+                JobGuid = jobData.JobId,
+                Status = JobStates.Inserting,
+                CreatedDate = DateTime.Now,
+                MaxRetries = (jobData.RetryParameters == null ? 0 : (int) jobData.RetryParameters.MaxRetries),
+                MinRetryWait =
+                    jobData.RetryParameters == null ? 0 : (int) jobData.RetryParameters.MinRetryWait.TotalSeconds,
+                RetryCount = 0
+            };
+        }
+
+        public SqlCommonOddJobParamMetaData[] GetParamDataForJob(SerializableOddJob jobData)
+        {
+            return jobData.JobArgs.Select(q => new SqlCommonOddJobParamMetaData()
+            {
+                JobGuid = jobData.JobId,
+                ParamOrdinal = q.Ordinal,
+                SerializedValue = q.Value,
+                SerializedType = q.TypeName,
+                ParameterName = q.Name
+            }).ToArray();
+
+        }
+
+        public SqlDbOddJobMethodGenericInfo[] GetGenericDataForJob(SerializableOddJob jobData)
+        {
+            return jobData.MethodGenericTypes.Select((q, i) => new SqlDbOddJobMethodGenericInfo()
+            {
+                JobGuid = jobData.JobId,
+                ParamOrder = i,
+                ParamTypeName = q
+            }).ToArray();
+
+        }
+
+
+        protected virtual BulkCopyOptions BulkOptions
+        {
+            get
+            {
+                return new BulkCopyOptions()
+                {
+                    KeepIdentity = false
+                };
+            }
+        }
+
+        private void _addJobImpl(SerializableOddJob jobData, DataConnection conn)
+        {
+
+            var table = _tableResolver.GetConfigurationForJob(jobData);
+            //var jobMetaData = GetMetaDataForJob(jobData);
+            var paramData = GetParamDataForJob(jobData);
+            var jobGenParams = GetGenericDataForJob(jobData);
+            var insertedIdExpr = conn.GetTable<SqlCommonDbOddJobMetaData>().TableName(table.QueueTableName)
+                .Value(q => q.QueueName, jobData.QueueName)
+                .Value(q => q.TypeExecutedOn, jobData.TypeExecutedOn)
+                .Value(q => q.MethodName, jobData.MethodName)
+                .Value(q => q.DoNotExecuteBefore, jobData.ExecutionTime)
+                .Value(q => q.JobGuid, jobData.JobId)
+                .Value(q => q.Status, JobStates.Inserting)
+                .Value(q => q.CreatedDate, DateTime.Now)
+                .Value(q => q.MaxRetries, (jobData.RetryParameters == null ? 0 : (int?) jobData.RetryParameters.MaxRetries))
+                .Value(q => q.MinRetryWait,
+                    jobData.RetryParameters == null ? 0 : (int?) jobData.RetryParameters.MinRetryWait.TotalSeconds)
+                .Value(q => q.RetryCount, 0);
+            var insertedId = insertedIdExpr.InsertWithInt64Identity();
+
+            if (paramData.Length > 0)
+            {
+                conn.GetTable<SqlCommonOddJobParamMetaData>().TableName(table.ParamTableName)
+                    .BulkCopy(BulkOptions, paramData);
+            }
+
+            if (jobGenParams.Length > 0)
+            {
+                conn.GetTable<SqlDbOddJobMethodGenericInfo>().TableName(table.JobMethodGenericParamTableName)
+                    .BulkCopy(BulkOptions,jobGenParams);
+            }
+            
+
+            conn.GetTable<SqlCommonDbOddJobMetaData>().TableName(table.QueueTableName).Where(q => q.Id == insertedId)
+                .Set(q => q.Status, JobStates.New)
+                .Update();
+        }
+
         public virtual Guid AddJob<TJob>(Expression<Action<TJob>> jobExpression, RetryParameters retryParameters = null,
             DateTimeOffset? executionTime = null, string queueName = "default")
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
             {
-                var ser = JobCreator.Create(jobExpression);
-                
-                var insertedIdExpr = conn.GetTable<SqlCommonDbOddJobMetaData>()
-                    .Value(q => q.QueueName, queueName)
-                    .Value(q => q.TypeExecutedOn, ser.TypeExecutedOn.AssemblyQualifiedName)
-                    .Value(q => q.MethodName, ser.MethodName)
-                    .Value(q => q.DoNotExecuteBefore, executionTime)
-                    .Value(q => q.JobGuid, ser.JobId)
-                    .Value(q=>q.Status, JobStates.Inserting)
-                    .Value(q=>q.CreatedDate, DateTime.Now)
-                    .Value(q => q.MaxRetries, (retryParameters == null ? 0 : (int?) retryParameters.MaxRetries))
-                    .Value(q => q.MinRetryWait,
-                        retryParameters == null ? 0 : (double?) retryParameters.MinRetryWait.TotalSeconds)
-                    .Value(q => q.RetryCount, 0);
-                    var insertedId = insertedIdExpr.InsertWithInt64Identity();
-
-                
-                var toInsert = ser.JobArgs.Select((val, index) => new { val, index }).ToList();
-                toInsert.ForEach(i =>
-                {
-
-                    conn.GetTable<SqlCommonOddJobParamMetaData>()
-                        .Value(q => q.JobGuid, ser.JobId)
-                        .Value(q => q.ParamOrdinal, i.index)
-                        .Value(q => q.SerializedValue, Newtonsoft.Json.JsonConvert.SerializeObject(i.val))
-                        .Value(q => q.SerializedType, i.val.GetType().AssemblyQualifiedName)
-                        .Insert();
-                    
-                    
-                });
-
-                var genMethodArgs = ser.MethodGenericTypes.Select((val, index) => new {val, index}).ToList();
-                genMethodArgs.ForEach(i =>
-                {
-                    conn.GetTable<SqlDbOddJobMethodGenericInfo>()
-                        .Value(q => q.JobGuid, ser.JobId)
-                        .Value(q => q.ParamOrder, i.index)
-                        .Value(q => q.ParamTypeName, i.val.AssemblyQualifiedName)
-                        .Insert();
-                });
-
-                conn.GetTable<SqlCommonDbOddJobMetaData>().Where(q => q.Id == insertedId)
-                    .Set(q => q.Status, JobStates.New)
-                    .Update();
-                
+                var ser = SerializableJobCreator.CreateJobDefinition(jobExpression, retryParameters, executionTime,queueName);
+                AddJob(ser);
                 return ser.JobId;
             }
         }

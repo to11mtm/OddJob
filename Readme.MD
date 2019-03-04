@@ -19,8 +19,15 @@ Features:
 	- Table Creation Script Helpers provided for Sql Providers.
 	  - Indexes not included. Talk to your DBA and/or read notes below!
 
+  - Serializable Job API:
+    - Get Jobs as a pre-serialized definition to use over the wire. Consider the use case of a reactive system; parts of the pipeline may add jobs that are queued upon completion of an events processing. This can be very useful in microservice scenarios where a series of actions must still be coordinated in an atomic fashion.
+
+
   - Low Friction API:
     - API is meant to be easy to stand up, but also easy to *expand into* more advanced use scenarios.
+
+  - Graceful Failures:
+    - Execution System is meant to fail gracefully; Log as much or as little as you want for your scenario.
 
 Goals:
 
@@ -52,10 +59,9 @@ Non-Goals:
 
 Not-Initial-Goals (Will be done when there's a need):
  
- - Net Core Support
-   - I don't think there's anything being done here that can't be done in core; But it's not at all set up for it, let alone validated.
-
  - Repeated Scheduling
+   - By this We are referring to Jobs that run Every Sunday, every 3rd of the month, etc.
+   - You can get around this with Scheduled tasks in windows, Cronjobs in *nix environments.
 
  - Perfect API Surface
    - By this we are referring to the total API space. 
@@ -75,7 +81,7 @@ Not-Initial-Goals (Will be done when there's a need):
  - Robust Ability to run without DI
    - Jobs themselves essentially require DI to run.
      -To be clear; There is a `DefaultContainerFactory` that will work as long as your job type has a public, paramterless constructor. It will not work if your type has any constructor dependencies, or expects properties to be injected after the fact. This is used primarily for test scenarios as well as for if you are really DI averse.
-	   - If you're in that camp, you'll want to use the `HardInjectedJobExecutorShell`. This shell will require you to provide creator functions for the `JobQueueLayerActor` and `JobWorkerActor`.
+	   - If you're in that camp, you'll want to use the `HardInjectedJobExecutorShell`. This shell will require you to provide creator functions for the `JobQueueCoordinator`, `JobQueueLayerActor` and `JobWorkerActor`
 
  - Minimal DB Round-Trips
    - Due to a semi-questionable design decision we have to:
@@ -97,18 +103,60 @@ Not-Initial-Goals (Will be done when there's a need):
 
 Usage:
 
+ - NetStandard/NetFramework Compatibility:
+   - While Libraries are provided for both versions, compatibility between frameworks is not guaranteed in all cases. 
+    - The API and unit work for both platforms, the concern lies in jobs defined in one framework working in another.
+	  - This is primarily due to the differences between the way types are serialized between versions.
+	  - Most normal .NET types *should* be forward compatible. i.e. framework defined jobs using normal things like strings and dictionaries.
+   - We will try to write unit tests around compatibility if possible.
+
  - Queue Insertion:
    - Use an Implementation of `IJobQueueAdder`
     - If Using `SqlServerJobQueueAdder`, you'll have to register an `IJobQueueDbConnectionFactory` and use it alongside `SqlServerDataConnectionFactory`
 
  - Queue Processor:
+
+   - The Queue Processor Consists of Four Components. 
+        - `JobQueueCoordinator`
+		  - A Coordinator that Handles the basic aspects of Fetching Jobs and sending them to the Workers.
+		  - There are a variety of methods for handling results of Jobs and otehr Events, including:
+		    - `OnJobQueueSaturated(DateTime saturationTime, int saturationMissedPulseCount, long queueLifeSaturationPulseCount)`
+			  - This method will be called if the Queue is been at or above it's Saturation point (2*numberOfWorkers) on a given pulse
+			- `OnJobRetry(JobFailed msg)`
+			  - This method will be called when a job has been set to 'retried' based on the Queue's Logic. `JobFailed` will contain information about the Job's failure, i.e. parameters and the exception if you choose to log.
+			- `OnJobFailed(JobFailed msg)`
+			  - This method will be called when a job has been set to a 'failed' status. This status indicates the Queue processor will NOT pick it up again.
+			- `OnJobSuccess(JobSuceeded msg)`
+			  - This method will be called when a job has 'succeeded' (i.e. executed with no exceptions thrown.) The Queue processor will not pick up this job again.
+			- `OnQueueTimeout(Exception ex)`
+			  - Called when a Query to the Queue store has timed out. This will let you send alarms if needed, etc.
+			- `OnJobTypeMissing(IOddJobWithMetadata job)`
+			  - Called when a Job is missing type data. This may happen if you are reading from the incorrect queue. **If this is reached, The job has been marked as failed and will not be picked up for Queue processing.**
+	    - `JobWorkerActor`
+		  - A Job Worker. This Executes Jobs based on the metadata. If no execptions are thrown, the job is treated as a success.
+		  - Currently this has no Extensino functionality, but will likely have such in the future.
+		- `JobQueueLayerActor`
+		  - A Semi-Asynchronous Handler for DB Connections.
+		    - Queue Fetch is an Ask (effectively synchronous) operation
+			- Queue Writes (failute, success, etc) is an asynchronus operation
+			  - This is only a problem in a process crash. Normal Shutdown procedures will make a timeout-based best effort to let all queues (worker and otherwise) flush.
+		  - This has a single overridable method:
+		    - `OnQueueFailure(object failedCommand, Exception ex)`
+			  - This will be called if the underlying Queue throws an exception.
+		- `JobExecutorShell`
+		  - A Container for handling the startup and shutdown of your Job Queues.
+		    - This will likely be the composition root of a Queue Processing Application/service.
+		  - `HardInjectedJobExecutorShell` and `DependencyInjectedJobExecutorShell` exist
+		    - See below for notes.
+        
+
    - If using 'HardInjectedJobExecutorShell' (Reccomended for most scenarios; lowest friction setup):
       - Implement an `IContainerFactory` if you have special initialization requirements or wish to use a DI container. Otherwise use `DefaultContainerFactory` which expectes a public parameterless constructor on any jobs.
 	  - New-Up an instance of `HardInjectedJobExecutorShell`, providing functions to initialize the above interfaces as needed when newing up your components.
 	    - If reaching into a DI container for these pieces, please note that these should be treated as non-singleton (i.e. transient) grabs from a container. This is the default for most DI Scenarios but is worth noting.
    
    - If using `DependencyInjectedJobExecutorShell` (Reccomended only for advanced scenarios):
-      - Register the following types in your DI Container:
+      - Register the following types (Or a proper inheritance of) in your DI Container:
         - `JobWorkerActor`
         - `JobQueueCoordinator`
         - `JobQueueLayerActor`
@@ -128,9 +176,9 @@ Usage:
 Missing Type handling:
 
   - The SQL Storage has to modes of behavior for Missing types:
-    - First (If no `IStorageJobTypeResolver` is defined, or `DefaltStorageJobTypeResolver` is used) will cause a failure on the storage layer.
+	- First (If no `IStorageJobTypeResolver` is defined, or `NullOnMissingTypeJobTypeResolver` is used) will cause the job to have a null type; This will cause the Execution layer to mark the job in a failed state and fire the `OnJobTypeMissing` handler.
+	- First (If `DefaltStorageJobTypeResolver` is used) will cause a failure on the storage layer.
 	  - This can eventaully cause the queue to back up!
-	- Second (If `NullOnMissingTypeJobTypeResolver` is used) will cause the job to have a null type; This will cause the Execution layer to mark the job in a failed state and fire the `OnJobTypeMissing` handler.
 
 Extensibility:
   - Everything except the core Job Creator is an interface.

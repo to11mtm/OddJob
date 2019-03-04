@@ -19,7 +19,21 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             ForwardTo.Forward(message);
             if (message is GetJobs)
             {
-                Context.Sender.Tell(new[] { new OddJobWithMetaData() { CreatedOn = DateTime.Now, FailureTime = null, JobArgs = new object[] { 0, 1, "derp" }, JobId = Guid.NewGuid(), LastAttemptTime = null, MethodName = GenerateJobType, QueueTime = DateTime.Now, RetryParameters = null, Status = JobStates.New, TypeExecutedOn = "derp".GetType() } });
+                Context.Sender.Tell(new[]
+                {
+                    new OddJobWithMetaAndStorageData()
+                    {
+                        CreatedOn = DateTime.Now, FailureTime = null,
+                        JobArgs = new OddJobParameter[]
+                        {
+                            new OddJobParameter() {Value = 0}, new OddJobParameter() {Value = 1},
+                            new OddJobParameter() {Value = "derp"}
+                        },
+                        JobId = Guid.NewGuid(), LastAttemptTime = null, MethodName = GenerateJobType,
+                        QueueTime = DateTime.Now, RetryParameters = null, Status = JobStates.New,
+                        TypeExecutedOn = "derp".GetType()
+                    }
+                });
             }
             else return false;
             return true;

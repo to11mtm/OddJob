@@ -7,7 +7,7 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 {
     static class Mapping
     {
-        public static MappingSchema BuildMappingSchema(ISqlDbJobQueueTableConfiguration _jobQueueTableConfiguration)
+        public static FluentMappingBuilder BuildMappingSchema(ISqlDbJobQueueTableConfiguration _jobQueueTableConfiguration)
         {
             var mapper = new LinqToDB.Mapping.FluentMappingBuilder(MappingSchema.Default);
             mapper.Entity<SqlCommonDbOddJobMetaData>().HasAttribute(
@@ -20,7 +20,8 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
                     IsColumnAttributeRequired = false,
                     Name = _jobQueueTableConfiguration.JobMethodGenericParamTableName
                 });
-            return mapper.MappingSchema;
+            
+            return mapper;
         }
     }
 }

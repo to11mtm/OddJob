@@ -17,6 +17,7 @@ namespace GlutenFree.OddJob.Execution.Akka
         {
             if (message is ShutDownQueues)
             {
+                //By design when we get this message it should mean the queue is drained.
                 Context.Sender.Tell(new QueueShutDown());
             }
             else if (message is ExecuteJobRequest)
@@ -25,6 +26,7 @@ namespace GlutenFree.OddJob.Execution.Akka
             }
             else
             {
+                //Unhandled.
                 return false;
             }
             return true;

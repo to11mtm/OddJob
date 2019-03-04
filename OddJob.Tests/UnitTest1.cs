@@ -13,7 +13,7 @@ namespace GlutenFree.OddJob.Tests
             var myvalue = new ClassTest() { classTestValue = TestConstants.classTestValue };
             var next = JobCreator.Create<SampleJobInGenericClass<string>>(j =>
                 j.DoThing(TestConstants.derp, TestConstants.herp, myvalue));
-            var jobEx = new OldDefaultJobExecutor(new DefaultContainerFactory());
+            var jobEx = new DefaultJobExecutor(new DefaultContainerFactory());
             jobEx.ExecuteJob(next);
         }
         [Fact]
@@ -22,7 +22,7 @@ namespace GlutenFree.OddJob.Tests
             var myvalue = new ClassTest() {classTestValue = TestConstants.classTestValue};
             var next = JobCreator.Create<SampleJobWithGenericType>(j =>
                 j.DoThing(TestConstants.derp, TestConstants.herp, myvalue));
-            var jobEx = new OldDefaultJobExecutor(new DefaultContainerFactory());
+            var jobEx = new DefaultJobExecutor(new DefaultContainerFactory());
             jobEx.ExecuteJob(next);
         }
         [Fact]
@@ -30,7 +30,7 @@ namespace GlutenFree.OddJob.Tests
         {
             var myValue = new ClassTest() { classTestValue = TestConstants.classTestValue };
             var next = JobCreator.Create<SampleJob>((j) => j.DoThing(TestConstants.derp, TestConstants.herp, myValue));
-            var jobEx = new OldDefaultJobExecutor(new DefaultContainerFactory());
+            var jobEx = new DefaultJobExecutor(new DefaultContainerFactory());
             jobEx.ExecuteJob(next);
         }
 
@@ -39,7 +39,7 @@ namespace GlutenFree.OddJob.Tests
         {
             var myValue = new ClassTest() { classTestValue = TestConstants.classTestValue };
             var next = JobCreator.Create<SampleJob>((j) => j.DoThing(TestConstants.derp, int.Parse(TestConstants.herp.ToString()), myValue));
-            var jobEx = new OldDefaultJobExecutor(new DefaultContainerFactory());
+            var jobEx = new DefaultJobExecutor(new DefaultContainerFactory());
             jobEx.ExecuteJob(next);
         }
         [Fact]
@@ -69,6 +69,33 @@ namespace GlutenFree.OddJob.Tests
             Xunit.Assert.True(SampleJobNoParam.Called);
         }
 
+        [Fact]
+        public void Can_Run_Jobs_With_Static_Method()
+        {
+            var next = JobCreator.Create<SampleJobStaticMethod>((j) => SampleJobStaticMethod.DoThing());
+            var jobEx = new DefaultJobExecutor(new DefaultContainerFactory());
+            jobEx.ExecuteJob(next);
+            Xunit.Assert.True(SampleJobStaticMethod.Called);
+        }
+
+        [Fact]
+        public void Can_Run_Static_Method_On_Static_Class()
+        {
+            var next = JobCreator.Create<object>((j) => SampleJobStaticClass.DoThing());
+            var jobEx = new DefaultJobExecutor(new DefaultContainerFactory());
+            jobEx.ExecuteJob(next);
+            Xunit.Assert.True(SampleJobStaticClass.Called);
+        }
+
+        [Fact]
+        public void Creator_Respects_StaticJob_Handling()
+        {
+            var next = JobCreator.Create<StaticClassJob>((j) => SampleJobStaticClass.DoThing());
+            var jobEx = new DefaultJobExecutor(new DefaultContainerFactory());
+            jobEx.ExecuteJob(next);
+            Xunit.Assert.True(SampleJobStaticClass.Called);
+        }
+
     }
 
     public class ClassTest
@@ -80,6 +107,26 @@ namespace GlutenFree.OddJob.Tests
         public const string derp = "lol";
         public const int herp = 9001;
         public const int classTestValue = 9002;
+    }
+
+    public static class SampleJobStaticClass
+    {
+        public static bool Called = false;
+        public static void DoThing()
+        {
+            Called = true;
+        }
+        
+    }
+
+    public class SampleJobStaticMethod
+    {
+        public static bool Called = false;
+        public static void DoThing()
+        {
+            Called = true;
+        }
+
     }
 
     public class SampleJobNoParam

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using GlutenFree.OddJob.Interfaces;
 using Newtonsoft.Json;
@@ -18,7 +19,7 @@ namespace GlutenFree.OddJob.Storage.FileSystem
         public string FileName { get; protected set; }
         
 
-        public IEnumerable<IOddJobWithMetadata> GetJobs(string[] queueNames,int fetchSize)
+        public IEnumerable<IOddJobWithMetadata> GetJobs(string[] queueNames,int fetchSize, Expression<Func<JobLockData,object>> orderPredicate)
         {
             IEnumerable<IOddJobWithMetadata> results = null;
             bool written = false;

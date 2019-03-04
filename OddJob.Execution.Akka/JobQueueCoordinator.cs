@@ -23,26 +23,35 @@ namespace GlutenFree.OddJob.Execution.Akka
         public DateTime? SaturationStartTime { get; protected set; }
         public int SaturationPulseCount { get; protected set; }
         public long QueueLifeSaturationPulseCount { get; protected set; }
-        public JobQueueCoordinator(Props workerProps, Props jobQueueActorProps, string queueName,int workerCount)
+        public Props WorkerProps { get; protected set; }
+        public bool AggressiveSweep { get; protected set; }
+        public JobQueueCoordinator()
         {
-            QueueName = queueName;
-            JobQueueActor = Context.ActorOf(jobQueueActorProps,"jobQueue");
-            WorkerRouterRef = Context.ActorOf(workerProps,"workerPool");
             ShuttingDown = false;
-            WorkerCount = workerCount;
             PendingItems = 0;
             QueueLifeSaturationPulseCount = 0;
         }
         protected override bool Receive(object message)
         {
-            if (message is ShutDownQueues)
+            if (message is SetJobQueueConfiguration)
+            {
+                var config = message as SetJobQueueConfiguration;
+                WorkerCount = config.NumWorkers;
+                QueueName = config.QueueName;
+                JobQueueActor = Context.ActorOf(config.QueueProps, "jobQueue");
+                WorkerProps = config.WorkerProps;
+                AggressiveSweep = config.AggressiveSweep;
+                WorkerRouterRef = Context.ActorOf(WorkerProps.WithRouter(new RoundRobinPool(WorkerCount)), "workerPool");
+                Context.Sender.Tell(new Configured());
+            }
+            else if (message is ShutDownQueues)
             {
                 ShutdownRequester = Context.Sender;
                 ShuttingDown = true;
                 //Tell all of the children to stop what they're doing.
                 WorkerRouterRef.Tell(new Broadcast(new ShutDownQueues()));
             }
-            if (message is QueueShutDown)
+            else if (message is QueueShutDown)
             {
                 ShutdownCount = ShutdownCount + 1;
                 SaturationPulseCount = 0;
@@ -54,75 +63,9 @@ namespace GlutenFree.OddJob.Execution.Akka
                     ShutdownRequester.Tell(new QueueShutDown());
                 }
             }
-            else if (message is JobSweep && !ShuttingDown)
+            else if ((message is JobSweep || message is SilentRetrySweep) && !ShuttingDown)
             {
-                //Naieve Backpressure
-                if (PendingItems < WorkerCount * 2)
-                {
-                    SaturationStartTime = null;
-                    SaturationPulseCount = 0;
-                    IEnumerable<IOddJobWithMetadata> jobsToQueue = null;
-                    try
-                    {
-                        jobsToQueue = JobQueueActor.Ask(new GetJobs(QueueName,WorkerCount), TimeSpan.FromSeconds(30)).Result as IEnumerable<IOddJobWithMetadata>;
-
-                    }
-                    catch (Exception ex)
-                    {
-                        Context.System.Log.Error(ex, "Timeout Retrieving data for Queue {0}", QueueName);
-                        try
-                        {
-                          OnQueueTimeout(ex);
-                        }
-                        catch (Exception)
-                        {
-                            Context.System.Log.Error(ex, "Error Running OnQueueTimeout Handler for Queue {0}", QueueName);
-                        }
-                    }
-                    if (jobsToQueue != null)
-                    {
-                        foreach (var job in jobsToQueue)
-                        {
-                            if (job.TypeExecutedOn == null)
-                            {
-                                try
-                                {
-                                    JobQueueActor.Tell(new MarkJobFailed(job.JobId));
-                                    OnJobTypeMissing(job);
-                                }
-                                catch (Exception ex)
-                                {
-                                    Context.System.Log.Error(ex, "Error Running OnQueueTimeout Handler for Queue {0}", QueueName);
-                                }
-                            }
-                            else
-                            {
-                                WorkerRouterRef.Tell(new ExecuteJobRequest(job));
-                                JobQueueActor.Tell(new MarkJobInProgress(job.JobId));
-                                PendingItems = PendingItems + 1;
-                            }
-                            
-                        }
-                    }
-                }
-                else
-                {
-                    SaturationStartTime = SaturationStartTime ?? DateTime.Now;
-                    SaturationPulseCount = SaturationPulseCount + 1;
-                    QueueLifeSaturationPulseCount = QueueLifeSaturationPulseCount + 1;
-                    try
-                    {
-                        OnJobQueueSaturated(SaturationStartTime.Value, SaturationPulseCount, QueueLifeSaturationPulseCount);
-                    }
-                    catch (Exception ex)
-                    {
-                        Context.System.Log.Error(ex,
-                            "Error Running OnJobQueueSaturated Handler for Queue {0}, Saturation Start Time : {1}, number of Saturated pulses {2}, Total Saturated Pulses for Life of Queue: {3}",
-                            QueueName, SaturationStartTime.ToString(), SaturationPulseCount, QueueLifeSaturationPulseCount);
-
-                    }
-                    
-                }
+                HandleSweep(message);
             }
             else if (message is JobSuceeded)
             {
@@ -170,9 +113,100 @@ namespace GlutenFree.OddJob.Execution.Akka
             }
             else
             {
-                return false;
+                return OnCustomMessage(message);
             }
             return true;
+        }
+
+        private void HandleSweep(object message)
+        {
+            //Naieve Backpressure:
+            if (PendingItems < WorkerCount * 2)
+            {
+                SaturationStartTime = null;
+                SaturationPulseCount = 0;
+                IEnumerable<IOddJobWithMetadata> jobsToQueue = null;
+                try
+                {
+                    jobsToQueue =
+                        JobQueueActor.Ask(new GetJobs(QueueName, WorkerCount), TimeSpan.FromSeconds(30)).Result as
+                            IEnumerable<IOddJobWithMetadata>;
+                }
+                catch (Exception ex)
+                {
+                    Context.System.Log.Error(ex, "Timeout Retrieving data for Queue {0}", QueueName);
+                    try
+                    {
+                        OnQueueTimeout(ex);
+                    }
+                    catch (Exception)
+                    {
+                        Context.System.Log.Error(ex, "Error Running OnQueueTimeout Handler for Queue {0}",
+                            QueueName);
+                    }
+                }
+
+                if (jobsToQueue != null)
+                {
+                    foreach (var job in jobsToQueue)
+                    {
+                        if (job.TypeExecutedOn == null)
+                        {
+                            try
+                            {
+                                JobQueueActor.Tell(new MarkJobFailed(job.JobId));
+                                OnJobTypeMissing(job);
+                            }
+                            catch (Exception ex)
+                            {
+                                Context.System.Log.Error(ex, "Error Running OnQueueTimeout Handler for Queue {0}", QueueName);
+                            }
+                        }
+                        else
+                        {
+                            WorkerRouterRef.Tell(new ExecuteJobRequest(job));
+                            JobQueueActor.Tell(new MarkJobInProgress(job.JobId));
+                            PendingItems = PendingItems + 1;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (message is JobSweep)
+                {
+                    SaturationStartTime = SaturationStartTime ?? DateTime.Now;
+                    SaturationPulseCount = SaturationPulseCount + 1;
+                    QueueLifeSaturationPulseCount = QueueLifeSaturationPulseCount + 1;
+                    try
+                    {
+                        OnJobQueueSaturated(SaturationStartTime.Value, SaturationPulseCount,
+                            QueueLifeSaturationPulseCount);
+                    }
+                    catch (Exception ex)
+                    {
+                        Context.System.Log.Error(ex,
+                            "Error Running OnJobQueueSaturated Handler for Queue {0}, Saturation Start Time : {1}, number of Saturated pulses {2}, Total Saturated Pulses for Life of Queue: {3}",
+                            QueueName, SaturationStartTime.ToString(), SaturationPulseCount,
+                            QueueLifeSaturationPulseCount);
+                    }
+                }
+
+                if (AggressiveSweep)
+                {
+                    Context.Self.Tell(new SilentRetrySweep());
+                }
+            }
+        }
+
+        /// <summary>
+        /// An Extension point to allow special handling of logic here.
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public virtual bool OnCustomMessage(object message)
+        {
+            return false;
         }
 
         /// <summary>
@@ -207,7 +241,7 @@ namespace GlutenFree.OddJob.Execution.Akka
 
 
         /// <summary>
-        /// Method to handle action taken when a job is put in retry.
+        /// Method to handle action taken when a job is put in a Failed state.
         /// This method is called after the retry has been marked in storage.
         /// </summary>
         /// <param name="msg">the Job failure message</param>

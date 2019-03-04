@@ -12,7 +12,7 @@ create Table {0}
 (
 Id BIGINT NOT NULL IDENTITY(1,1) PRIMARY KEY,
 QueueName NVarchar(255) not null,
-TypeExecutedOn NVarChar(255) not null,
+TypeExecutedOn NVarChar(512) not null,
 MethodName NVarChar(255) not null,
 DoNotExecuteBefore datetime null,
 JobGuid uniqueidentifier not null,
@@ -32,11 +32,12 @@ CreatedDate datetime not null)
             return string.Format(@"
 Create table {0}
 (
-JobParamId bigint not null identity(1,1) primary key,
+Id bigint not null identity(1,1) primary key,
 JobGuid uniqueidentifier not null, 
 ParamOrdinal int not null,
 SerializedValue nvarchar(max) null,
-SerializedType nvarchar(255) null
+SerializedType nvarchar(255) null,
+ParameterName nvarchar(255) null
 )", config.ParamTableName);
         }
 

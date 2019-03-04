@@ -6,7 +6,7 @@ using GlutenFree.OddJob.Storage.BaseTests;
 using GlutenFree.OddJob.Storage.FileSystem;
 using Xunit;
 
-namespace OddJob.Storage.FileSystem.Test
+namespace GlutenFree.OddJob.Storage.FileSystem.Test
 {
     public class FileSystemStoreTests : StorageTests
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using GlutenFree.OddJob.Interfaces;
+using GlutenFree.OddJob.Serializable;
 using GlutenFree.OddJob.Storage.BaseTests;
-using GlutenFree.OddJob.Storage.Sql.SqlServer;
 using GlutenFree.OddJob.Storage.SQL.Common;
 using GlutenFree.OddJob.Storage.SQL.SQLite;
 
@@ -24,7 +24,7 @@ namespace GlutenFree.OddJob.Storage.Sql.SQLite.Test
                 return () => new SQLiteJobQueueAdder(
                     new SQLiteJobQueueDataConnectionFactory(UnitTestTableHelper.connString)
                     ,
-                    new SqlDbJobQueueDefaultTableConfiguration());
+                    new DefaultJobAdderQueueTableResolver(new SqlDbJobQueueDefaultTableConfiguration()));
             }
         }
 
@@ -34,7 +34,7 @@ namespace GlutenFree.OddJob.Storage.Sql.SQLite.Test
             {
                 return () => new SQLiteJobQueueManager(
                     new SQLiteJobQueueDataConnectionFactory(UnitTestTableHelper.connString),
-                    new SqlDbJobQueueDefaultTableConfiguration());
+                    new SqlDbJobQueueDefaultTableConfiguration(),new NullOnMissingTypeJobTypeResolver());
             }
         }
 
