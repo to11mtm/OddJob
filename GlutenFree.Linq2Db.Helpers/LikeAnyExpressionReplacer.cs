@@ -5,8 +5,12 @@ using System.Reflection;
 
 namespace GlutenFree.Linq2Db.Helpers
 {
+    /// <summary>
+    /// A Helper class to be used with Linq2Db in order to allow for parameterized 'like' queries to a DB.
+    /// </summary>
     public class LikeAnyExpressionReplacer : ExpressionVisitor
     {
+        //
         private static MethodInfo ContainsMethod = typeof(string).GetMethod("Contains", types:new Type[]{typeof(string)});
         private static MethodInfo ToUpperMethod = typeof(string).GetMethod("ToUpper", types:new Type[]{});
         private static MethodInfo ToLowerMethod = typeof(string).GetMethod("ToLower",types:new Type[]{});

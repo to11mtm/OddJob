@@ -16,7 +16,8 @@ namespace GlutenFree.Linq2Db.Helpers
         private List<ExpressionVisitor> defaultVisitors = new List<ExpressionVisitor>()
             {new LikeAnyExpressionReplacer()};
 
-        public ExpressionReplacingLinq2DbConnection(MappingSchema mappingSchema,List<ExpressionVisitor> customVisitors) : base(mappingSchema)
+        public ExpressionReplacingLinq2DbConnection(MappingSchema mappingSchema, List<ExpressionVisitor> customVisitors)
+            : base(mappingSchema)
         {
             this.customVisitors = customVisitors;
         }

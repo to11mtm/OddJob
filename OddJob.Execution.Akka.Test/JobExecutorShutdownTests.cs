@@ -16,7 +16,7 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             //Warning: this test is a bit racy, due to the nature of JobExecutor and the scheduler.
             //Lowering the timeouts may cause false failures on the test, as the timer may fire before the shutdown is even called.
             var jobStore = new InMemoryTestStore();
-            var executor = new HardInjectedJobExecutorShell(() => new JobQueueLayerActor(jobStore),
+            var executor = new HardInjectedJobExecutorShell<JobQueueLayerActor, JobWorkerActor, JobQueueCoordinator>(() => new JobQueueLayerActor(jobStore),
                 () => new JobWorkerActor(new DefaultJobExecutor(new DefaultContainerFactory())),
                 () => new JobQueueCoordinator(), null);
             jobStore.AddJob((ShellShutdownMockJob1 m) => m.DoThing(0), null, null, queueName);
@@ -38,7 +38,7 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             //Lowering the timeouts may cause false failures on the test, as the timer may fire before the shutdown is even called.
             var jobStore = new InMemoryTestStore();
 
-            var executor = new HardInjectedJobExecutorShell(() => new JobQueueLayerActor(jobStore),
+            var executor = new HardInjectedJobExecutorShell<JobQueueLayerActor, JobWorkerActor, JobQueueCoordinator>(() => new JobQueueLayerActor(jobStore),
                 () => new JobWorkerActor(new DefaultJobExecutor(new DefaultContainerFactory())),
                 () => new JobQueueCoordinator(), null);
 

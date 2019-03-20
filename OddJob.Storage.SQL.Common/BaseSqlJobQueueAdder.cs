@@ -13,12 +13,12 @@ using LinqToDB.Mapping;
 
 namespace GlutenFree.OddJob.Storage.SQL.Common
 {
-    public abstract class BaseSqlJobQueueAdder : IJobQueueAdder, ISerializedJobQueueAdder
+    public class BaseSqlJobQueueAdder : IJobQueueAdder, ISerializedJobQueueAdder
     {
         private readonly FluentMappingBuilder _mappingSchema;
         private readonly IJobAdderQueueTableResolver _tableResolver;
 
-        protected BaseSqlJobQueueAdder(IJobQueueDataConnectionFactory jobQueueDataConnectionFactory,
+        public BaseSqlJobQueueAdder(IJobQueueDataConnectionFactory jobQueueDataConnectionFactory,
             IJobAdderQueueTableResolver tableResolver)
         {
             _jobQueueConnectionFactory = jobQueueDataConnectionFactory;

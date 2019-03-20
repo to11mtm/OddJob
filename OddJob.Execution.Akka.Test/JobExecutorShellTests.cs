@@ -153,7 +153,7 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
         {
             var queueName = QueueNameHelper.CreateQueueName();
             var jobStore = new InMemoryTestStore();
-            var executor = new HardInjectedJobExecutorShell(() => new JobQueueLayerActor(jobStore),
+            var executor = new HardInjectedJobExecutorShell<JobQueueLayerActor, JobWorkerActor, JobQueueCoordinator>(() => new JobQueueLayerActor(jobStore),
                 () => new JobWorkerActor(new MockJobSuccessExecutor()),
                 ()=> new JobQueueCoordinator(), null);
             executor.StartJobQueue(queueName,5,1);
@@ -164,7 +164,7 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
         {
             var queueName = QueueNameHelper.CreateQueueName();
             var jobStore = new InMemoryTestStore();
-            var executor = new HardInjectedJobExecutorShell(() => new JobQueueLayerActor(jobStore),
+            var executor = new HardInjectedJobExecutorShell<JobQueueLayerActor, JobWorkerActor, JobQueueCoordinator>(() => new JobQueueLayerActor(jobStore),
                 () => new JobWorkerActor(new DefaultJobExecutor(new DefaultContainerFactory())),
                 () => new JobQueueCoordinator(), null);
             executor.StartJobQueue(queueName,5,1,1);

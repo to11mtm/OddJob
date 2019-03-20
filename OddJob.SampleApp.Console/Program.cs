@@ -17,7 +17,7 @@ namespace OddJob.SampleApp.Console
         static void Main(string[] args)
         {
             var store = new InMemoryTestStore();
-            var jobQueue = new HardInjectedJobExecutorShell(() => new JobQueueLayerActor(store),
+            var jobQueue = new HardInjectedJobExecutorShell<JobQueueLayerActor, JobWorkerActor, JobQueueCoordinator>(() => new JobQueueLayerActor(store),
                 () => new JobWorkerActor(new DefaultJobExecutor(new DefaultContainerFactory())),
                 () => new JobQueueCoordinator(),
                 loggerConfig: new StandardConsoleEngineLoggerConfig("DEBUG"));
