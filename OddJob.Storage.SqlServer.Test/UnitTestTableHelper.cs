@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using GlutenFree.OddJob.Storage.Sql.SqlServer;
-using GlutenFree.OddJob.Storage.SQL.Common;
+using GlutenFree.OddJob.Storage.Sql.Common;
 
 namespace OddJob.Storage.Sql.SqlServer.Test
 {

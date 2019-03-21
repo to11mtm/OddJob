@@ -3,14 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using System.Web;
 using GlutenFree.Linq2Db.Helpers;
-using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Serializable;
-using GlutenFree.OddJob.Storage.SQL.Common;
-using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
-using GlutenFree.OddJob.Storage.SQL.SQLite;
-using Microsoft.FSharp.Core;
+using GlutenFree.OddJob.Storage.Sql.Common;
+using GlutenFree.OddJob.Storage.Sql.Common.DbDtos;
+using GlutenFree.OddJob.Storage.Sql.SQLite;
 using WebSharper;
 
 namespace GlutenFree.OddJob.Manager.Presentation.WS

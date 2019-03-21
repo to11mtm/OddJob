@@ -1,9 +1,7 @@
-﻿using System.Reflection.Emit;
-using GlutenFree.OddJob.Storage.Sql.Common.DbDtos;
-using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
+﻿using GlutenFree.OddJob.Storage.Sql.Common.DbDtos;
 using LinqToDB.Mapping;
 
-namespace GlutenFree.OddJob.Storage.SQL.Common
+namespace GlutenFree.OddJob.Storage.Sql.Common
 {
     static class Mapping
     {

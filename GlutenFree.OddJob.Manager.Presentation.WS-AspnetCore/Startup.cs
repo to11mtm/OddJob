@@ -1,20 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using GlutenFree.OddJob.Serializable;
+﻿using GlutenFree.OddJob.Serializable;
 using GlutenFree.OddJob.Storage.Sql.Common;
-using GlutenFree.OddJob.Storage.SQL.SQLite;
+using GlutenFree.OddJob.Storage.Sql.SQLite;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SimpleInjector;
 using SimpleInjector.Lifestyles;
 using WebSharper.AspNetCore;
-using WebSharper.Sitelets;
 
 namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
 {

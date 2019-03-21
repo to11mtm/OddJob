@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace GlutenFree.OddJob.Serializable
+﻿namespace GlutenFree.OddJob.Serializable
 {
     public class OddJobSerializedParameter
     {

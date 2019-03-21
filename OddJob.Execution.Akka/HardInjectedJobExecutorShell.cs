@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Linq;
 using System.Linq.Expressions;
 using Akka.Actor;
-using Akka.Dispatch;
-using Akka.Event;
 
 namespace GlutenFree.OddJob.Execution.Akka
 {

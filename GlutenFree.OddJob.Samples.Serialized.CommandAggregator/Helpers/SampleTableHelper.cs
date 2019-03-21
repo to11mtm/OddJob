@@ -3,7 +3,7 @@ using System.Data;
 using System.Data.SQLite;
 using System.Runtime.CompilerServices;
 using GlutenFree.OddJob.Storage.Sql.SQLite;
-using GlutenFree.OddJob.Storage.SQL.Common;
+using GlutenFree.OddJob.Storage.Sql.Common;
 
 namespace GlutenFree.OddJob.Samples.Serialized.CommandAggregator
 {

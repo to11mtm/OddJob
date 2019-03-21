@@ -1,7 +1,6 @@
-﻿using GlutenFree.OddJob.Storage.Sql.SqlServer;
-using GlutenFree.OddJob.Storage.SQL.Common;
+﻿using GlutenFree.OddJob.Storage.Sql.Common;
 
-namespace GlutenFree.OddJob.Storage.SQL.SQLite
+namespace GlutenFree.OddJob.Storage.Sql.SQLite
 {
     public class SQLiteJobQueueAdder : BaseSqlJobQueueAdder
     {

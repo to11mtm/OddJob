@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using GlutenFree.OddJob.Serializable;
 
-namespace GlutenFree.OddJob.Storage.SQL.Common
+namespace GlutenFree.OddJob.Storage.Sql.Common
 {
     /// <summary>
     /// Retrieves Table configurations based on the Queue Name for a job

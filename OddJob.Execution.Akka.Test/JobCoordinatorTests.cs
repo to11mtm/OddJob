@@ -9,12 +9,10 @@ using Akka.Routing;
 using Akka.TestKit.Xunit2;
 using GlutenFree.OddJob.Execution.Akka.Messages;
 using GlutenFree.OddJob.Execution.Akka.Test.Mocks;
-using GlutenFree.OddJob.Execution.BaseTests;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Serializable;
 using GlutenFree.OddJob.Storage.Sql.SQLite;
-using GlutenFree.OddJob.Storage.SQL.Common;
-using GlutenFree.OddJob.Storage.SQL.SQLite;
+using GlutenFree.OddJob.Storage.Sql.Common;
 using Xunit;
 
 namespace GlutenFree.OddJob.Execution.Akka.Test

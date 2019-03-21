@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore.Template;
-using WebSharper.JavaScript;
 using Microsoft.FSharp.Core;
 using WebSharper;
 using WebSharper.UI;

@@ -1,8 +1,5 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.Web;
+﻿using System.Threading.Tasks;
 using GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore.Template;
-using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
 using WebSharper;
 using WebSharper.Sitelets;
 using WebSharper.UI;

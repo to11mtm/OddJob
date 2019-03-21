@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Serializable;
 using GlutenFree.OddJob.Storage.Sql.Common.DbDtos;
-using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
 using LinqToDB;
 using LinqToDB.Data;
 using LinqToDB.Mapping;
 
-namespace GlutenFree.OddJob.Storage.SQL.Common
+namespace GlutenFree.OddJob.Storage.Sql.Common
 {
     public class BaseSqlJobQueueAdder : IJobQueueAdder, ISerializedJobQueueAdder
     {
@@ -29,14 +27,14 @@ namespace GlutenFree.OddJob.Storage.SQL.Common
 
 
 
-        private IJobQueueDataConnectionFactory _jobQueueConnectionFactory { get; set; }
+        private readonly IJobQueueDataConnectionFactory _jobQueueConnectionFactory;
 
 
-        public virtual void AddJobs(IEnumerable<SerializableOddJob> jobDatas)
+        public virtual void AddJobs(IEnumerable<SerializableOddJob> jobDataSet)
         {
             using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
             {
-                foreach (var job in jobDatas)
+                foreach (var job in jobDataSet)
                 {
                     _addJobImpl(job, conn);
                 }

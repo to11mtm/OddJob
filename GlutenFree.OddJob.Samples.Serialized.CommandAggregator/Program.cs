@@ -1,11 +1,9 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Data.SQLite;
 using System.Linq;
-using System.Threading;
 using Akka.Actor;
 using GlutenFree.OddJob.Execution.Akka;
-using GlutenFree.OddJob.Storage.SQL.Common;
+using GlutenFree.OddJob.Storage.Sql.Common;
 
 namespace GlutenFree.OddJob.Samples.Serialized.CommandAggregator
 {

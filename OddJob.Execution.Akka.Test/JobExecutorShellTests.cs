@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Reflection;
 using System.Threading;
 using Akka.DI.SimpleInjector;
 using GlutenFree.OddJob.Execution.Akka.Messages;
@@ -11,8 +7,8 @@ using GlutenFree.OddJob.Execution.Akka.Test.Mocks;
 using GlutenFree.OddJob.Execution.BaseTests;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Serializable;
-using GlutenFree.OddJob.Storage.SQL.Common;
-using GlutenFree.OddJob.Storage.SQL.SQLite;
+using GlutenFree.OddJob.Storage.Sql.Common;
+using GlutenFree.OddJob.Storage.Sql.SQLite;
 using Xunit;
 using Container = SimpleInjector.Container;
 

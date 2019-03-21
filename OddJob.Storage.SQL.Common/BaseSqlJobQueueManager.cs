@@ -1,21 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Transactions;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Serializable;
-using GlutenFree.OddJob.Storage.Sql.Common;
 using GlutenFree.OddJob.Storage.Sql.Common.DbDtos;
-using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
 using LinqToDB;
 using LinqToDB.Data;
 using LinqToDB.Linq;
 using LinqToDB.Mapping;
 using LinqToDB.Tools;
 
-namespace GlutenFree.OddJob.Storage.SQL.Common
+namespace GlutenFree.OddJob.Storage.Sql.Common
 {
     public class BaseSqlJobQueueManager : IJobQueueManager , IJobSearchProvider
     {

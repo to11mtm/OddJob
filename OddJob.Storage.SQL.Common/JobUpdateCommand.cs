@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
+using GlutenFree.OddJob.Storage.Sql.Common.DbDtos;
 
-namespace GlutenFree.OddJob.Storage.SQL.Common
+namespace GlutenFree.OddJob.Storage.Sql.Common
 {
     public class JobUpdateCommand
     {

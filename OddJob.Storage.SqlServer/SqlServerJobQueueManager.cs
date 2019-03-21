@@ -1,5 +1,5 @@
 ﻿using GlutenFree.OddJob.Serializable;
-using GlutenFree.OddJob.Storage.SQL.Common;
+using GlutenFree.OddJob.Storage.Sql.Common;
 
 namespace GlutenFree.OddJob.Storage.Sql.SqlServer
 {

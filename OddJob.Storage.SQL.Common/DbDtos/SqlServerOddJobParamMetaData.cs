@@ -1,7 +1,7 @@
 ﻿using System;
 using LinqToDB.Mapping;
 
-namespace GlutenFree.OddJob.Storage.SQL.Common.DbDtos
+namespace GlutenFree.OddJob.Storage.Sql.Common.DbDtos
 {
     public class SqlCommonOddJobParamMetaData
     {

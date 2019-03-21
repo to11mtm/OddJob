@@ -2,20 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web;
 using GlutenFree.OddJob.Manager.Presentation.WS.Template;
-using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
 using Microsoft.FSharp.Core;
 using WebSharper;
-using WebSharper.JavaScript;
-using WebSharper.JavaScript.Dom;
-using WebSharper.Sitelets;
 using WebSharper.UI;
-using WebSharper.UI.Client;
 using static WebSharper.UI.Client.Html;
 using Doc = WebSharper.UI.Doc;
 using Elt = WebSharper.UI.Elt;
-using Html = WebSharper.UI.Client.Html;
 
 namespace GlutenFree.OddJob.Manager.Presentation.WS
 {

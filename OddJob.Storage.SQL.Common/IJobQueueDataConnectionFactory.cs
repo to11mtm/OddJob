@@ -2,7 +2,7 @@
 using LinqToDB.Data;
 using LinqToDB.Mapping;
 
-namespace GlutenFree.OddJob.Storage.SQL.Common
+namespace GlutenFree.OddJob.Storage.Sql.Common
 {
     public interface IJobQueueDataConnectionFactory
     {

@@ -4,8 +4,7 @@ using System.Reflection;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Serializable;
 using GlutenFree.OddJob.Storage.BaseTests;
-using GlutenFree.OddJob.Storage.SQL.Common;
-using LinqToDB;
+using GlutenFree.OddJob.Storage.Sql.Common;
 using LinqToDB.DataProvider.SqlServer;
 using OddJob.Storage.Sql.SqlServer.Test;
 

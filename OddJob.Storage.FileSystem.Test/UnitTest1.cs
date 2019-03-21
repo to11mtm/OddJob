@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Linq;
-using System.Threading;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Storage.BaseTests;
-using GlutenFree.OddJob.Storage.FileSystem;
-using Xunit;
 
 namespace GlutenFree.OddJob.Storage.FileSystem.Test
 {

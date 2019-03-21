@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using GlutenFree.OddJob;
 using GlutenFree.OddJob.Execution.Akka;
-using GlutenFree.OddJob.Execution.Akka.Test;
 using GlutenFree.OddJob.Execution.BaseTests;
 
 namespace OddJob.SampleApp.Console

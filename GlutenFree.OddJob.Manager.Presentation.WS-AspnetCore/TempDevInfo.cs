@@ -4,8 +4,7 @@ using System.Data.SQLite;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using GlutenFree.OddJob.Storage.Sql.SQLite;
-using GlutenFree.OddJob.Storage.SQL.Common;
-using GlutenFree.OddJob.Storage.SQL.SQLite;
+using GlutenFree.OddJob.Storage.Sql.Common;
 
 namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
 {

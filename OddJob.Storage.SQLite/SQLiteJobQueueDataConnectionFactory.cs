@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq.Expressions;
 using GlutenFree.Linq2Db.Helpers;
-using GlutenFree.OddJob.Storage.SQL.Common;
+using GlutenFree.OddJob.Storage.Sql.Common;
 using LinqToDB;
 using LinqToDB.Data;
 using LinqToDB.Mapping;
 
-namespace GlutenFree.OddJob.Storage.SQL.SQLite
+namespace GlutenFree.OddJob.Storage.Sql.SQLite
 {
     public class SQLiteJobQueueDataConnectionFactory : IJobQueueDataConnectionFactory
     {

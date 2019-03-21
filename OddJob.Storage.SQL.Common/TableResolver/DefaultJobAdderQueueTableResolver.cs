@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace GlutenFree.OddJob.Storage.SQL.Common
+namespace GlutenFree.OddJob.Storage.Sql.Common
 {
     public class DefaultJobAdderQueueTableResolver : QueueNameBasedJobAdderQueueTableResolver
     {

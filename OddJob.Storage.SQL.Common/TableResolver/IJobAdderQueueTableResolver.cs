@@ -1,6 +1,6 @@
 ﻿using GlutenFree.OddJob.Serializable;
 
-namespace GlutenFree.OddJob.Storage.SQL.Common
+namespace GlutenFree.OddJob.Storage.Sql.Common
 {
     /// <summary>
     /// This interface lets you configure Queue table configurations for specific jobs.

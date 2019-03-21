@@ -2,13 +2,11 @@
 using System.Linq;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Storage.Sql.Common.DbDtos;
-using GlutenFree.OddJob.Storage.SQL.Common;
-using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
 using LinqToDB;
 using LinqToDB.Mapping;
 using LinqToDB.Tools;
 
-namespace GlutenFree.OddJob.Storage.Sql.SqlServer
+namespace GlutenFree.OddJob.Storage.Sql.Common
 {
     public class BaseSqlJobQueuePurger : IJobQueuePurger
     {

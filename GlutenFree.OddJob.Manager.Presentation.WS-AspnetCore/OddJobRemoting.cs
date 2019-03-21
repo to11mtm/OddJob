@@ -1,7 +1,6 @@
 using GlutenFree.Linq2Db.Helpers;
 using GlutenFree.OddJob.Storage.Sql.Common;
-using GlutenFree.OddJob.Storage.SQL.Common;
-using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
+using GlutenFree.OddJob.Storage.Sql.Common.DbDtos;
 using System;
 using System.Collections.Generic;
 using System.Linq;

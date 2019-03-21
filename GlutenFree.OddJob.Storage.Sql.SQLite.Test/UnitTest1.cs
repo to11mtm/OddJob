@@ -2,8 +2,7 @@
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Serializable;
 using GlutenFree.OddJob.Storage.BaseTests;
-using GlutenFree.OddJob.Storage.SQL.Common;
-using GlutenFree.OddJob.Storage.SQL.SQLite;
+using GlutenFree.OddJob.Storage.Sql.Common;
 
 namespace GlutenFree.OddJob.Storage.Sql.SQLite.Test
 {

@@ -1,4 +1,4 @@
-﻿using GlutenFree.OddJob.Storage.SQL.Common;
+﻿using GlutenFree.OddJob.Storage.Sql.Common;
 
 namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
 {

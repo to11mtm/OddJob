@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Serializable;
-using GlutenFree.OddJob.Storage.SQL.Common;
-using GlutenFree.OddJob.Storage.SQL.Common.DbDtos;
+using GlutenFree.OddJob.Storage.Sql.Common.DbDtos;
 
 namespace GlutenFree.OddJob.Storage.Sql.Common
 {

@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using GlutenFree.OddJob.Storage.SQL.Common;
+using GlutenFree.OddJob.Storage.Sql.Common;
 
 namespace GlutenFree.OddJob.Samples.Serialized.CommandAggregator
 {

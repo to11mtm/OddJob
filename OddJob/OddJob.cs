@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using GlutenFree.OddJob.Interfaces;
 
 namespace GlutenFree.OddJob

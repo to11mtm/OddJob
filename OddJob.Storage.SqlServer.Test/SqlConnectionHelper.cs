@@ -4,7 +4,7 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using GlutenFree.OddJob.Storage.SQL.Common;
+using GlutenFree.OddJob.Storage.Sql.Common;
 
 namespace OddJob.Storage.Sql.SqlServer.Test
 {

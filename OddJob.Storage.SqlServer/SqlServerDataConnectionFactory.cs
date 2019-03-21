@@ -1,9 +1,6 @@
-﻿using GlutenFree.OddJob.Storage.SQL.Common;
-using LinqToDB;
+﻿using GlutenFree.OddJob.Storage.Sql.Common;
 using LinqToDB.Data;
-using LinqToDB.DataProvider;
 using LinqToDB.DataProvider.SqlServer;
-using LinqToDB.DataProvider.SQLite;
 using LinqToDB.Mapping;
 
 namespace GlutenFree.OddJob.Storage.Sql.SqlServer
