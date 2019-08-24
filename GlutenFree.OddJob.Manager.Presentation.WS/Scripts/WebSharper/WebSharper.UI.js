@@ -3525,6 +3525,13 @@
    };
   });
  };
+ AttrModule.Prop=function(name,value)
+ {
+  return Attrs$1.Static(function(el)
+  {
+   el[name]=value;
+  });
+ };
  AttrModule.DynamicPred=function(name,predView,valView)
  {
   function viewFn(el,t)
@@ -5124,7 +5131,7 @@
  {
   var m;
   m=instance.querySelector("[ws-replace]");
-  return Unchecked.Equals(m,null)?(console.warn("Filling non-existent text hole",templateName),null):(m.parentNode.replaceChild(new Global.Text(fillWith),m),{
+  return Unchecked.Equals(m,null)?(console.warn("Filling non-existent text hole",templateName),null):(m.parentNode.replaceChild(self.document.createTextNode(fillWith),m),{
    $:1,
    $0:m.getAttribute("ws-replace")
   });
@@ -5133,7 +5140,7 @@
  {
   function run(attrName)
   {
-   DomUtility.IterSelector(instance,"["+attrName+"]",function(e)
+   Templates.foreachNotPreserved(instance,"["+attrName+"]",function(e)
    {
     if(!dontRemove.Contains(e.getAttribute(attrName)))
      e.removeAttribute(attrName);
@@ -5142,7 +5149,7 @@
   run("ws-attr");
   run("ws-onafterrender");
   run("ws-var");
-  DomUtility.IterSelector(instance,"[ws-hole]",function(e)
+  Templates.foreachNotPreserved(instance,"[ws-hole]",function(e)
   {
    if(!dontRemove.Contains(e.getAttribute("ws-hole")))
     {
@@ -5151,19 +5158,19 @@
       e.removeChild(e.lastChild);
     }
   });
-  DomUtility.IterSelector(instance,"[ws-replace]",function(e)
+  Templates.foreachNotPreserved(instance,"[ws-replace]",function(e)
   {
    if(!dontRemove.Contains(e.getAttribute("ws-replace")))
     e.parentNode.removeChild(e);
   });
-  DomUtility.IterSelector(instance,"[ws-on]",function(e)
+  Templates.foreachNotPreserved(instance,"[ws-on]",function(e)
   {
    e.setAttribute("ws-on",Strings.concat(" ",Arrays.filter(function(x)
    {
     return dontRemove.Contains(Arrays.get(Strings.SplitChars(x,[":"],1),1));
    },Strings.SplitChars(e.getAttribute("ws-on"),[" "],1))));
   });
-  DomUtility.IterSelector(instance,"[ws-attr-holes]",function(e)
+  Templates.foreachNotPreserved(instance,"[ws-attr-holes]",function(e)
   {
    var holeAttrs,i,$1,attrName,_this;
    holeAttrs=Strings.SplitChars(e.getAttribute("ws-attr-holes"),[" "],1);
@@ -5197,7 +5204,7 @@
  {
   function run(attrName)
   {
-   DomUtility.IterSelector(t,"["+attrName+"]",function(e)
+   Templates.foreachNotPreserved(t,"["+attrName+"]",function(e)
    {
     var m,o;
     m=(o=null,[mappings.TryGetValue(e.getAttribute(attrName).toLowerCase(),{
@@ -5218,7 +5225,7 @@
   run("ws-attr");
   run("ws-onafterrender");
   run("ws-var");
-  DomUtility.IterSelector(t,"[ws-on]",function(e)
+  Templates.foreachNotPreserved(t,"[ws-on]",function(e)
   {
    e.setAttribute("ws-on",Strings.concat(" ",Arrays.map(function(x)
    {
@@ -5237,7 +5244,7 @@
     return m[0]?Arrays.get(a,0)+":"+m[1]:x;
    },Strings.SplitChars(e.getAttribute("ws-on"),[" "],1))));
   });
-  DomUtility.IterSelector(t,"[ws-attr-holes]",function(e)
+  Templates.foreachNotPreserved(t,"[ws-attr-holes]",function(e)
   {
    var holeAttrs,i,$1;
    holeAttrs=Strings.SplitChars(e.getAttribute("ws-attr-holes"),[" "],1);
@@ -5548,7 +5555,7 @@
     return Prepare.fill(fillWith,p,n);
    }
    name$2=fillWith.nodeName.toLowerCase();
-   DomUtility.IterSelector(instance,"[ws-attr-holes]",function(e)
+   Templates.foreachNotPreserved(instance,"[ws-attr-holes]",function(e)
    {
     var holeAttrs,i,$1,attrName,_this;
     holeAttrs=Strings.SplitChars(e.getAttribute("ws-attr-holes"),[" "],1);
@@ -5573,13 +5580,14 @@
   }
   function convertElement(el)
   {
-   if(Strings.StartsWith(el.nodeName.toLowerCase(),"ws-"))
-    convertInstantiation(el);
-   else
-    {
-     Prepare.convertAttrs(el);
-     convertNodeAndSiblings(el.firstChild);
-    }
+   if(!el.hasAttribute("ws-preserve"))
+    if(Strings.StartsWith(el.nodeName.toLowerCase(),"ws-"))
+     convertInstantiation(el);
+    else
+     {
+      Prepare.convertAttrs(el);
+      convertNodeAndSiblings(el.firstChild);
+     }
   }
   function convertNodeAndSiblings(n)
   {
@@ -5738,7 +5746,7 @@
     e.Dispose();
   }
   els=DomUtility.ChildrenArray(el);
-  DomUtility.IterSelector(el,"[ws-hole]",function(p)
+  Templates.foreachNotPreserved(el,"[ws-hole]",function(p)
   {
    var m,doc,name;
    name=p.getAttribute("ws-hole");
@@ -5748,7 +5756,7 @@
    m=tryGetAsDoc(name);
    m!=null&&m.$==1?(doc=m.$0,Docs$1.LinkElement(p,doc.docNode),holes.push(DocElemNode.New(Attrs$1.Empty(p),doc.docNode,null,p,Fresh.Int(),null)),updates.push(doc.updates)):void 0;
   });
-  DomUtility.IterSelector(el,"[ws-replace]",function(e$1)
+  Templates.foreachNotPreserved(el,"[ws-replace]",function(e$1)
   {
    var m,doc,p,after,before,o;
    m=tryGetAsDoc(e$1.getAttribute("ws-replace"));
@@ -5760,7 +5768,7 @@
     $0:[before,after]
    },p,Fresh.Int(),null)),updates.push(doc.updates)):void 0;
   });
-  DomUtility.IterSelector(el,"[ws-attr]",function(e$1)
+  Templates.foreachNotPreserved(el,"[ws-attr]",function(e$1)
   {
    var name,m,o;
    name=e$1.getAttribute("ws-attr");
@@ -5777,7 +5785,7 @@
    }),o]);
    m[0]?m[1].$==3?addAttr(e$1,m[1].$1):console.warn("Attribute hole filled with non-attribute data",name):void 0;
   });
-  DomUtility.IterSelector(el,"[ws-on]",function(e$1)
+  Templates.foreachNotPreserved(el,"[ws-on]",function(e$1)
   {
    addAttr(e$1,AttrProxy.Concat(Arrays.choose(function(x$1)
    {
@@ -5803,7 +5811,7 @@
    },Strings.SplitChars(e$1.getAttribute("ws-on"),[" "],1))));
    e$1.removeAttribute("ws-on");
   });
-  DomUtility.IterSelector(el,"[ws-onafterrender]",function(e$1)
+  Templates.foreachNotPreserved(el,"[ws-onafterrender]",function(e$1)
   {
    var name,m,o;
    name=e$1.getAttribute("ws-onafterrender");
@@ -5819,7 +5827,7 @@
    }),o]);
    m[0]?m[1].$==6?(e$1.removeAttribute("ws-onafterrender"),addAttr(e$1,AttrModule.OnAfterRender(m[1].$1))):m[1].$==7?(e$1.removeAttribute("ws-onafterrender"),addAttr(e$1,AttrModule.OnAfterRender(m[1].$1))):console.warn("onafterrender hole filled with non-onafterrender data",name):void 0;
   });
-  DomUtility.IterSelector(el,"[ws-var]",function(e$1)
+  Templates.foreachNotPreserved(el,"[ws-var]",function(e$1)
   {
    var name,m,o;
    name=e$1.getAttribute("ws-var");
@@ -5836,7 +5844,7 @@
    }),o]);
    m[0]?m[1].$==8?addAttr(e$1,AttrModule.Value(m[1].$1)):m[1].$==9?addAttr(e$1,AttrModule.Checked(m[1].$1)):m[1].$==10?addAttr(e$1,AttrModule.IntValue(m[1].$1)):m[1].$==11?addAttr(e$1,AttrModule.IntValueUnchecked(m[1].$1)):m[1].$==12?addAttr(e$1,AttrModule.FloatValue(m[1].$1)):m[1].$==13?addAttr(e$1,AttrModule.FloatValueUnchecked(m[1].$1)):console.warn("Var hole filled with non-Var data",name):void 0;
   });
-  DomUtility.IterSelector(el,"[ws-attr-holes]",function(e$1)
+  Templates.foreachNotPreserved(el,"[ws-attr-holes]",function(e$1)
   {
    var re,holeAttrs,i,$4;
    re=new Global.RegExp(Templates.TextHoleRE(),"g");
@@ -5971,6 +5979,14 @@
     $0:$3
    }:null,$2?$2.$0:void 0)
   },["Render","El"]),Array.TreeReduce(View.Const(),View.Map2Unit,updates)];
+ };
+ Templates.foreachNotPreserved=function(root,selector,f)
+ {
+  DomUtility.IterSelector(root,selector,function(p)
+  {
+   if(p.closest("[ws-preserve]")==null)
+    f(p);
+  });
  };
  Templates.TextHoleRE=function()
  {

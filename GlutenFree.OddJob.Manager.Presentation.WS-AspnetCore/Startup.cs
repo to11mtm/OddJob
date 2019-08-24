@@ -1,4 +1,5 @@
-﻿using GlutenFree.OddJob.Serializable;
+﻿using System;
+using GlutenFree.OddJob.Serializable;
 using GlutenFree.OddJob.Storage.Sql.Common;
 using GlutenFree.OddJob.Storage.Sql.SQLite;
 using Microsoft.AspNetCore;
@@ -93,11 +94,8 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
 
         private void InitializeContainer(IApplicationBuilder app)
         {
-            container.Register<IJobSearchProvider>(() =>
-            {
-                return new SQLiteJobQueueManager(new SQLiteJobQueueDataConnectionFactory(TempDevInfo.ConnString),
-                    TempDevInfo.TableConfigurations["console"], new NullOnMissingTypeJobTypeResolver());
-            }, Lifestyle.Scoped);
+            container.Register<IJobSearchProvider>(providerFactory, Lifestyle.Scoped);
+
             container.Register(typeof(IRemotingHandler<,>), new[] {typeof(OddJobRemotingHandler)});
             //container.Register(typeof(OddJobRemotingHandler));
             container.RegisterDecorator(typeof(IRemotingHandler<,>), typeof(AsyncOddJobRemotingHandlerDecorator<,>));
@@ -111,5 +109,11 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
             // Allow Simple Injector to resolve services from ASP.NET Core.
             container.AutoCrossWireAspNetComponents(app);
         }
+
+        private Func<IJobSearchProvider> providerFactory = () =>
+        {
+            return new SqlDbJobSearchProvider(new SQLiteJobQueueDataConnectionFactory(TempDevInfo.ConnString),
+                TempDevInfo.TableConfigurations["console"], new NullOnMissingTypeJobTypeResolver());
+        };
     }
 }

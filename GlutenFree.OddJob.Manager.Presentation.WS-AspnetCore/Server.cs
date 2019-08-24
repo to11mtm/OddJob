@@ -61,7 +61,9 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
                     Page(ctx, action, "About",
                         doc(
                             h1("About"),
-                            p("This is a template WebSharper client-server application.")
+                            p("This is a Sample Management application for OddJob."),
+                            p("You may customize it and utilize your own DB connection instead"),
+                            p("And also play with the Styling as desired.")
                         )
                     )
                 )

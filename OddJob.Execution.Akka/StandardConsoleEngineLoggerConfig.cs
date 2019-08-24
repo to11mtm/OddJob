@@ -5,7 +5,7 @@ using Akka.Event;
 namespace GlutenFree.OddJob.Execution.Akka
 {
     /// <summary>
-    /// Uses the default Execution engine configuration of 
+    /// Uses the default Execution engine configuration (Console Logging of Akka Events and queue Timeouts.)
     /// </summary>
     public class StandardConsoleEngineLoggerConfig : IExecutionEngineLoggerConfig
     {
