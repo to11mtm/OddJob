@@ -109,7 +109,7 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
         [Remote]
         public static Task<string[]> GetQueueNameList()
         {
-            var manager = new SQLiteJobQueueManager(new SQLiteJobQueueDataConnectionFactory(TempDevInfo.ConnString),
+            var manager = new SqlDbJobSearchProvider(new SQLiteJobQueueDataConnectionFactory(TempDevInfo.ConnString),
                 TempDevInfo.TableConfigurations["console"], new NullOnMissingTypeJobTypeResolver());
             var result = (new string[]{null}).Concat(manager.GetJobCriteriaValues(q => q.QueueName).ToList()).ToArray();
             return Task.FromResult(result);
@@ -118,7 +118,7 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
         [Remote]
         public static Task<JobMetadataResult[]> SearchCriteria(JobSearchCriteria criteria )
         {
-            var manager = new SQLiteJobQueueManager(new SQLiteJobQueueDataConnectionFactory(TempDevInfo.ConnString),
+            var manager = new SqlDbJobSearchProvider(new SQLiteJobQueueDataConnectionFactory(TempDevInfo.ConnString),
                 TempDevInfo.TableConfigurations["console"], new NullOnMissingTypeJobTypeResolver());
             Expression<Func<SqlCommonDbOddJobMetaData, bool>> expr = null;
             if (!string.IsNullOrWhiteSpace(criteria.QueueName))
@@ -194,7 +194,7 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
         [Remote]
         public static Task<string[]> GetMethods(string queueName)
         {
-            var manager = new SQLiteJobQueueManager(new SQLiteJobQueueDataConnectionFactory(TempDevInfo.ConnString),
+            var manager = new SqlDbJobSearchProvider(new SQLiteJobQueueDataConnectionFactory(TempDevInfo.ConnString),
                 TempDevInfo.TableConfigurations["console"], new NullOnMissingTypeJobTypeResolver());
             Expression<Func<SqlCommonDbOddJobMetaData, bool>> expr = null;
             var results = new string[]{null};
@@ -212,7 +212,7 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS
         [Remote]
         public static Task<bool> UpdateJob(JobUpdateViewModel input)
         {
-            var manager = new SQLiteJobQueueManager(new SQLiteJobQueueDataConnectionFactory(TempDevInfo.ConnString),
+            var manager = new SqlDbJobSearchProvider(new SQLiteJobQueueDataConnectionFactory(TempDevInfo.ConnString),
                 TempDevInfo.TableConfigurations["console"], new NullOnMissingTypeJobTypeResolver());
             Dictionary<Expression<Func<SqlCommonDbOddJobMetaData, object>>, object> updateSet =
                 new Dictionary<Expression<Func<SqlCommonDbOddJobMetaData, object>>, object>();

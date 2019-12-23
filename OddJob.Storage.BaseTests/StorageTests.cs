@@ -3,11 +3,13 @@ using System.Linq;
 using System.Threading;
 using GlutenFree.OddJob.Interfaces;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace GlutenFree.OddJob.Storage.BaseTests
 {
     public abstract class StorageTests
     {
+        
         protected abstract Func<IJobQueueAdder> JobAddStoreFunc { get; }
         protected abstract Func<IJobQueueManager> JobMgrStoreFunc { get; }
 

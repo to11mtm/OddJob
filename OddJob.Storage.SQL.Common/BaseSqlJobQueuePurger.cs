@@ -12,12 +12,12 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
     {
         private readonly FluentMappingBuilder _mappingSchema;
         private readonly IJobQueueDataConnectionFactory _jobQueueConnectionFactory;
-
+        private ISqlDbJobQueueTableConfiguration _tableConfig;
         public BaseSqlJobQueuePurger(IJobQueueDataConnectionFactory jobQueueConnectionFactory,
             ISqlDbJobQueueTableConfiguration tableConfig)
         {
             _jobQueueConnectionFactory = jobQueueConnectionFactory;
-
+            _tableConfig = tableConfig;
             _mappingSchema = Mapping.BuildMappingSchema(tableConfig);
         }
 
@@ -26,14 +26,17 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
             using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
             {
                 conn.GetTable<SqlCommonOddJobParamMetaData>()
-                    .Where(q => q.JobGuid.In(conn.GetTable<SqlCommonDbOddJobMetaData>()
+                    .TableName(_tableConfig.ParamTableName)
+                    .Where(q => q.JobGuid.In(conn.GetTable<SqlCommonDbOddJobMetaData>().TableName(_tableConfig.QueueTableName)
                         .Where(r => r.Status == stateToPurge && r.CreatedDate < purgeOlderThan && r.QueueName == name).Select(r=>r.JobGuid)))
                     .Delete();
                 conn.GetTable<SqlDbOddJobMethodGenericInfo>()
-                    .Where(q => q.JobGuid.In(conn.GetTable<SqlCommonDbOddJobMetaData>()
+                    .TableName(_tableConfig.JobMethodGenericParamTableName)
+                    .Where(q => q.JobGuid.In(conn.GetTable<SqlCommonDbOddJobMetaData>().TableName(_tableConfig.QueueTableName)
                         .Where(r => r.Status == stateToPurge && r.CreatedDate < purgeOlderThan && r.QueueName == name).Select(r => r.JobGuid)))
                     .Delete();
                 conn.GetTable<SqlCommonDbOddJobMetaData>()
+                    .TableName(_tableConfig.QueueTableName)
                     .Where(r => r.Status == stateToPurge && r.CreatedDate < purgeOlderThan && r.QueueName == name)
                     .Delete();
                    
