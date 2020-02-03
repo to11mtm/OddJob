@@ -9,6 +9,7 @@ using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Serializable;
 using GlutenFree.OddJob.Storage.Sql.Common;
 using GlutenFree.OddJob.Storage.Sql.SQLite;
+using Moq;
 using Xunit;
 using Container = SimpleInjector.Container;
 
@@ -45,6 +46,10 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
 
     public class DependencyInjectedJobExecutorShellTests : AkkaExecutionTest
     {
+        static DependencyInjectedJobExecutorShellTests()
+        {
+            UnitTestTableHelper.EnsureTablesExist();
+        }
         
         [Fact]
         public void JobShell_Can_Start()
@@ -116,6 +121,7 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             container.Register<JobQueueLayerActor>();
             container.Register<JobWorkerActor>();
             container.Register<JobQueueCoordinator,OverriddenJobCoordinator>();
+            container.Verify();
             var jobStore = (IJobQueueAdder)container.GetInstance(typeof(IJobQueueAdder));
             var executor = new DependencyInjectedJobExecutorShell(
                 (system) => new SimpleInjectorDependencyResolver(container, system),
@@ -123,8 +129,8 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             /*var executor = new HardInjectedJobExecutorShell(() => new JobQueueLayerActor(jobStore),
                 () => new JobWorkerActor(new DefaultJobExecutor(new DefaultContainerFactory())), null);*/
             jobStore.AddJob((DIShellMockJob m) => m.DoThing(nameof(DI_Semantics_Allow_Overridden_Coordinator), 0), null, null, queueName);
-            executor.StartJobQueue(queueName, 5, 1, 1);
-            SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(8));
+            executor.StartJobQueue(queueName, 5, 3, 1);
+            SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(5));
             Xunit.Assert.True(
                 DIShellMockJob.MyCounter.ContainsKey(nameof(DI_Semantics_Allow_Overridden_Coordinator)));
             Xunit.Assert.Equal(1, OverriddenJobCoordinator.Succeeded);
@@ -139,6 +145,40 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
         {
             System.Console.WriteLine("I {0}ed", derp);
             MyCounter.AddOrUpdate(testName, (a) => 1, (a, b) => b + 1);
+        }
+    }
+
+    public class WriterPluginTests
+    {
+        [Fact]
+        public void Plugin_Writes()
+        {
+            var queueName = QueueNameHelper.CreateQueueName();
+            var jobStore = new InMemoryTestStore();
+            var executor =
+                new HardInjectedJobExecutorShell<JobQueueLayerActor,
+                    JobWorkerActor, JobQueueCoordinator>(
+                    () => new JobQueueLayerActor(jobStore),
+                    () => new JobWorkerActor(new MockJobSuccessExecutor()),
+                    () => new JobQueueCoordinator(), null);
+            var mockJobQueueWriter = new Mock<IJobQueueResultWriter>();
+            var written = false;
+
+            jobStore.AddJob((StaticClassJob j) => string.Concat("lol"),
+                queueName:queueName);
+            var mockObj = mockJobQueueWriter.Object;
+            executor.StartJobQueue(queueName, 5, 1, firstPulseDelayInSeconds:1,
+                plugins: new IJobExecutionPluginConfiguration[]
+                {
+                    ResultRecordingPlugin.PropFactory(() => mockObj, 1),
+                });
+
+            SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(5));
+
+            mockJobQueueWriter.Verify(
+                r => r.WriteJobQueueResult(It.IsAny<Guid>(),
+                    It.IsAny<IOddJobResult>()), Times.Once);
+
         }
     }
 

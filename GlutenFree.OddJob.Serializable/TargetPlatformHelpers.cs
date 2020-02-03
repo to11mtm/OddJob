@@ -5,7 +5,6 @@
         private static object _coreAssemblyNameWrteLock = new object();
         private static string _assemblyCoreType = null;
         public const string coreLibString = "%coretarget%";
-
         public static string ReplaceCoreTypes(string typeString)
         {
             return typeString.Replace(coreLibString, GetCoreAssemblyName());

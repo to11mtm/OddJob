@@ -1,6 +1,9 @@
 ﻿using System.Runtime.CompilerServices;
+using FluentMigrator.Runner.Generators.SqlServer;
 using GlutenFree.OddJob.Storage.Sql.SqlServer;
 using GlutenFree.OddJob.Storage.Sql.Common;
+using GlutenFree.OddJob.Storage.Sql.TableHelper;
+using LinqToDB.DataProvider.SqlServer;
 
 namespace OddJob.Storage.Sql.SqlServer.Test
 {
@@ -11,6 +14,10 @@ namespace OddJob.Storage.Sql.SqlServer.Test
         {
             using (var db = SqlConnectionHelper.GetLocalDB("unittestdb"))
             {
+                var helper =
+                    new SqlTableHelper(
+                        new SqlServerDataConnectionFactory(new TestDbConnectionFactory(), SqlServerVersion.v2008),
+                        new SqlServer2008Generator());
 
                 using (var cmd = db.CreateCommand())
                 {
@@ -32,20 +39,29 @@ namespace OddJob.Storage.Sql.SqlServer.Test
                 }
                 using (var cmd = db.CreateCommand())
                 {
-                    cmd.CommandText = SqlServerDbJobTableHelper.JobQueueParamTableCreateScript(
-                        new SqlDbJobQueueDefaultTableConfiguration());
+                    cmd.CommandText =
+                        helper.GetMainTableSql(
+                            new SqlDbJobQueueDefaultTableConfiguration());
+                        //SqlServerDbJobTableHelper.JobQueueParamTableCreateScript(
+                        //new SqlDbJobQueueDefaultTableConfiguration());
                     cmd.ExecuteNonQuery();
                 }
                 using (var cmd = db.CreateCommand())
                 {
-                    cmd.CommandText = SqlServerDbJobTableHelper.JobTableCreateScript(
-                        new SqlDbJobQueueDefaultTableConfiguration());
+                    cmd.CommandText =
+                        helper.GetParamTableSql(
+                            new SqlDbJobQueueDefaultTableConfiguration());
+                        //SqlServerDbJobTableHelper.JobTableCreateScript(
+                        //new SqlDbJobQueueDefaultTableConfiguration());
                     cmd.ExecuteNonQuery();
                 }
                 using (var cmd = db.CreateCommand())
                 {
-                    cmd.CommandText = SqlServerDbJobTableHelper.JobQueueJobMethodGenericParamTableCreateScript(
-                        new SqlDbJobQueueDefaultTableConfiguration());
+                    cmd.CommandText =
+                        helper.GetGenericParamTableSql(
+                            new SqlDbJobQueueDefaultTableConfiguration());
+                        //SqlServerDbJobTableHelper.JobQueueJobMethodGenericParamTableCreateScript(
+                        //new SqlDbJobQueueDefaultTableConfiguration());
                     cmd.ExecuteNonQuery();
                 }
             }

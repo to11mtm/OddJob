@@ -4,6 +4,6 @@ namespace GlutenFree.OddJob
 {
     public interface IJobExecutor
     {
-        void ExecuteJob(IOddJob job);
+        IOddJobResult ExecuteJob(IOddJob job);
     }
 }

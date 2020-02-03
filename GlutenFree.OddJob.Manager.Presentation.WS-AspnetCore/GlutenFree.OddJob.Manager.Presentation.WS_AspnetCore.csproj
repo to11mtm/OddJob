@@ -25,11 +25,11 @@
     <PackageReference Include="SimpleInjector" Version="4.4.2" />
     <PackageReference Include="SimpleInjector.Integration.AspNetCore" Version="4.4.2" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.109.0" />    
-    <PackageReference Include="WebSharper" Version="4.5.14.339" />    
-    <PackageReference Include="WebSharper.CSharp" Version="4.5.14.339" />
-    <PackageReference Include="WebSharper.UI" Version="4.5.11.174" />
-    <PackageReference Include="WebSharper.UI.CSharp" Version="4.5.11.174" />
-    <PackageReference Include="WebSharper.AspNetCore" Version="4.5.4.106" />
+    <PackageReference Include="WebSharper" Version="4.6.0.361" />    
+    <PackageReference Include="WebSharper.CSharp" Version="4.6.0.361" />
+    <PackageReference Include="WebSharper.UI" Version="4.6.0.190" />
+    <PackageReference Include="WebSharper.UI.CSharp" Version="4.6.0.190" />
+    <PackageReference Include="WebSharper.AspNetCore" Version="4.6.0.120" />
   </ItemGroup>
 
   <ItemGroup>

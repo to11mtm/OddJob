@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
 
@@ -36,6 +37,11 @@ namespace GlutenFree.OddJob
         public static OddJob Create<T>(Expression<Action<T>> jobExpr)
         {
             return ExpressionBasedJobCreator.CreateInternal<T>(jobExpr.Body as MethodCallExpression);
+        }
+
+        public static OddJob Create<T>(Expression<Action<Guid, T>> jobExpr)
+        {
+            return ExpressionBasedJobCreator.CreateInternal<T>(jobExpr.Body as MethodCallExpression, jobExpr.Parameters.First());
         }
         
     }

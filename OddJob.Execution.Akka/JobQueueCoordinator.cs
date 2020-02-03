@@ -1,16 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Akka.Actor;
 using Akka.Routing;
+using Akka.Util.Internal;
 using GlutenFree.OddJob.Execution.Akka.Messages;
 using GlutenFree.OddJob.Interfaces;
 
 namespace GlutenFree.OddJob.Execution.Akka
 {
+    /// <summary>
+    /// A Job Queue Coordinator For handling jobs and their logic.
+    /// </summary>
     public class JobQueueCoordinator : ActorBase
     {
+        protected List<IActorRef> PluginRefs { get; set; }
+        protected int PluginCount { get;  set; }
+        protected int PluginShutdownCount { get; set; }
         public IActorRef WorkerRouterRef { get; protected set; }
-        public IActorRef JobQueueActor { get; protected set; }
+        public IActorRef JobQueueReaderRef { get; protected set; }
+        public IActorRef JobQueueWritersRef { get; protected set; }
         public string QueueName { get; protected set; }
         public bool ShuttingDown { get; protected set; }
         public int WorkerCount { get; protected set; }
@@ -24,89 +33,50 @@ namespace GlutenFree.OddJob.Execution.Akka
         public bool AggressiveSweep { get; protected set; }
         public JobQueueCoordinator()
         {
+            PluginRefs = new List<IActorRef>();
+            PluginCount = 0;
             ShuttingDown = false;
             PendingItems = 0;
             QueueLifeSaturationPulseCount = 0;
+        }
+        protected void RegisterPlugin(IActorRef pluginRef)
+        {
+            PluginRefs.Add(pluginRef);
+            PluginCount = PluginCount +1;
         }
         protected override bool Receive(object message)
         {
             if (message is SetJobQueueConfiguration)
             {
-                var config = message as SetJobQueueConfiguration;
-                WorkerCount = config.NumWorkers;
-                QueueName = config.QueueName;
-                JobQueueActor = Context.ActorOf(config.QueueProps, "jobQueue");
-                WorkerProps = config.WorkerProps;
-                AggressiveSweep = config.AggressiveSweep;
-                WorkerRouterRef = Context.ActorOf(WorkerProps.WithRouter(new RoundRobinPool(WorkerCount)), "workerPool");
-                Context.Sender.Tell(new Configured());
+                SetConfiguration(message as SetJobQueueConfiguration);
             }
             else if (message is ShutDownQueues)
             {
-                ShutdownRequester = Context.Sender;
-                ShuttingDown = true;
-                //Tell all of the children to stop what they're doing.
-                WorkerRouterRef.Tell(new Broadcast(new ShutDownQueues()));
+                StartQueueShutdown();
             }
             else if (message is QueueShutDown)
             {
-                ShutdownCount = ShutdownCount + 1;
-                SaturationPulseCount = 0;
-                if (ShutdownCount == WorkerCount)
-                {
-                    //We Do this ask to make sure that all DB commands from the queues have been flushed.
-                    var storeShutdown = JobQueueActor.Ask(new ShutDownQueues()).Result as QueueShutDown;
-                    //Tell our requester that we are truly done.
-                    ShutdownRequester.Tell(new QueueShutDown());
-                }
+                HandleQueueShutdownMessage();
+            }
+            else if (message is GetSpecificJob && !ShuttingDown)
+            {
+                HandleSpecificJob(message);
             }
             else if ((message is JobSweep || message is SilentRetrySweep) && !ShuttingDown)
             {
                 HandleSweep(message);
             }
+            else if (message is ExecuteJobCommand jobCommand)
+            {
+                HandleExecuteJobItem(jobCommand.Job);
+            }
             else if (message is JobSuceeded)
             {
-                var msg = (JobSuceeded)message;
-                JobQueueActor.Tell(new MarkJobSuccess(msg.JobData.JobId));
-                PendingItems = PendingItems - 1;
-                try
-                {
-                    OnJobSuccess(msg);
-                }
-                catch(Exception ex)
-                {
-                    Context.System.Log.Error(ex, "Error Running OnJobSuccess Handler for Queue {0}, job {1}", QueueName, msg.JobData.JobId);
-                }
+                HandleJobSuccess((JobSuceeded)message);
             }
             else if (message is JobFailed)
             {
-                var msg = message as JobFailed;
-                PendingItems = PendingItems - 1;
-                if (msg.JobData.RetryParameters == null || msg.JobData.RetryParameters.MaxRetries <= msg.JobData.RetryParameters.RetryCount)
-                {
-                    JobQueueActor.Tell(new MarkJobFailed(msg.JobData.JobId));
-
-                    try
-                    {
-                        OnJobFailed(msg);
-                    }
-                    catch (Exception ex)
-                    {
-                        Context.System.Log.Error(ex, "Error Running OnJobFailed Handler for Queue {0}, job {1}", QueueName, msg.JobData.JobId);
-                    }
-                }
-                else
-                {
-                    JobQueueActor.Tell(new MarkJobInRetryAndIncrement(msg.JobData.JobId, DateTime.Now));
-                    try
-                    {
-                        OnJobRetry(msg);
-                    }
-                    catch (Exception ex)
-                    {
-                        Context.System.Log.Error(ex, "Error Running OnJobRetry Handler for Queue {0}, job {1}", QueueName, msg.JobData.JobId);
-                    }
-                }
+                HandleJobFailed((JobFailed)message);
             }
             else
             {
@@ -115,6 +85,149 @@ namespace GlutenFree.OddJob.Execution.Akka
             return true;
         }
 
+        private void HandleJobFailed(JobFailed msg)
+        {
+            PendingItems = PendingItems - 1;
+            if (msg.JobData.RetryParameters == null ||
+                msg.JobData.RetryParameters.MaxRetries <=
+                msg.JobData.RetryParameters.RetryCount)
+            {
+                JobQueueWritersRef.Tell(new MarkJobFailed(msg.JobData.JobId));
+
+                try
+                {
+                    PluginRefs.ForEach(r => r.Tell(msg));
+                    OnJobFailed(msg);
+                }
+                catch (Exception ex)
+                {
+                    Context.System.Log.Error(ex,
+                        "Error Running OnJobFailed Handler for Queue {0}, job {1}",
+                        QueueName, msg.JobData.JobId);
+                }
+            }
+            else
+            {
+                JobQueueWritersRef.Tell(
+                    new MarkJobInRetryAndIncrement(msg.JobData.JobId, DateTime.Now));
+                try
+                {
+                    OnJobRetry(msg);
+                }
+                catch (Exception ex)
+                {
+                    Context.System.Log.Error(ex,
+                        "Error Running OnJobRetry Handler for Queue {0}, job {1}",
+                        QueueName, msg.JobData.JobId);
+                }
+            }
+        }
+
+        private void HandleJobSuccess(JobSuceeded msg)
+        {
+            JobQueueWritersRef.Tell(new MarkJobSuccess(msg.JobData.JobId));
+            PendingItems = PendingItems - 1;
+            try
+            {
+                PluginRefs.ForEach(r => r.Tell(msg));
+                OnJobSuccess(msg);
+            }
+            catch (Exception ex)
+            {
+                Context.System.Log.Error(ex,
+                    "Error Running OnJobSuccess Handler for Queue {0}, job {1}",
+                    QueueName, msg.JobData.JobId);
+            }
+        }
+
+        private void StartQueueShutdown()
+        {
+            ShutdownRequester = Context.Sender;
+            ShuttingDown = true;
+            //Tell all of the children to stop what they're doing.
+            WorkerRouterRef.Tell(new Broadcast(new ShutDownQueues()));
+        }
+
+        private void SetConfiguration(SetJobQueueConfiguration config)
+        {
+            WorkerCount = config.NumWorkers;
+            WriterCount = config.NumWriters > 0
+                ? config.NumWriters
+                : config.NumWorkers;
+
+            QueueName = config.QueueName;
+            JobQueueReaderRef = Context.ActorOf(config.QueueProps, "jobQueue");
+            JobQueueWritersRef = Context.ActorOf(
+                config.QueueProps.WithRouter(
+                    new RoundRobinPool(WriterCount)), "writerQueue");
+            WorkerProps = config.WorkerProps;
+            AggressiveSweep = config.AggressiveSweep;
+            WorkerRouterRef =
+                Context.ActorOf(WorkerProps.WithRouter(new RoundRobinPool(WorkerCount)),
+                    "workerPool");
+            config.ExecutionPlugins.ToList()
+                .Select((r, i) => new {conf = r, num = i}).ForEach(r =>
+                {
+                    var created = Context.ActorOf(r.conf.CreationProps,
+                        $"plugin-{r.num}-{r.conf.CreationProps.Type.Name}");
+                    RegisterPlugin(created);
+                    created.Tell(r.conf.ConfigMsg);
+                    created.Tell(config);
+                });
+            Context.Sender.Tell(new Configured());
+        }
+
+        protected void HandleQueueShutdownMessage()
+        {
+            SaturationPulseCount = 0;
+            if (ShutdownCount < WorkerCount)
+            {
+                ShutdownCount = ShutdownCount + 1;
+                if (ShutdownCount == WorkerCount)
+                {
+                    JobQueueReaderRef.Tell(new ShutDownQueues());
+                }
+            }
+            else if (ShutdownCount < WorkerCount + 1)
+            {
+                ShutdownCount = ShutdownCount + 1;
+                if (ShutdownCount == WorkerCount + 1)
+                {
+                    JobQueueWritersRef.Tell(new Broadcast(new ShutDownQueues()));
+                }
+            }
+            else if (ShutdownCount < WorkerCount + WriterCount + 1)
+            {
+                ShutdownCount = ShutdownCount + 1;
+                if (ShutdownCount == WorkerCount + WriterCount + 1)
+                {
+                    PluginRefs.ForEach(r => r.Tell(new ShutDownQueues()));
+                }
+            }
+            else if (ShutdownCount >= WorkerCount + WriterCount + 1)
+            {
+                PluginShutdownCount = PluginShutdownCount + 1;
+            }
+
+            if (ShutdownCount >= WorkerCount + WriterCount + 1)
+            {
+                if (PluginCount == PluginShutdownCount)
+                {
+                    //Tell our requester that we are truly done.
+                    ShutdownRequester.Tell(new QueueShutDown());
+                }
+            }
+        }
+
+        public int WriterCount { get; set; }
+
+        private void HandleSpecificJob(object message)
+        {
+            if (PendingItems < WorkerCount * 2)
+            {
+                JobQueueReaderRef.Tell(message);
+            }
+        }
         private void HandleSweep(object message)
         {
             //Naieve Backpressure:
@@ -126,7 +239,7 @@ namespace GlutenFree.OddJob.Execution.Akka
                 try
                 {
                     jobsToQueue =
-                        JobQueueActor.Ask(new GetJobs(QueueName, WorkerCount), TimeSpan.FromSeconds(30)).Result as
+                        JobQueueReaderRef.Ask(new GetJobs(QueueName, WorkerCount), TimeSpan.FromSeconds(30)).Result as
                             IEnumerable<IOddJobWithMetadata>;
                 }
                 catch (Exception ex)
@@ -151,7 +264,7 @@ namespace GlutenFree.OddJob.Execution.Akka
                         {
                             try
                             {
-                                JobQueueActor.Tell(new MarkJobFailed(job.JobId));
+                                JobQueueWritersRef.Tell(new MarkJobFailed(job.JobId));
                                 OnJobTypeMissing(job);
                             }
                             catch (Exception ex)
@@ -161,9 +274,7 @@ namespace GlutenFree.OddJob.Execution.Akka
                         }
                         else
                         {
-                            WorkerRouterRef.Tell(new ExecuteJobRequest(job));
-                            JobQueueActor.Tell(new MarkJobInProgress(job.JobId));
-                            PendingItems = PendingItems + 1;
+                            HandleExecuteJobItem(job);
                         }
                     }
                 }
@@ -194,6 +305,13 @@ namespace GlutenFree.OddJob.Execution.Akka
                     Context.Self.Tell(new SilentRetrySweep());
                 }
             }
+        }
+
+        private void HandleExecuteJobItem(IOddJobWithMetadata job)
+        {
+            WorkerRouterRef.Tell(new ExecuteJobRequest(job));
+            JobQueueWritersRef.Tell(new MarkJobInProgress(job.JobId));
+            PendingItems = PendingItems + 1;
         }
 
         /// <summary>

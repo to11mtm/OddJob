@@ -13,6 +13,7 @@ using LinqToDB.Data;
 using LinqToDB.Linq;
 using LinqToDB.Mapping;
 using LinqToDB.Tools;
+using Newtonsoft.Json;
 
 namespace GlutenFree.OddJob.Storage.Sql.Common
 {
@@ -260,7 +261,11 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
             using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
             {
                 var lockGuid = Guid.NewGuid();
-                var updateCmd = LockUpdateQuery(queueNames, fetchSize, orderPredicate, conn, lockGuid);
+                var updateCmd = LockUpdateQuery(fetchSize, orderPredicate, conn,
+                    lockGuid, jobMetaData =>
+                        queueNames.Contains(jobMetaData.QueueName) &&
+                        (jobMetaData.Status == "New" ||
+                         (jobMetaData.Status == "Retry")));
                 var updateCount = await updateCmd.UpdateAsync(token);
                 if (updateCount > 0)
                 {
@@ -281,7 +286,11 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
             {
                 //Because our Lock Update Does the lock, we don't bother with a transaction.
                 var lockGuid = Guid.NewGuid();
-                var updateCmd = LockUpdateQuery(queueNames, fetchSize, orderPredicate, conn, lockGuid);
+                var updateCmd = LockUpdateQuery(fetchSize, orderPredicate, conn,
+                    lockGuid, jobMetaData =>
+                        queueNames.Contains(jobMetaData.QueueName) &&
+                        (jobMetaData.Status == "New" ||
+                         (jobMetaData.Status == "Retry")));
 
 
                 var updateCount = updateCmd.Update();
@@ -291,8 +300,8 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
             }
         }
 
-        private IUpdatable<SqlCommonDbOddJobMetaData> LockUpdateQuery(string[] queueNames, int fetchSize, Expression<Func<JobLockData, object>> orderPredicate, DataConnection conn,
-            Guid lockGuid)
+        private IUpdatable<SqlCommonDbOddJobMetaData> LockUpdateQuery(int fetchSize, Expression<Func<JobLockData, object>> orderPredicate, DataConnection conn,
+            Guid lockGuid, Expression<Func<SqlCommonDbOddJobMetaData, bool>> expression)
         {
             var lockTime = DateTime.Now;
             var lockClaimTimeoutThreshold = DateTime.Now.AddSeconds(
@@ -300,18 +309,19 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
             var defaultMinCoalesce = DateTime.MinValue;
             IQueryable<JobLockData> lockingCheckQuery =
                 QueueTable(conn)
-                    .Where(
-                        jobMetaData => queueNames.Contains(jobMetaData.QueueName)
-                             &&
+                    .Where(jobMetaData=>
+                        //jobMetaData => queueNames.Contains(jobMetaData.QueueName) 
+                        //     &&
                              (jobMetaData.DoNotExecuteBefore <= lockTime || jobMetaData.DoNotExecuteBefore == null)
                              &&
-                             (jobMetaData.Status == "New" ||
-                              (jobMetaData.Status == "Retry" && jobMetaData.MaxRetries >= jobMetaData.RetryCount &&
-                               jobMetaData.LastAttempt.Value.AddSeconds(jobMetaData.MinRetryWait) <= lockTime)
+                             (( jobMetaData.MaxRetries >= jobMetaData.RetryCount &&
+                               (jobMetaData.LastAttempt.Value.AddSeconds(jobMetaData.MinRetryWait) <= lockTime)
+                                 || jobMetaData.LastAttempt == null)
                              )
                              && (jobMetaData.LockClaimTime == null || jobMetaData.LockClaimTime <
                                  lockClaimTimeoutThreshold)
-                    ).Select(lockProjection => new JobLockData
+                             
+                    ).Where(expression).Select(lockProjection => new JobLockData
                     {
                         JobId = lockProjection.Id,
                         MostRecentDate =
@@ -374,16 +384,29 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
             }
         }
 
-        public virtual IOddJobWithMetadata GetJob(Guid jobId)
+        public virtual IOddJobWithMetadata GetJob(Guid jobId, bool withLock)
         {
             using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
             {
+                var canGet = 1;
+                if (withLock)
+                {
+                    var lockGuid = Guid.NewGuid();
+                    var lockQ = LockUpdateQuery(1, r => r.CreatedDate, conn,
+                        lockGuid, r => r.JobGuid == jobId);
+                    canGet = lockQ.Update();
+                }
 
-                var jobWithParamQuery = QueueTable(conn)
-                    .Where(jobMetadata => jobMetadata.JobGuid == jobId);
+                if (canGet > 0)
+                {
+                    var jobWithParamQuery = QueueTable(conn)
+                        .Where(jobMetadata => jobMetadata.JobGuid == jobId);
 
-                var resultSet = ExecuteJoinQuery(jobWithParamQuery, conn);
-                return resultSet.FirstOrDefault();
+                    var resultSet = ExecuteJoinQuery(jobWithParamQuery, conn);
+                    return resultSet.FirstOrDefault();
+                }
+
+                return null;
             }
         }
 
@@ -449,8 +472,11 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
                         Status = group.First().MetaData.Status,
                         ExecutionTime = group.First().MetaData.DoNotExecuteBefore,
                         QueueName = group.First().MetaData.QueueName,
-                        JobArgs = group.OrderBy(p => p.ParamData.ParamOrdinal) //Order by for Reader paranoia
-                            .Select(param => param.ParamData).Where(s => s.SerializedType != null).GroupBy(param => param.ParamOrdinal)
+                        JobArgs = group.Where(r=>r.ParamData!=null)
+                            .OrderBy(p => p.ParamData.ParamOrdinal) //Order by for Reader paranoia
+                            .Select(param => param.ParamData)
+                            .Where(s => s.SerializedType != null)
+                            .GroupBy(param => param.ParamOrdinal)
                             .Select(s => new OddJobSerializedParameter()
                             {
                                 Ordinal = s.FirstOrDefault().ParamOrdinal,
@@ -461,8 +487,8 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
                         RetryParameters = new RetryParameters(group.First().MetaData.MaxRetries,
                             TimeSpan.FromSeconds(group.First().MetaData.MinRetryWait),
                             group.First().MetaData.RetryCount, group.First().MetaData.LastAttempt),
-                        MethodGenericTypes = group.OrderBy(q => q.JobMethodGenericData.ParamOrder) //Order by for reader paranoia.
-                            .Where(t => t.JobMethodGenericData != null && t.JobMethodGenericData.ParamTypeName != null)
+                        MethodGenericTypes = group.Where(r=>r.JobMethodGenericData != null).OrderBy(q => q.JobMethodGenericData.ParamOrder) //Order by for reader paranoia.
+                            .Where(t => t.JobMethodGenericData.ParamTypeName != null)
                             .Select(q => q.JobMethodGenericData)
                             .GroupBy(q => q.ParamOrder)
                             .Select(t => t.FirstOrDefault().ParamTypeName).ToArray()
@@ -478,7 +504,12 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
             ).LeftJoin(MethodGenericParameterTable(conn)
             , (job_param,jobGeneric)=> job_param.MetaData.JobGuid == jobGeneric.JobGuid
             , (job_param,jobGeneric)=> new{MetaData = job_param.MetaData, ParamData = job_param.ParamData, JobMethodGenericData = jobGeneric});
+            
+            //We do the result set this way for a few reasons:
+            // - In most sane usages, there shouldn't be a lot of data coming back
+            // - Linq2Db does a good job of making the right choices
             var resultSet = newQuery.ToList();
+            
             var finalSet =  resultSet.GroupBy(jobMetadata => jobMetadata.MetaData.JobGuid)
                 .Select(group =>
                     new SqlDbOddJob()
@@ -493,7 +524,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
                             .Select(q=>q.ParamData).Where(s => s?.SerializedType != null).GroupBy(q=>q.ParamOrdinal)
                             .Select(s => new OddJobParameter() { Name = s.FirstOrDefault()?.ParameterName, Value = 
                                 Newtonsoft.Json.JsonConvert.DeserializeObject(s.FirstOrDefault()?.SerializedValue,
-                                    _typeResolver.GetTypeForJob(s.FirstOrDefault()?.SerializedType))
+                                    _typeResolver.GetTypeForJob(s.FirstOrDefault()?.SerializedType), SerializableJobCreator.Settings)
                                 , Type= TargetPlatformHelpers.ReplaceCoreTypes(s.FirstOrDefault()?.SerializedType)
                             }).ToArray(),
                         RetryParameters = new RetryParameters(group.First().MetaData.MaxRetries,

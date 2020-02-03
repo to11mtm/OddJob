@@ -25,7 +25,9 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
                     }
                     else if (msg.JobData.MethodName =="Success")
                     {
-                        Context.Sender.Tell(new JobSuceeded(msg.JobData));
+                        Context.Sender.Tell(new JobSuceeded(msg.JobData,
+                            new OddJobResult()
+                                {Result = null, ReturnType = typeof(void)}));
                     }
                 }
             }

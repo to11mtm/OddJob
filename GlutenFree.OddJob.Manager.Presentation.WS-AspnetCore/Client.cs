@@ -208,7 +208,8 @@ namespace GlutenFree.OddJob.Manager.Presentation.WS_AspnetCore
                     ),
                     //TODO: This looks bad with lots of Parameters.
                     Html.div(Html.div(juvm.MetaData.JobArgs.Select((r, i) =>
-                            Html.div(new Jobparameter.JobParameter().Type(r.Type).Name(r.Name).Value(r.Value)
+                            Html.div(new Jobparameter.JobParameter()
+                                .Type(r.Type).Name(r.Name).Value(r.Value)
                                 .Ordinal(i.ToString()).Doc())).ToArray())),
                     Html.div(Html.style("margin-left","5%"), Html.div(jobParamUpdate)),
                     Html.button("Update", async () =>

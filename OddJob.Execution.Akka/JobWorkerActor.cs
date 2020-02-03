@@ -35,8 +35,8 @@ namespace GlutenFree.OddJob.Execution.Akka
         {
             try
             {
-                _jobExecutor.ExecuteJob(request.JobData);
-                Context.Sender.Tell(new JobSuceeded(request.JobData));
+                var res = _jobExecutor.ExecuteJob(request.JobData);
+                Context.Sender.Tell(new JobSuceeded(request.JobData,res));
             }
             catch(Exception ex)
             {

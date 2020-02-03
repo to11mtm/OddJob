@@ -118,7 +118,7 @@ namespace GlutenFree.OddJob.Execution.BaseTests
             });
         }
 
-        public IOddJobWithMetadata GetJob(Guid jobId)
+        public IOddJobWithMetadata GetJob(Guid jobId, bool mustLock = true)
         {
             return jobStore.FirstOrDefault(q => q.Value.Any(r => r.JobId == jobId)).Value
                 .FirstOrDefault(q => q.JobId == jobId);

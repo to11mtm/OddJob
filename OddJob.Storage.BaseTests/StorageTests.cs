@@ -272,7 +272,7 @@ namespace GlutenFree.OddJob.Storage.BaseTests
 
 
             jobMgrStore.MarkJobInRetryAndIncrement(jobGuid, DateTime.Now);
-            var job = jobMgrStore.GetJob((jobGuid));
+            var job = jobMgrStore.GetJob((jobGuid),false);
             Assert.Equal(JobStates.Retry, job.Status);
         }
 
@@ -296,13 +296,13 @@ namespace GlutenFree.OddJob.Storage.BaseTests
 
 
             jobMgrStore.MarkJobInRetryAndIncrement(jobGuid, DateTime.Now);
-            var jobAfterFirstIncrement = jobMgrStore.GetJob(jobGuid);
+            var jobAfterFirstIncrement = jobMgrStore.GetJob(jobGuid,false);
             Assert.Equal(1, jobAfterFirstIncrement.RetryParameters.RetryCount);
             SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(1));
             var jobsAfterFirstRetry = jobMgrStore.GetJobs(new[] { "test" }, 5, q=>q.MostRecentDate);
             Assert.Contains(jobsAfterFirstRetry, q => q.JobId == jobGuid);
             jobMgrStore.MarkJobInRetryAndIncrement(jobGuid, DateTime.Now);
-            var jobAfterSecondIncrement = jobMgrStore.GetJob(jobGuid);
+            var jobAfterSecondIncrement = jobMgrStore.GetJob(jobGuid,false);
             Assert.Equal(2, jobAfterSecondIncrement.RetryParameters.RetryCount);
             SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(1));
             var jobsAfterSecondRetry = jobMgrStore.GetJobs(new[] { "test" }, 5, q=>q.MostRecentDate);

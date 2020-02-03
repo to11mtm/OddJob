@@ -27,11 +27,18 @@ namespace GlutenFree.OddJob.Execution.Akka
         {
             try
             {
-
-
                 if (message is ShutDownQueues)
                 {
                     Context.Sender.Tell(new QueueShutDown());
+                }
+                else if (message is GetSpecificJob)
+                {
+                    var j = (message as GetSpecificJob);
+                    var job = jobQueue.GetJob(j.JobId, true);
+                    if (job != null)
+                    {
+                        Context.Sender.Tell(new ExecuteJobCommand(job));
+                    }
                 }
                 else if (message is GetJobs)
                 {
@@ -76,6 +83,16 @@ namespace GlutenFree.OddJob.Execution.Akka
 
         }
         
+    }
+
+    public class ExecuteJobCommand
+    {
+        public IOddJobWithMetadata Job { get; private set; }
+
+        public ExecuteJobCommand(IOddJobWithMetadata job)
+        {
+            Job = job;
+        }
     }
 }
 

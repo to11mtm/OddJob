@@ -17,9 +17,10 @@ namespace GlutenFree.OddJob.Storage.FileSystem
         }
 
         public string FileName { get; protected set; }
-        
 
-        public IEnumerable<IOddJobWithMetadata> GetJobs(string[] queueNames,int fetchSize, Expression<Func<JobLockData,object>> orderPredicate)
+
+        public IEnumerable<IOddJobWithMetadata> GetJobs(string[] queueNames,
+            int fetchSize, Expression<Func<JobLockData, object>> orderPredicate)
         {
             IEnumerable<IOddJobWithMetadata> results = null;
             bool written = false;
@@ -28,7 +29,8 @@ namespace GlutenFree.OddJob.Storage.FileSystem
                 try
                 {
                     using (FileStream fs =
-                 File.Open(FileName, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                        File.Open(FileName, FileMode.Open, FileAccess.ReadWrite,
+                            FileShare.None))
                     {
                         byte[] toRead = null;
                         using (var memStream = new MemoryStream())
@@ -36,28 +38,47 @@ namespace GlutenFree.OddJob.Storage.FileSystem
                             fs.CopyTo(memStream);
                             toRead = memStream.ToArray();
                         }
+
                         var serializer =
-                            Newtonsoft.Json.JsonConvert.DeserializeObject<List<FileSystemJobMetaData>>(Encoding.UTF8.GetString(toRead), new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
+                            Newtonsoft.Json.JsonConvert
+                                .DeserializeObject<List<FileSystemJobMetaData>>(
+                                    Encoding.UTF8.GetString(toRead),
+                                    new JsonSerializerSettings()
+                                    {
+                                        TypeNameHandling = TypeNameHandling.All
+                                    });
                         var filtered = serializer.Where(q =>
-                        queueNames.Contains(q.QueueName)
-                        && (q.Status==JobStates.New || q.Status==JobStates.Retry)
-                        &&
-                        ((q.RetryParameters == null ||q.Status==JobStates.New) ||
-                        (q.RetryParameters.RetryCount <= q.RetryParameters.MaxRetries)
-                        &&
-                        (q.RetryParameters.LastAttempt == null
-                          || q.RetryParameters.
-                              LastAttempt.Value.Add(q.RetryParameters.MinRetryWait)
-                               < DateTime.Now)))
-                               .OrderBy(q =>
-                               Math.Min(q.CreatedOn.Ticks, (q.RetryParameters ?? new RetryParameters(0, TimeSpan.FromSeconds(0), 0, null)).LastAttempt.GetValueOrDefault(DateTime.MaxValue).Ticks)
-                               ).Take(fetchSize).ToList();
-                        foreach(var item in filtered)
+                                queueNames.Contains(q.QueueName)
+                                && (q.Status == JobStates.New ||
+                                    q.Status == JobStates.Retry)
+                                &&
+                                ((q.RetryParameters == null ||
+                                  q.Status == JobStates.New) ||
+                                 (q.RetryParameters.RetryCount <=
+                                  q.RetryParameters.MaxRetries)
+                                 &&
+                                 (q.RetryParameters.LastAttempt == null
+                                  || q.RetryParameters.LastAttempt.Value.Add(
+                                      q.RetryParameters.MinRetryWait)
+                                  < DateTime.Now)))
+                            .OrderBy(q =>
+                                Math.Min(q.CreatedOn.Ticks,
+                                    (q.RetryParameters ?? new RetryParameters(0,
+                                         TimeSpan.FromSeconds(0), 0, null))
+                                    .LastAttempt
+                                    .GetValueOrDefault(DateTime.MaxValue).Ticks)
+                            ).Take(fetchSize).ToList();
+                        foreach (var item in filtered)
                         {
                             item.Status = "Queued";
                             item.QueueTime = DateTime.Now;
                         }
-                        var newData = Newtonsoft.Json.JsonConvert.SerializeObject(serializer, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
+
+                        var newData =
+                            Newtonsoft.Json.JsonConvert.SerializeObject(
+                                serializer,
+                                new JsonSerializerSettings()
+                                    {TypeNameHandling = TypeNameHandling.All});
                         var toWrite = Encoding.UTF8.GetBytes(newData);
                         fs.Position = 0;
                         fs.SetLength(toWrite.Length);
@@ -70,7 +91,7 @@ namespace GlutenFree.OddJob.Storage.FileSystem
                 {
                     //Magic Number Source:
                     //https://stackoverflow.com/questions/2568875/how-to-tell-if-a-caught-ioexception-is-caused-by-the-file-being-used-by-another
-                    if (ex.HResult == unchecked((int)0x80070020))
+                    if (ex.HResult == unchecked((int) 0x80070020))
                     {
                         //Retry.
                     }
@@ -80,10 +101,11 @@ namespace GlutenFree.OddJob.Storage.FileSystem
                     }
                 }
             }
+
             return results;
         }
 
-        public IOddJobWithMetadata GetJob(Guid jobId)
+        public IOddJobWithMetadata GetJob(Guid jobId, bool mustLock = true)
         {
             IOddJobWithMetadata results = null;
             bool written = false;
@@ -92,7 +114,8 @@ namespace GlutenFree.OddJob.Storage.FileSystem
                 try
                 {
                     using (FileStream fs =
-                 File.Open(FileName, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                        File.Open(FileName, FileMode.Open, FileAccess.ReadWrite,
+                            FileShare.None))
                     {
                         byte[] toRead = null;
                         using (var memStream = new MemoryStream())
@@ -100,9 +123,17 @@ namespace GlutenFree.OddJob.Storage.FileSystem
                             fs.CopyTo(memStream);
                             toRead = memStream.ToArray();
                         }
+
                         var serializer =
-                            Newtonsoft.Json.JsonConvert.DeserializeObject<List<FileSystemJobMetaData>>(Encoding.UTF8.GetString(toRead), new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
-                        var filtered = serializer.Where(q => q.JobId == jobId).FirstOrDefault();
+                            Newtonsoft.Json.JsonConvert
+                                .DeserializeObject<List<FileSystemJobMetaData>>(
+                                    Encoding.UTF8.GetString(toRead),
+                                    new JsonSerializerSettings()
+                                    {
+                                        TypeNameHandling = TypeNameHandling.All
+                                    });
+                        var filtered = serializer.Where(q => q.JobId == jobId)
+                            .FirstOrDefault();
                         written = true;
                         results = filtered;
                     }
@@ -111,7 +142,7 @@ namespace GlutenFree.OddJob.Storage.FileSystem
                 {
                     //Magic Number Source:
                     //https://stackoverflow.com/questions/2568875/how-to-tell-if-a-caught-ioexception-is-caused-by-the-file-being-used-by-another
-                    if (ex.HResult == unchecked((int)0x80070020))
+                    if (ex.HResult == unchecked((int) 0x80070020))
                     {
                         //Retry.
                     }
@@ -121,10 +152,12 @@ namespace GlutenFree.OddJob.Storage.FileSystem
                     }
                 }
             }
+
             return results;
         }
 
-        public void WriteJobState(Guid jobId, Action<FileSystemJobMetaData> transformFunc)
+        public void WriteJobState(Guid jobId,
+            Action<FileSystemJobMetaData> transformFunc)
         {
             bool written = false;
             while (!written)
@@ -132,7 +165,8 @@ namespace GlutenFree.OddJob.Storage.FileSystem
                 try
                 {
                     using (FileStream fs =
-                 File.Open(FileName, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                        File.Open(FileName, FileMode.Open, FileAccess.ReadWrite,
+                            FileShare.None))
                     {
                         byte[] toRead = null;
                         using (var memStream = new MemoryStream())
@@ -140,16 +174,28 @@ namespace GlutenFree.OddJob.Storage.FileSystem
                             fs.CopyTo(memStream);
                             toRead = memStream.ToArray();
                         }
+
                         var serializer =
-                            Newtonsoft.Json.JsonConvert.DeserializeObject<List<FileSystemJobMetaData>>(Encoding.UTF8.GetString(toRead), new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
+                            Newtonsoft.Json.JsonConvert
+                                .DeserializeObject<List<FileSystemJobMetaData>>(
+                                    Encoding.UTF8.GetString(toRead),
+                                    new JsonSerializerSettings()
+                                    {
+                                        TypeNameHandling = TypeNameHandling.All
+                                    });
                         var filtered = serializer.FirstOrDefault(q =>
-                        q.JobId == jobId);
+                            q.JobId == jobId);
                         if (filtered != null)
                         {
                             transformFunc(filtered);
                         }
-                        var newData = Newtonsoft.Json.JsonConvert.SerializeObject(serializer, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
-                        
+
+                        var newData =
+                            Newtonsoft.Json.JsonConvert.SerializeObject(
+                                serializer,
+                                new JsonSerializerSettings()
+                                    {TypeNameHandling = TypeNameHandling.All});
+
                         var toWrite = Encoding.UTF8.GetBytes(newData);
                         fs.Position = 0;
                         fs.SetLength(toWrite.Length);
@@ -161,7 +207,7 @@ namespace GlutenFree.OddJob.Storage.FileSystem
                 {
                     //Magic Number Source:
                     //https://stackoverflow.com/questions/2568875/how-to-tell-if-a-caught-ioexception-is-caused-by-the-file-being-used-by-another
-                    if (ex.HResult == unchecked((int)0x80070020))
+                    if (ex.HResult == unchecked((int) 0x80070020))
                     {
                         //Retry.
                     }
@@ -172,15 +218,15 @@ namespace GlutenFree.OddJob.Storage.FileSystem
                 }
             }
         }
-    
+
 
         public void MarkJobFailed(Guid jobGuid)
         {
             WriteJobState(jobGuid, (q) =>
-             {
-                 q.Status = JobStates.Failed;
-                 q.FailureTime = DateTime.Now;
-             });
+            {
+                q.Status = JobStates.Failed;
+                q.FailureTime = DateTime.Now;
+            });
         }
 
         public void MarkJobInProgress(Guid jobId)
@@ -195,11 +241,11 @@ namespace GlutenFree.OddJob.Storage.FileSystem
         public void MarkJobInRetryAndIncrement(Guid jobId, DateTime lastAttempt)
         {
             WriteJobState(jobId, (q) =>
-             {
-                 q.Status = JobStates.Retry;
-                 q.RetryParameters.LastAttempt = lastAttempt;
-                 q.RetryParameters.RetryCount = q.RetryParameters.RetryCount + 1;
-             });
+            {
+                q.Status = JobStates.Retry;
+                q.RetryParameters.LastAttempt = lastAttempt;
+                q.RetryParameters.RetryCount = q.RetryParameters.RetryCount + 1;
+            });
         }
 
         public void MarkJobSuccess(Guid jobGuid)

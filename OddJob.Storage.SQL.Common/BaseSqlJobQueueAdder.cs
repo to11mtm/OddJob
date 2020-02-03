@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Serializable;
 using GlutenFree.OddJob.Storage.Sql.Common.DbDtos;
@@ -167,6 +168,17 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
         }
 
         public virtual Guid AddJob<TJob>(Expression<Action<TJob>> jobExpression, RetryParameters retryParameters = null,
+            DateTimeOffset? executionTime = null, string queueName = "default")
+        {
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            {
+                var ser = SerializableJobCreator.CreateJobDefinition(jobExpression, retryParameters, executionTime,queueName);
+                AddJob(ser);
+                return ser.JobId;
+            }
+        }
+        
+        public virtual Guid AddJob<TJob>(Expression<Action<Guid,TJob>> jobExpression, RetryParameters retryParameters = null,
             DateTimeOffset? executionTime = null, string queueName = "default")
         {
             using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))

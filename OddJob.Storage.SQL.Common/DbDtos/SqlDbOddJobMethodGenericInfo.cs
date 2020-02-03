@@ -10,6 +10,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common.DbDtos
         public long Id { get; set; }
         public Guid JobGuid { get; set; }
         public int ParamOrder { get; set; }
+        [NotNull]
         public string ParamTypeName { get; set; }
     }
 }

@@ -2,11 +2,47 @@
 using System.Linq;
 using System.Linq.Expressions;
 using GlutenFree.OddJob.Interfaces;
+using Newtonsoft.Json;
 
 namespace GlutenFree.OddJob.Serializable
 {
+    public static class SerializedJobResultCreator
+    {
+        public static SerializableOddJobResult GetResult(IOddJobResult result, ITypeNameSerializer typeNameSerializer=null)
+        {
+            var mySer = typeNameSerializer ?? new UnversionedTypeSerializer();
+            return new SerializableOddJobResult()
+            {
+                
+                Value = Newtonsoft.Json.JsonConvert.SerializeObject(
+                    result.Result),
+                TypeName = mySer.GetTypeName(result.ReturnType)
+            };
+        }
+    }
+
+    public class SerializableOddJobResult
+    {
+        public string Value { get; set; }
+        public string TypeName { get; set; }
+    }
     public static class SerializableJobCreator
     {
+        public static Newtonsoft.Json.JsonSerializerSettings Settings { get; }
+
+        static SerializableJobCreator()
+        {
+            Settings = new JsonSerializerSettings();
+        }
+        public static SerializableOddJob CreateJobDefinition<T>(
+            Expression<Action<Guid,T>> jobExpression,
+            RetryParameters retryParameters = null,
+            DateTimeOffset? executionTime = null, string queueName = "default",
+            ITypeNameSerializer typeNameSerializer = null)
+        {
+            var job = JobCreator.Create(jobExpression);
+            return Serialize<T>(retryParameters, executionTime, queueName, typeNameSerializer, job);
+        }
         /// <summary>
         /// Creates a Serialized Job Definition.
         /// Complex Parameters are stored as JSON strings,
@@ -23,25 +59,32 @@ namespace GlutenFree.OddJob.Serializable
             RetryParameters retryParameters = null, DateTimeOffset? executionTime = null, string queueName = "default", ITypeNameSerializer typeNameSerializer=null)
         {
             var job = JobCreator.Create(jobExpression);
+            return Serialize<T>(retryParameters, executionTime, queueName, typeNameSerializer, job);
+        }
+
+        private static SerializableOddJob Serialize<T>(RetryParameters retryParameters,
+            DateTimeOffset? executionTime, string queueName,
+            ITypeNameSerializer typeNameSerializer, OddJob job)
+        {
             var mySer = typeNameSerializer ?? new UnversionedTypeSerializer();
             return new SerializableOddJob()
             {
                 JobId = job.JobId,
                 MethodName = job.MethodName,
-                JobArgs = job.JobArgs.Select((a,i) => new OddJobSerializedParameter()
+                JobArgs = job.JobArgs.Select((a, i) => new OddJobSerializedParameter()
                 {
                     Ordinal = i,
                     Name = a.Name,
-                    Value = Newtonsoft.Json.JsonConvert.SerializeObject(a.Value),
+                    Value = Newtonsoft.Json.JsonConvert.SerializeObject(a.Value, Settings),
                     TypeName = mySer.GetTypeName(a.Value.GetType())
                 }).ToArray(),
                 TypeExecutedOn = mySer.GetTypeName(job.TypeExecutedOn),
                 Status = job.Status,
-                MethodGenericTypes = job.MethodGenericTypes.Select(q => mySer.GetTypeName(q)).ToArray(),
+                MethodGenericTypes = job.MethodGenericTypes
+                    .Select(q => mySer.GetTypeName(q)).ToArray(),
                 RetryParameters = retryParameters ?? new RetryParameters(),
                 ExecutionTime = executionTime,
                 QueueName = queueName
-
             };
         }
 
@@ -55,7 +98,7 @@ namespace GlutenFree.OddJob.Serializable
                     new OddJobParameter()
                     {
                         Name = q.Name,
-                        Value = Newtonsoft.Json.JsonConvert.DeserializeObject(q.Value, Type.GetType(q.TypeName))
+                        Value = Newtonsoft.Json.JsonConvert.DeserializeObject(q.Value, Type.GetType(q.TypeName), Settings)
                     }).ToArray(),
                 JobId = jobData.JobId,
                 MethodGenericTypes = jobData.MethodGenericTypes

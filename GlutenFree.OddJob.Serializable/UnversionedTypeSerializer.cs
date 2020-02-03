@@ -1,17 +1,25 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 
 namespace GlutenFree.OddJob.Serializable
 {
     public class UnversionedTypeSerializer : ITypeNameSerializer
     {
+        public static ConcurrentDictionary<Type,string> scrubbedStringCache = new ConcurrentDictionary<Type, string>();
         public string GetTypeName(Type type)
         {
             if (type != null)
             {
-                var str = _assemblyRegex.Replace(type.AssemblyQualifiedName, "");
-                var str2 = str.Replace(TargetPlatformHelpers.GetCoreAssemblyName(), TargetPlatformHelpers.coreLibString);
-                return str2;
+                return scrubbedStringCache.GetOrAdd(type, typ =>
+                {
+                    var str =
+                        _assemblyRegex.Replace(typ.AssemblyQualifiedName, "");
+                    var str2 = str.Replace(
+                        TargetPlatformHelpers.GetCoreAssemblyName(),
+                        TargetPlatformHelpers.coreLibString);
+                    return str2;
+                });
             }
 
             return "";

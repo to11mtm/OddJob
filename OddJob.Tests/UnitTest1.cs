@@ -1,10 +1,27 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Linq;
 using Xunit;
 
 namespace GlutenFree.OddJob.Tests
 {
-    public class UnitTest1
+    public class JobCreatorAndExecutorTests
     {
+        [Fact]
+        public void Can_Get_Guid_From_Job_In_Params()
+        {
+            var next = JobCreator.Create<SampleJob>((j, g) =>
+                g.DoThing(j.ToString(), 4, new ClassTest()));
+        }
+
+        [Fact]
+        public void Can_Use_Struct_Param()
+        {
+            var next =
+                JobCreator.Create<StructJob>((j) =>
+                    j.DoThing(new StructParam(4)));
+        }
+
 
         [Fact]
         public void Can_Run_Job_With_Arity_in_class_With_Arity()
@@ -126,6 +143,24 @@ namespace GlutenFree.OddJob.Tests
             Called = true;
         }
 
+    }
+
+    public struct StructParam
+    {
+        public int Val { get; }
+
+        public StructParam(int val)
+        {
+            Val = val;
+        }
+    }
+
+    public struct StructJob
+    {
+        public void DoThing(StructParam t)
+        {
+            
+        }
     }
 
     public class SampleJobNoParam
