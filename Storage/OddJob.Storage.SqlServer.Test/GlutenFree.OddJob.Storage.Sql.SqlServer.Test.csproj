@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net462;netcoreapp2.1</TargetFrameworks>
+
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+    
+   
+
+
+  <ItemGroup>
+    <PackageReference Include="linq2db" Version="2.9.5" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.8.0" />
+    <PackageReference Include="xunit" Version="2.3.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
+    <PackageReference Include="FluentMigrator.Runner.SqlServer">
+      <Version>3.2.1</Version>
+    </PackageReference>
+  </ItemGroup> 
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\GlutenFree.OddJob.Storage.Sql.BaseTests\GlutenFree.OddJob.Storage.Sql.BaseTests.csproj" />
+    <ProjectReference Include="..\GlutenFree.OddJob.Storage.Sql.TableHelper\GlutenFree.OddJob.Storage.Sql.TableHelper.csproj" />
+    <ProjectReference Include="..\OddJob.Storage.BaseTests\GlutenFree.OddJob.Storage.BaseTests.csproj" />
+    <ProjectReference Include="..\OddJob.Storage.SQL.Common\GlutenFree.OddJob.Storage.Sql.Common.csproj" />
+    <ProjectReference Include="..\OddJob.Storage.SqlServer\GlutenFree.OddJob.Storage.Sql.SqlServer.csproj" />
+    <ProjectReference Include="..\..\core\OddJob\GlutenFree.OddJob.csproj" />
+  </ItemGroup> 
+
+
+  <ItemGroup>
+    <Reference Include="linq2db">
+      <HintPath>..\packages\linq2db.2.2.0\lib\net45\linq2db.dll</HintPath>
+    </Reference>
+  </ItemGroup> 
+
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup> 
+
+
+
+</Project>
