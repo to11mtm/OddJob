@@ -71,7 +71,7 @@ namespace GlutenFree.OddJob.Execution.Akka
         /// <param name="firstPulseDelayInSeconds">The time to wait before the first pulse delay. Default is 5. Can use any value greater than 0</param>
         /// <param name="priorityExpresssion">An expression to use for setting retrieval priority. Default is most recent Attempt/Creation</param>
         /// <param name="aggressiveSweep">If true, when queues are saturated, a silent 'resweep' will be repeatedly sent for each saturated pulse, until the saturation condition has ended. These repeated attempts will not trigger the 'OnJobQueueSaturated' method or further increment the counters.</param>
-        public void StartJobQueue(string queueName, int numWorkers, int pulseDelayInSeconds, int firstPulseDelayInSeconds = 5, Expression<Func<JobLockData,object>> priorityExpresssion = null, bool aggressiveSweep = false, IEnumerable<IJobExecutionPluginConfiguration> plugins=null)
+        public void StartJobQueue(string queueName, int numWorkers, int pulseDelayInSeconds, int firstPulseDelayInSeconds = 5, Expression<Func<JobLockData,object>> priorityExpresssion = null, bool aggressiveSweep = false, int maxPendingFetches=30, int fetchTimeoutSeconds = 30, IEnumerable<IJobExecutionPluginConfiguration> plugins=null)
         {
             if (coordinatorPool.ContainsKey(queueName) == false)
             {
@@ -86,7 +86,7 @@ namespace GlutenFree.OddJob.Execution.Akka
                     queueName);
                 var result = jobCoordinator.Ask(new SetJobQueueConfiguration(WorkerProps, JobQueueProps, queueName,
                             numWorkers,
-                            pulseDelayInSeconds, firstPulseDelayInSeconds, priExpr, aggressiveSweep, 0, plugins),
+                            pulseDelayInSeconds, firstPulseDelayInSeconds, priExpr, aggressiveSweep, 0, maxPendingFetches, pendingSweepTimeoutSeconds:fetchTimeoutSeconds, executionPlugins: plugins),
                         TimeSpan.FromSeconds(10))
                     .Result;
                 

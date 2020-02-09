@@ -10,9 +10,17 @@ namespace OddJob.Storage.Sql.SqlServer.Test
 {
     public class TestDbConnectionFactory : IJobQueueDbConnectionFactory
     {
+        private string _dbLocation;
+        private string _dbName;
+
+        public TestDbConnectionFactory(string dbLocation, string dbName)
+        {
+            _dbLocation = dbLocation;
+            _dbName = dbName;
+        }
         public DbConnection CreateDbConnection()
         {
-            return SqlConnectionHelper.GetLocalDB("unittestdb");
+            return SqlConnectionHelper.GetLocalDB(_dbName, _dbLocation);
         }
     }
     //Insane Props to :
@@ -21,17 +29,24 @@ namespace OddJob.Storage.Sql.SqlServer.Test
     {
         public const string DB_DIRECTORY = "Data";
 
-        public static string CheckConnString(string dbName)
+        public static string CheckConnString(string dbName, string dbLocation)
         {
-            return CheckConnString(dbName, false);
+            return CheckConnString(dbName, dbLocation, false);
         }
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public static string CheckConnString(string dbName, bool deleteIfExists)
+        public static string CheckConnString(string dbName,string dbLocation, bool deleteIfExists)
         {
             try
             {
-                string outputFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-                    DB_DIRECTORY);
+
+                string outputFolder =
+                    (string.IsNullOrWhiteSpace(dbLocation) == false &&
+                     Directory.Exists(dbLocation))
+                        ? dbLocation
+                        : Path.Combine(
+                            Path.GetDirectoryName(Assembly
+                                .GetExecutingAssembly().Location),
+                            DB_DIRECTORY);
                 string mdfFilename = dbName + ".mdf";
                 string dbFileName = Path.Combine(outputFolder, mdfFilename);
                 string logFileName = Path.Combine(outputFolder, String.Format("{0}_log.ldf", dbName));
@@ -67,12 +82,18 @@ namespace OddJob.Storage.Sql.SqlServer.Test
             }
         }
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public static SqlConnection GetLocalDB(string dbName, bool deleteIfExists = false)
+        public static SqlConnection GetLocalDB(string dbName,string dbLocation, bool deleteIfExists = false)
         {
             try
             {
-                string outputFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
-                    DB_DIRECTORY);
+                string outputFolder =
+                    (string.IsNullOrWhiteSpace(dbLocation) == false &&
+                     Directory.Exists(dbLocation))
+                        ? dbLocation
+                        : Path.Combine(
+                            Path.GetDirectoryName(Assembly
+                                .GetExecutingAssembly().Location),
+                            DB_DIRECTORY);
                 string mdfFilename = dbName + ".mdf";
                 string dbFileName = Path.Combine(outputFolder, mdfFilename);
                 string logFileName = Path.Combine(outputFolder, String.Format("{0}_log.ldf", dbName));

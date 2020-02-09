@@ -8,13 +8,14 @@
     <ItemGroup>
       <PackageReference Include="MagicOnion" Version="3.0.8" />
       <PackageReference Include="Moq" Version="4.13.1" />
-      <PackageReference Include="SimpleInjector" Version="4.4.2" />
+      <PackageReference Include="SimpleInjector" Version="4.9.0" />
       <PackageReference Include="System.Security.Permissions" Version="4.7.0" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\OddJob.Rpc.Client\OddJob.Rpc.Client.csproj" />
-      <ProjectReference Include="..\OddJob.RpcServer\OddJob.RpcServer.csproj" />
+      <ProjectReference Include="..\OddJob.Rpc.Integration.SimpleInjector\OddJob.Rpc.Integration.SimpleInjector.csproj" />
+      <ProjectReference Include="..\OddJob.Rpc.Server\OddJob.Rpc.Server.csproj" />
       <ProjectReference Include="..\OddJob.Rpc\OddJob.Rpc.csproj" />
     </ItemGroup>
 

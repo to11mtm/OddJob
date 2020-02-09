@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Akka.Actor;
 using GlutenFree.OddJob.Execution.Akka.Messages;
 using GlutenFree.OddJob.Serializable;
@@ -36,15 +37,20 @@ namespace OddJob.Rpc.Execution.Plugin
             _parent.Tell(new GetSpecificJob(jobData.JobId, jobData.QueueName));
         }
 
-        public void Join(string queueName)
+        public async Task Join(string queueName, DateTime expiresAt)
         {
-            client.JoinMonitoringAsync(queueName);
+            await client.JoinMonitoringAsync(queueName, expiresAt);
         }
 
-        public void Stop(string queueName)
+        public async Task Stop(string queueName)
         {
-            client.LeaveMonitoringAsync(queueName);
-            client.DisposeAsync().Wait();
+            await client.LeaveMonitoringAsync(queueName);
+            await client.DisposeAsync();
+        }
+
+        public async Task Refresh(string queueName, DateTime expiresAt)
+        {
+            await client.JoinMonitoringAsync(queueName, expiresAt);
         }
     }
 }

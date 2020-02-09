@@ -19,7 +19,7 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             ForwardTo.Forward(message);
             if (message is GetJobs)
             {
-                Context.Sender.Tell(new[]
+                Context.Sender.Tell(new JobSweepResponse( new[]
                 {
                     new OddJobWithMetaAndStorageData()
                     {
@@ -33,7 +33,7 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
                         QueueTime = DateTime.Now, RetryParameters = null, Status = JobStates.New,
                         TypeExecutedOn = "derp".GetType()
                     }
-                });
+                }, ((GetJobs)message).SweepGuid));
             }
             else return false;
             return true;

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Transactions;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Serializable;
 using GlutenFree.OddJob.Storage.Sql.Common.DbDtos;
@@ -13,7 +12,6 @@ using LinqToDB.Data;
 using LinqToDB.Linq;
 using LinqToDB.Mapping;
 using LinqToDB.Tools;
-using Newtonsoft.Json;
 
 namespace GlutenFree.OddJob.Storage.Sql.Common
 {

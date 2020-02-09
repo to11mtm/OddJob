@@ -13,7 +13,7 @@ namespace GlutenFree.OddJob.Storage.Sql.SQLite.Test
         public SQLiteStorageTest(ITestOutputHelper outputHelper) :base(outputHelper)
         {
 
-            UnitTestTableHelper.EnsureTablesExist();
+            SQLiteUnitTestTableHelper.EnsureTablesExist();
 
 
         }
@@ -23,7 +23,7 @@ namespace GlutenFree.OddJob.Storage.Sql.SQLite.Test
             get
             {
                 return () => new SQLiteJobQueueAdder(
-                    new SQLiteJobQueueDataConnectionFactory(UnitTestTableHelper.connString)
+                    new SQLiteJobQueueDataConnectionFactory(SQLiteUnitTestTableHelper.connString)
                     ,
                     new DefaultJobAdderQueueTableResolver(new SqlDbJobQueueDefaultTableConfiguration()));
             }
@@ -34,7 +34,7 @@ namespace GlutenFree.OddJob.Storage.Sql.SQLite.Test
             get
             {
                 return () => new SQLiteJobQueueManager(
-                    new SQLiteJobQueueDataConnectionFactory(UnitTestTableHelper.connString),
+                    new SQLiteJobQueueDataConnectionFactory(SQLiteUnitTestTableHelper.connString),
                     new SqlDbJobQueueDefaultTableConfiguration(),new NullOnMissingTypeJobTypeResolver());
             }
         }

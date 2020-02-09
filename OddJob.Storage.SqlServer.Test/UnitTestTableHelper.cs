@@ -2,21 +2,22 @@
 using FluentMigrator.Runner.Generators.SqlServer;
 using GlutenFree.OddJob.Storage.Sql.SqlServer;
 using GlutenFree.OddJob.Storage.Sql.Common;
+using GlutenFree.OddJob.Storage.Sql.SqlServer.Test;
 using GlutenFree.OddJob.Storage.Sql.TableHelper;
 using LinqToDB.DataProvider.SqlServer;
 
 namespace OddJob.Storage.Sql.SqlServer.Test
 {
-    public static class UnitTestTableHelper
+    public static class SqlServerUnitTestTableHelper
     {
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public static void EnsureTablesExist()
+        public static void EnsureTablesExist(string dbName, string localLocation)
         {
-            using (var db = SqlConnectionHelper.GetLocalDB("unittestdb"))
+            using (var db = SqlConnectionHelper.GetLocalDB(dbName,localLocation))
             {
                 var helper =
                     new SqlTableHelper(
-                        new SqlServerDataConnectionFactory(new TestDbConnectionFactory(), SqlServerVersion.v2008),
+                        new SqlServerDataConnectionFactory(new TestDbConnectionFactory(localLocation,dbName), SqlServerVersion.v2008),
                         new SqlServer2008Generator());
 
                 using (var cmd = db.CreateCommand())

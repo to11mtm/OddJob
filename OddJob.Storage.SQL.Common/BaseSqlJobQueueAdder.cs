@@ -123,7 +123,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
             {
                 return new BulkCopyOptions()
                 {
-                    KeepIdentity = false
+                    KeepIdentity = false,
                 };
             }
         }

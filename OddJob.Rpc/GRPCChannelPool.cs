@@ -7,6 +7,10 @@ using MessagePack;
 namespace OddJob.Rpc.Client
 {
     
+    /// <summary>
+    /// A Simple pool for GRPC Channels.
+    /// This should normally be treated as a Singleton.
+    /// </summary>
     public class GRPCChannelPool : IDisposable
     {
         
@@ -32,7 +36,7 @@ namespace OddJob.Rpc.Client
             // If anything it's too paranoid.
             // ReSharper disable once InconsistentlySynchronizedField
             _openConnections.TryGetValue(conf, out channel);
-            if (channel == null)
+            if (channel == null || channel.State == ChannelState.Shutdown)
             {
                 object myLock = null;
                 if (!_connLocks.TryGetValue(conf, out myLock))
@@ -46,8 +50,15 @@ namespace OddJob.Rpc.Client
                 {
                     
                         _openConnections.TryGetValue(conf, out channel); 
-                    if (channel == null)
+                    if (channel == null || channel.State == ChannelState.Shutdown)
                     {
+                        try
+                        {
+                            channel?.ShutdownAsync().Wait();
+                        }
+                        catch
+                        {
+                        }
                         _openConnections.TryAdd(conf, new Channel(conf.Host,
                             conf.Port,
                             conf.ChannelCredentials,

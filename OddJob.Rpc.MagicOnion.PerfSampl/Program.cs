@@ -9,52 +9,13 @@ using MagicOnion.Server;
 using Moq;
 using Newtonsoft.Json;
 using OddJob.Rpc.Client;
+using OddJob.Rpc.Integration.SimpleInjector;
 using OddJob.RpcServer;
 using SimpleInjector;
-using SimpleInjector.Lifestyles;
 
 namespace OddJob.Rpc.MagicOnion.PerfSampl
 {
-    public class SimpleInjectorActivator : IMagicOnionServiceActivator
-    {
-        public T Create<T>(IServiceLocator serviceLocator)
-        {
-            return serviceLocator.GetService<T>();
-        }
-    }
-    public class SimpleInjectorServiceLocator : IServiceLocator
-    {
-        public SimpleInjectorServiceLocator(Container container)
-        {
-            _container = container;
-        }
-        private Container _container;
-        public T GetService<T>() 
-        {
-            return (T)_container.GetInstance(typeof(T));
-        }
-
-        public IServiceLocatorScope CreateScope()
-        {
-            return new SimpleInjectorServiceLocatorScope(AsyncScopedLifestyle.BeginScope(_container));
-        }
-    }
-
-    public class SimpleInjectorServiceLocatorScope : IServiceLocatorScope
-    {
-        private Scope _scope;
-        public SimpleInjectorServiceLocatorScope(Scope beginScope)
-        {
-            _scope = beginScope;
-        }
-
-        public void Dispose()
-        {
-            _scope.Dispose();
-        }
-
-        public IServiceLocator ServiceLocator { get{return new SimpleInjectorServiceLocator(_scope.Container);} }
-    }
+    
 
     public class MockAdder: ISerializedJobQueueAdder
     {

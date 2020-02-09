@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Akka.Actor;
+using Akka.Event;
 using Akka.Routing;
 using Akka.Util.Internal;
 using GlutenFree.OddJob.Execution.Akka.Messages;
@@ -31,6 +32,9 @@ namespace GlutenFree.OddJob.Execution.Akka
         public long QueueLifeSaturationPulseCount { get; protected set; }
         public Props WorkerProps { get; protected set; }
         public bool AggressiveSweep { get; protected set; }
+        public int AllowedPendingSweeps { get; protected set; }
+        public Dictionary<Guid, DateTime> PendingSweeps { get; } = new Dictionary<Guid, DateTime>();
+        public int PendingSweepTimeoutSeconds { get; protected set; }
         public JobQueueCoordinator()
         {
             PluginRefs = new List<IActorRef>();
@@ -46,6 +50,10 @@ namespace GlutenFree.OddJob.Execution.Akka
         }
         protected override bool Receive(object message)
         {
+            try
+            {
+
+            
             if (message is SetJobQueueConfiguration)
             {
                 SetConfiguration(message as SetJobQueueConfiguration);
@@ -66,6 +74,10 @@ namespace GlutenFree.OddJob.Execution.Akka
             {
                 HandleSweep(message);
             }
+            else if (message is JobSweepResponse)
+            {
+                HandleJobSet((JobSweepResponse)message);
+            }
             else if (message is ExecuteJobCommand jobCommand)
             {
                 HandleExecuteJobItem(jobCommand.Job);
@@ -83,6 +95,12 @@ namespace GlutenFree.OddJob.Execution.Akka
                 return OnCustomMessage(message);
             }
             return true;
+            }
+            catch (Exception e)
+            {
+                Context.GetLogger().Error(e, "Error Running Handler!");
+                throw;
+            }
         }
 
         private void HandleJobFailed(JobFailed msg)
@@ -119,6 +137,30 @@ namespace GlutenFree.OddJob.Execution.Akka
                     Context.System.Log.Error(ex,
                         "Error Running OnJobRetry Handler for Queue {0}, job {1}",
                         QueueName, msg.JobData.JobId);
+                }
+            }
+        }
+
+        private void HandleJobSet(JobSweepResponse jobset)
+        {
+            var jobsToQueue = jobset.Jobs;
+            foreach (var job in jobsToQueue)
+            {
+                if (job.TypeExecutedOn == null)
+                {
+                    try
+                    {
+                        JobQueueWritersRef.Tell(new MarkJobFailed(job.JobId));
+                        OnJobTypeMissing(job);
+                    }
+                    catch (Exception ex)
+                    {
+                        Context.System.Log.Error(ex, "Error Running OnJobTypeMissing Handler for Queue {0}", QueueName);
+                    }
+                }
+                else
+                {
+                    HandleExecuteJobItem(job);
                 }
             }
         }
@@ -162,6 +204,8 @@ namespace GlutenFree.OddJob.Execution.Akka
                     new RoundRobinPool(WriterCount)), "writerQueue");
             WorkerProps = config.WorkerProps;
             AggressiveSweep = config.AggressiveSweep;
+            AllowedPendingSweeps = config.AllowedPendingSweeps;
+            PendingSweepTimeoutSeconds = config.PendingSweepTimeoutSeconds;
             WorkerRouterRef =
                 Context.ActorOf(WorkerProps.WithRouter(new RoundRobinPool(WorkerCount)),
                     "workerPool");
@@ -231,53 +275,31 @@ namespace GlutenFree.OddJob.Execution.Akka
         private void HandleSweep(object message)
         {
             //Naieve Backpressure:
-            if (PendingItems < WorkerCount * 2)
+            var timedOutSweeps =
+                PendingSweeps.Where(t => t.Value < DateTime.Now).ToList();
+            foreach (var sweep in timedOutSweeps)
             {
-                SaturationStartTime = null;
-                SaturationPulseCount = 0;
-                IEnumerable<IOddJobWithMetadata> jobsToQueue = null;
+                Context.System.Log.Error( "Timeout Retrieving data for Queue {0}", QueueName);
                 try
                 {
-                    jobsToQueue =
-                        JobQueueReaderRef.Ask(new GetJobs(QueueName, WorkerCount), TimeSpan.FromSeconds(30)).Result as
-                            IEnumerable<IOddJobWithMetadata>;
+                    OnQueueTimeout(sweep.Key, sweep.Value);
                 }
                 catch (Exception ex)
                 {
-                    Context.System.Log.Error(ex, "Timeout Retrieving data for Queue {0}", QueueName);
-                    try
-                    {
-                        OnQueueTimeout(ex);
-                    }
-                    catch (Exception)
-                    {
-                        Context.System.Log.Error(ex, "Error Running OnQueueTimeout Handler for Queue {0}",
-                            QueueName);
-                    }
+                    Context.System.Log.Error(ex, "Error Running OnQueueTimeout Handler for Queue {0}",
+                        QueueName);
                 }
-
-                if (jobsToQueue != null)
-                {
-                    foreach (var job in jobsToQueue)
-                    {
-                        if (job.TypeExecutedOn == null)
-                        {
-                            try
-                            {
-                                JobQueueWritersRef.Tell(new MarkJobFailed(job.JobId));
-                                OnJobTypeMissing(job);
-                            }
-                            catch (Exception ex)
-                            {
-                                Context.System.Log.Error(ex, "Error Running OnQueueTimeout Handler for Queue {0}", QueueName);
-                            }
-                        }
-                        else
-                        {
-                            HandleExecuteJobItem(job);
-                        }
-                    }
-                }
+                PendingSweeps.Remove(sweep.Key);
+            }
+            if (PendingItems < WorkerCount * 2 &&(AllowedPendingSweeps>= PendingSweeps.Count ))
+            {
+                SaturationStartTime = null;
+                SaturationPulseCount = 0;
+                
+                    var sweepGuid = Guid.NewGuid();
+                    PendingSweeps.Add(sweepGuid,DateTime.Now.AddSeconds(PendingSweepTimeoutSeconds));
+                        JobQueueReaderRef.Tell(
+                            new GetJobs(QueueName, WorkerCount, sweepGuid));
             }
             else
             {
@@ -339,8 +361,11 @@ namespace GlutenFree.OddJob.Execution.Akka
         /// Method to handle Queue Read Failures(e.x. Timeouts).
         /// This can be used to do things like send email, perhaps trigger a Queue shutdown, etc.
         /// </summary>
+        /// <param name="requestGuid"></param>
         /// <param name="ex">The Queue Failure recieved.</param>
-        protected virtual void OnQueueTimeout(Exception ex)
+        /// <param name="expirationTime"></param>
+        protected virtual void OnQueueTimeout(Guid requestGuid,
+            DateTime expirationTime)
         {
 
         }

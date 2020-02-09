@@ -9,6 +9,19 @@ namespace OddJob.RpcServer
     {
         public static Server StartService(RpcServerConfiguration conf)
         {
+            var svcDef = GetServiceDefinition(conf);
+            var server = new Grpc.Core.Server()
+            {
+                Services = {svcDef},
+                Ports = {new ServerPort(conf.Host, conf.Port, conf.Credentials)}
+            };
+
+            server.Start();
+            return server;
+        }
+
+        public static MagicOnionServiceDefinition GetServiceDefinition(RpcServerConfiguration conf)
+        {
             var opts = new MagicOnionOptions();
             opts.GlobalFilters = conf.GlobalFilters;
             opts.ServiceLocator = conf.ServiceLocator;
@@ -16,13 +29,7 @@ namespace OddJob.RpcServer
             opts.MagicOnionServiceActivator = conf.Activator;
             var svc =MagicOnionEngine.BuildServerServiceDefinition(
                 new Type[] { typeof(StreamingJobCreationServer)}, opts);
-            var server = new Grpc.Core.Server()
-            {
-                Services = {svc},
-                Ports = {new ServerPort(conf.Host, conf.Port, conf.Credentials)}
-            };
-            server.Start();
-            return server;
+            return svc;
         }
     }
 }

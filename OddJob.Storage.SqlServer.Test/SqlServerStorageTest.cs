@@ -19,7 +19,7 @@ namespace GlutenFree.OddJob.Storage.Sql.SqlServer.Test
             var execPath = Path.Combine(Assembly.GetExecutingAssembly().CodeBase, string.Empty)
                 .Substring(0, Assembly.GetExecutingAssembly().CodeBase.LastIndexOf('/'));
             AppDomain.CurrentDomain.SetData("DataDirectory", new Uri(Path.Combine(execPath, string.Empty)).LocalPath);
-            UnitTestTableHelper.EnsureTablesExist();
+            SqlServerUnitTestTableHelper.EnsureTablesExist(TestConf.dbName,TestConf.localLocation);
 
 
         }
@@ -29,7 +29,7 @@ namespace GlutenFree.OddJob.Storage.Sql.SqlServer.Test
             get
             {
                 return () => new SqlServerJobQueueAdder(
-                    new SqlServerDataConnectionFactory(new TestDbConnectionFactory(), SqlServerVersion.v2008)
+                    new SqlServerDataConnectionFactory(TestConf.FactFact, SqlServerVersion.v2008)
                     ,
                     new DefaultJobAdderQueueTableResolver(new SqlDbJobQueueDefaultTableConfiguration()));
             }
@@ -40,7 +40,7 @@ namespace GlutenFree.OddJob.Storage.Sql.SqlServer.Test
             get
             {
                 return () => new SqlServerJobQueueManager(
-                    new SqlServerDataConnectionFactory(new TestDbConnectionFactory(), SqlServerVersion.v2008),
+                    new SqlServerDataConnectionFactory(TestConf.FactFact, SqlServerVersion.v2008),
                     new SqlDbJobQueueDefaultTableConfiguration(), new NullOnMissingTypeJobTypeResolver());
             }
         }

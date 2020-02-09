@@ -2,11 +2,11 @@
 
 namespace OddJob.Rpc
 {
-    public class UnregisteredSerializerOptions : MessagePackSerializerOptions
+    public class UnregisteredSerializerOptions
     {
-        public static UnregisteredSerializerOptions Instance { get; } = new UnregisteredSerializerOptions();
-        protected UnregisteredSerializerOptions() : base(MessagePack.Resolvers.ContractlessStandardResolver.Instance)
-        {
-        }
+        public static MessagePackSerializerOptions Instance { get; } =
+            MessagePack.MessagePackSerializer.DefaultOptions.WithResolver(
+                MessagePack.Resolvers.ContractlessStandardResolver.Instance);
+        
     }
 }

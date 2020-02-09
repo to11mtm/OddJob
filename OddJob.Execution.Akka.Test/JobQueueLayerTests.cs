@@ -62,11 +62,12 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             
             var myGuid = testStore.AddJob((MockJob m) => m.MockMethod(), null, null, "test");
             InMemoryTestStore.jobPeeker["test"].FirstOrDefault(q => q.JobId == myGuid);
-            
 
-            actor.Tell(new GetJobs("test", 10));
+            var guid = Guid.NewGuid();
+            actor.Tell(new GetJobs("test", 10, guid));
 
-            ExpectMsg<IEnumerable<IOddJobWithMetadata>>(duration: TimeSpan.FromSeconds(180));
+            var set = ExpectMsg<JobSweepResponse>(duration: TimeSpan.FromSeconds(180));
+            Assert.Equal(set.SweepGuid, guid);
         }
     }
 }

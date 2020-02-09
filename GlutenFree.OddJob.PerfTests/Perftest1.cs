@@ -16,9 +16,9 @@ namespace GlutenFree.OddJob.PerfTests
     {
         public string Perftest_Sqlite_Store(int iters)
         {
-            UnitTestTableHelper.EnsureTablesExist();
+            SQLiteUnitTestTableHelper.EnsureTablesExist();
             var jobWriter = new SQLiteJobQueueAdder(
-                new SQLiteJobQueueDataConnectionFactory(UnitTestTableHelper
+                new SQLiteJobQueueDataConnectionFactory(SQLiteUnitTestTableHelper
                     .connString),
                 new DefaultJobAdderQueueTableResolver(
                     new SqlDbJobQueueDefaultTableConfiguration()));

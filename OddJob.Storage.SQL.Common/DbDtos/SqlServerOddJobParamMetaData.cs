@@ -10,11 +10,11 @@ namespace GlutenFree.OddJob.Storage.Sql.Common.DbDtos
         public long Id { get; set; }
         public Guid JobGuid { get; set; }
         public int ParamOrdinal { get; set; }
-        [NotNull]
+        [Column(CanBeNull = false, Length = Int32.MaxValue)]
         public string SerializedValue { get; set; }
-        [NotNull]
+        [Column(CanBeNull = false)]
         public string SerializedType { get; set; }
-        [NotNull]
+        [Column(CanBeNull = false, Length =256)]
         public string ParameterName { get; set; }
     }
 }

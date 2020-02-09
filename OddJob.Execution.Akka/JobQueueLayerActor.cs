@@ -43,7 +43,9 @@ namespace GlutenFree.OddJob.Execution.Akka
                 else if (message is GetJobs)
                 {
                     var msg = (GetJobs) message;
-                    Context.Sender.Tell(jobQueue.GetJobs(new[] {msg.QueueName}, msg.FetchSize, (q)=>q.MostRecentDate));
+                    var jobs = jobQueue.GetJobs(new[] {msg.QueueName},
+                        msg.FetchSize, (q) => q.MostRecentDate);
+                    Context.Sender.Tell(new JobSweepResponse(jobs, msg.SweepGuid));
                 }
                 else if (message is MarkJobInProgress)
                 {
@@ -83,16 +85,6 @@ namespace GlutenFree.OddJob.Execution.Akka
 
         }
         
-    }
-
-    public class ExecuteJobCommand
-    {
-        public IOddJobWithMetadata Job { get; private set; }
-
-        public ExecuteJobCommand(IOddJobWithMetadata job)
-        {
-            Job = job;
-        }
     }
 }
 

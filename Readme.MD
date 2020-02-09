@@ -35,6 +35,8 @@ Goals:
 
   - Be more useful in Distributed scenarios than the 'blog-hotness' schedulers
   
+  - Don't require any special attributes/interfaces on parameters passed or methods called.
+  
   - Allow Scheduling of jobs in the future (i.e. days ahead)
 
 

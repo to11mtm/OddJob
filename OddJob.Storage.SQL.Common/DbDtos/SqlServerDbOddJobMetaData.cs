@@ -14,7 +14,8 @@ namespace GlutenFree.OddJob.Storage.Sql.Common.DbDtos
         [Column(CanBeNull = false)]
         public string TypeExecutedOn { get; set; }
 
-        [Column(CanBeNull = false)]
+        //1024 Is a decent max given Compiler limitations.
+        [Column(CanBeNull = false, Length = 1024)]
         public string MethodName { get; set; }
 
         public int MaxRetries { get; set; }

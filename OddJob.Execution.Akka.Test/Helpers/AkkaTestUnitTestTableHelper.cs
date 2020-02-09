@@ -1,12 +1,12 @@
 ﻿using System.Data;
 using System.Data.SQLite;
 using System.Runtime.CompilerServices;
-using FluentMigrator.Runner.Generators.SQLite;
 using GlutenFree.OddJob.Storage.Sql.Common;
+using GlutenFree.OddJob.Storage.Sql.SQLite;
 
-namespace GlutenFree.OddJob.Storage.Sql.SQLite.Test
+namespace GlutenFree.OddJob.Execution.Akka.Test
 {
-    public static class UnitTestTableHelper
+    public static class AkkaTestUnitTestTableHelper
     {
         public static readonly string connString = "FullUri=file::memory:?cache=shared";
         /// <summary>
@@ -15,7 +15,7 @@ namespace GlutenFree.OddJob.Storage.Sql.SQLite.Test
         public static readonly SQLiteConnection heldConnection;
 
         public static bool TablesCreated = false;
-        static UnitTestTableHelper()
+        static AkkaTestUnitTestTableHelper()
         {
             heldConnection = new SQLiteConnection(connString);
         }
@@ -32,11 +32,6 @@ namespace GlutenFree.OddJob.Storage.Sql.SQLite.Test
                 heldConnection.Open();
             }
 
-            var helper =
-                new GlutenFree.OddJob.Storage.Sql.TableHelper.SqlTableHelper(
-                    new SQLiteJobQueueDataConnectionFactory(connString),
-                    new SQLiteGenerator());
-            
             using (var db = new SQLiteConnection(connString))
             {
                 db.Open();
@@ -59,30 +54,22 @@ namespace GlutenFree.OddJob.Storage.Sql.SQLite.Test
                 }
                 using (var cmd = db.CreateCommand())
                 {
-                    cmd.CommandText =
-                        helper.GetMainTableSql(
-                            new SqlDbJobQueueDefaultTableConfiguration());
-                    //SQLiteDbJobTableHelper.JobQueueParamTableCreateScript(
-                    //    new SqlDbJobQueueDefaultTableConfiguration());
+                    cmd.CommandText = SQLiteDbJobTableHelper.JobQueueParamTableCreateScript(
+                        new SqlDbJobQueueDefaultTableConfiguration());
                     cmd.ExecuteNonQuery();
                 }
                 using (var cmd = db.CreateCommand())
                 {
-                    cmd.CommandText =
-                        helper.GetParamTableSql(
-                            new SqlDbJobQueueDefaultTableConfiguration());
-                        //SQLiteDbJobTableHelper.JobTableCreateScript(
-                        //new SqlDbJobQueueDefaultTableConfiguration());
+                    cmd.CommandText = SQLiteDbJobTableHelper.JobTableCreateScript(
+                        new SqlDbJobQueueDefaultTableConfiguration());
                     cmd.ExecuteNonQuery();
                 }
 
                 using (var cmd = db.CreateCommand())
                 {
                     cmd.CommandText =
-                        helper.GetGenericParamTableSql(
+                        SQLiteDbJobTableHelper.JobQueueJobMethodGenericParamTableCreateScript(
                             new SqlDbJobQueueDefaultTableConfiguration());
-                        //SQLiteDbJobTableHelper.JobQueueJobMethodGenericParamTableCreateScript(
-                        //   new SqlDbJobQueueDefaultTableConfiguration());
                     cmd.ExecuteNonQuery();
                 }
             }
