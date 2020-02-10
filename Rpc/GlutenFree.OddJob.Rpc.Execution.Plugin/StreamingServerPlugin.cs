@@ -22,10 +22,24 @@ namespace OddJob.Rpc.Execution.Plugin
             ReceiveAsync<SetJobQueueConfiguration>(SetQueueAndConnect);
             ReceiveAsync<ShutDownQueues>(StopQueues);
         }
-        public static IJobExecutionPluginConfiguration CreateSettings(
+        /// <summary>
+        /// Creates an <see cref="IJobExecutionPluginConfiguration"/> object
+        /// to pass into your ActorSystem. 
+        /// </summary>
+        /// <param name="conf">The RPC Client Configuration</param>
+        /// <param name="pool">A GRPC Channel Pool</param>
+        /// <param name="secondsBetweenRefresh">Number of seconds between refreshes. This is a fairly lightweight operation so 5-10s is probably a good value.</param>
+        /// <param name="secondsToExpire">Sets the expiration time for a keepalive token. This must always be larger than seconds between refreshes.</param>
+        /// <returns></returns>
+        public static IJobExecutionPluginConfiguration CreatePluginConfiguration(
             RpcClientConfiguration conf, GRPCChannelPool pool,
             int secondsBetweenRefresh, int secondsToExpire)
         {
+            if (secondsBetweenRefresh > secondsToExpire)
+            {
+                throw new ArgumentException(
+                    $"{nameof(secondsToExpire)} must be greater than or equal to {nameof(secondsBetweenRefresh)}");
+            }
             return new StreamingServerPluginConfiguration(
                 Props.Create(() => new StreamingServerPlugin()),
                 new SetStreamingServerConfiguration()

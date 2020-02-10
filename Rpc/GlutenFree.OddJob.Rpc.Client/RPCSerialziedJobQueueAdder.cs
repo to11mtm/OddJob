@@ -21,7 +21,7 @@ namespace OddJob.Rpc.Client
         public void Create()
         {
             _client = MagicOnionClient.Create<IRpcJobCreator>(
-                new DefaultCallInvoker(_pool.RecoverChannel(_conf))
+                new DefaultCallInvoker(_pool.GetChannel(_conf))
                 , UnregisteredSerializerOptions.Instance,
                 _conf.Filters.ToArray());
         }

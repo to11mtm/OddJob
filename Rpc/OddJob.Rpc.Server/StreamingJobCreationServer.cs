@@ -18,9 +18,17 @@ namespace OddJob.RpcServer
         {
         }
     }
+
+    public abstract class BaseStreamingJobCreationServer : StreamingHubBase<IJobHub, IJobHubReceiver>, IJobHub
+    {
+        public abstract Task CreateJob(SerializableOddJob jobData);
+        public abstract Task JoinMonitoringAsync(string queueName, DateTime expiresAt);
+        public abstract Task LeaveMonitoringAsync(string queueName);
+        public abstract Task CreateJobs(IEnumerable<SerializableOddJob> jobDataSet);
+    }
     public abstract class
         BaseStreamingJobCreationServer<TCacheStore> :
-            StreamingHubBase<IJobHub, IJobHubReceiver>, IJobHub
+            BaseStreamingJobCreationServer
     where TCacheStore : ITimedCache<Guid>
     {
         public IKeyedTimedCacheStore<TCacheStore,Guid> LiveConnections { get; }
@@ -34,7 +42,7 @@ namespace OddJob.RpcServer
         Random r = new Random();
         private ISerializedJobQueueAdder _jobQueueAdder;
 
-        public Task CreateJob(SerializableOddJob jobData)
+        public override Task CreateJob(SerializableOddJob jobData)
         {
             //await Group.AddAsync($"adder-{jobData.QueueName}",
             //    new ClientId() {Id = ConnectionId});
@@ -47,6 +55,9 @@ namespace OddJob.RpcServer
         
         private void NotifyQueueSubscribers(SerializableOddJob jobData)
         {
+            try
+            {
+
             
             var connQ = LiveConnections.GetOrCreate(jobData.QueueName);
             var set = connQ.GetItems().ToList();
@@ -70,9 +81,15 @@ namespace OddJob.RpcServer
 
                 BroadcastTo(_group, broadcastlist).JobCreated(jobData);
             }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
         
-        public async Task JoinMonitoringAsync(string queueName, DateTime expiresAt)
+        public override async Task JoinMonitoringAsync(string queueName, DateTime expiresAt)
         {
             var grp =
                 GroupSet.GetOrAdd(queueName,
@@ -96,7 +113,7 @@ namespace OddJob.RpcServer
 
         }
 
-        public async Task LeaveMonitoringAsync(string queueName)
+        public override async Task LeaveMonitoringAsync(string queueName)
         {
             Group.RawGroupRepository.TryGet(queueName, out IGroup _group);
             if (_group != null)
@@ -106,7 +123,7 @@ namespace OddJob.RpcServer
             
         }
 
-        public Task CreateJobs(IEnumerable<SerializableOddJob> jobDataSet)
+        public override Task CreateJobs(IEnumerable<SerializableOddJob> jobDataSet)
         {
             _jobQueueAdder.AddJobs(jobDataSet);
             foreach (var job in jobDataSet)

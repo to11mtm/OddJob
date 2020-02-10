@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -8,6 +9,7 @@ using GlutenFree.OddJob.Storage.Sql.Common;
 
 namespace OddJob.Storage.Sql.SqlServer.Test
 {
+    
     public class TestDbConnectionFactory : IJobQueueDbConnectionFactory
     {
         private string _dbLocation;
@@ -23,8 +25,14 @@ namespace OddJob.Storage.Sql.SqlServer.Test
             return SqlConnectionHelper.GetLocalDB(_dbName, _dbLocation);
         }
     }
-    //Insane Props to :
-    //https://social.msdn.microsoft.com/Forums/en-US/268c3411-102a-4272-b305-b14e29604313/localdb-create-amp-connect-to-database-gtgt-programmatically-ltlt?forum=sqlsetupandupgrade
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <remarks>
+    ///Insane Props to :
+    ///https://social.msdn.microsoft.com/Forums/en-US/268c3411-102a-4272-b305-b14e29604313/localdb-create-amp-connect-to-database-gtgt-programmatically-ltlt?forum=sqlsetupandupgrade
+    /// </remarks>
+    [ExcludeFromCodeCoverage]
     public static class SqlConnectionHelper
     {
         public const string DB_DIRECTORY = "Data";

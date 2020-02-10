@@ -7,9 +7,9 @@ namespace OddJob.RpcServer
 {
     public static class StreamingServiceWrapper
     {
-        public static Server StartService(RpcServerConfiguration conf)
+        public static Server StartService<T>(RpcServerConfiguration conf) where T: BaseStreamingJobCreationServer
         {
-            var svcDef = GetServiceDefinition(conf);
+            var svcDef = GetServiceDefinition<T>(conf);
             var server = new Grpc.Core.Server()
             {
                 Services = {svcDef},
@@ -20,7 +20,7 @@ namespace OddJob.RpcServer
             return server;
         }
 
-        public static MagicOnionServiceDefinition GetServiceDefinition(RpcServerConfiguration conf)
+        public static MagicOnionServiceDefinition GetServiceDefinition<T>(RpcServerConfiguration conf) where T: BaseStreamingJobCreationServer
         {
             var opts = new MagicOnionOptions();
             opts.GlobalFilters = conf.GlobalFilters;
@@ -28,7 +28,7 @@ namespace OddJob.RpcServer
             opts.SerializerOptions = UnregisteredSerializerOptions.Instance;
             opts.MagicOnionServiceActivator = conf.Activator;
             var svc =MagicOnionEngine.BuildServerServiceDefinition(
-                new Type[] { typeof(StreamingJobCreationServer)}, opts);
+                new Type[] { typeof(T)}, opts);
             return svc;
         }
     }

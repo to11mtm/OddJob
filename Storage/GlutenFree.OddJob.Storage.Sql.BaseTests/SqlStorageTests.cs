@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using GlutenFree.OddJob.Storage.BaseTests;
 using LinqToDB.Data;
@@ -9,6 +10,7 @@ namespace GlutenFree.OddJob.Storage.Sql.BaseTests
 {
     public abstract class SqlStorageTests : StorageTests
     {
+        [ExcludeFromCodeCoverage]
         protected SqlStorageTests(ITestOutputHelper outputHelper)
         {
             LinqToDB.Data.DataConnection.TurnTraceSwitchOn();

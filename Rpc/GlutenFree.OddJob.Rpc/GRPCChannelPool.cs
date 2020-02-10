@@ -17,17 +17,6 @@ namespace OddJob.Rpc.Client
         private ConcurrentDictionary<RpcClientConfiguration,Channel> _openConnections = new ConcurrentDictionary<RpcClientConfiguration, Channel>();
         private ConcurrentDictionary<RpcClientConfiguration,object> _connLocks = new ConcurrentDictionary<RpcClientConfiguration, object>();
         
-        public Channel RecoverChannel(RpcClientConfiguration conf)
-        {
-            var channel = GetChannel(conf);
-            if (channel.State == ChannelState.Shutdown)
-            {
-                channel.ShutdownAsync();
-                _openConnections.TryUpdate(conf, null, channel);   
-            }
-
-            return GetChannel(conf);
-        }
         public Channel GetChannel(RpcClientConfiguration conf)
         {
             Channel channel = null;

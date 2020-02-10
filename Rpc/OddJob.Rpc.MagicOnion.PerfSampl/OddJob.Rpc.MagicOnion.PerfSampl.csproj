@@ -13,10 +13,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\OddJob.Rpc.Client\OddJob.Rpc.Client.csproj" />
-      <ProjectReference Include="..\OddJob.Rpc.Integration.SimpleInjector\OddJob.Rpc.Integration.SimpleInjector.csproj" />
+      <ProjectReference Include="..\GlutenFree.OddJob.Rpc.Client\GlutenFree.OddJob.Rpc.Client.csproj" />
+      <ProjectReference Include="..\GlutenFree.OddJob.Rpc.Integration.SimpleInjector\GlutenFree.OddJob.Rpc.Integration.SimpleInjector.csproj" />
+      <ProjectReference Include="..\GlutenFree.OddJob.Rpc\GlutenFree.OddJob.Rpc.csproj" />
       <ProjectReference Include="..\OddJob.Rpc.Server\OddJob.Rpc.Server.csproj" />
-      <ProjectReference Include="..\OddJob.Rpc\OddJob.Rpc.csproj" />
     </ItemGroup>
 
 </Project>

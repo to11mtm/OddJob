@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using GlutenFree.OddJob.Interfaces;
@@ -71,6 +72,7 @@ namespace GlutenFree.OddJob.Storage.Sql.SqlServer.Test
             }
         }
     }
+    [ExcludeFromCodeCoverage]
     public class PurgeTestJob
     {
         public static int getCounterValue(string param)

@@ -30,22 +30,27 @@ namespace OddJob.RpcServer
 
             return results;
         }
-
+        
+        private static object cleanupLock = new object();
         private static void Cleanup(ConcurrentDictionary<T, DateTime> container)
         {
-            //Look for expired entries
-            var res = container.Where(r => r.Value < DateTime.Now);
-            foreach (var keyValuePair in res)
+            lock (cleanupLock)
             {
-                //Try to remove the key
-                DateTime outCheck;
-                var removed = container.TryRemove(keyValuePair.Key, out outCheck);
-                if (removed && outCheck > DateTime.Now)
+                //Look for expired entries
+                var res = container.Where(r => r.Value < DateTime.Now);
+                foreach (var keyValuePair in res)
                 {
-                    //If we got here, it got freshened while enumerating.
-                    //Put it back in, unless it somehow got freshened again.
-                    container.AddOrUpdate(keyValuePair.Key, k => outCheck,
-                        (k, dt) => dt > outCheck ? dt : outCheck);
+                    //Try to remove the key
+                    DateTime outCheck;
+                    var removed =
+                        container.TryRemove(keyValuePair.Key, out outCheck);
+                    if (removed && outCheck > DateTime.Now)
+                    {
+                        //If we got here, it got freshened while enumerating.
+                        //Put it back in, unless it somehow got freshened again.
+                        container.AddOrUpdate(keyValuePair.Key, k => outCheck,
+                            (k, dt) => dt > outCheck ? dt : outCheck);
+                    }
                 }
             }
         }

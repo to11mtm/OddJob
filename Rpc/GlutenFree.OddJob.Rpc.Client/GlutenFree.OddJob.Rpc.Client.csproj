@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
+        <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+        <RootNamespace>OddJob.Rpc.Client</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
@@ -9,7 +10,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\OddJob.Rpc\OddJob.Rpc.csproj" />
+      <ProjectReference Include="..\GlutenFree.OddJob.Rpc\GlutenFree.OddJob.Rpc.csproj" />
     </ItemGroup>
 
 </Project>

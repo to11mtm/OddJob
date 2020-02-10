@@ -7,8 +7,4 @@
     <Description>Core Model and Functionality for Job Creation and Job Running.</Description>
     <PackageTags>job jobs jobscheduler scheduler oddjob task future later</PackageTags>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="FastExpressionCompiler" Version="2.0.0" />
-  </ItemGroup>
 </Project>

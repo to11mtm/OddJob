@@ -135,7 +135,7 @@ namespace OddJob.Rpc.MagicOnion.AkkaSample
         
         private static async Task StreamingSample(Container container, int iters, int numClients)
         {
-            var server = StreamingServiceWrapper.StartService(
+            var server = StreamingServiceWrapper.StartService<StreamingJobCreationServer>(
                 new RpcServerConfiguration("localhost", 9001,
                     ServerCredentials.Insecure,
                     new List<MagicOnionServiceFilterDescriptor>(),
@@ -149,7 +149,7 @@ namespace OddJob.Rpc.MagicOnion.AkkaSample
             jobServer.StartJobQueue("default", 50, 60,
                 plugins: new IJobExecutionPluginConfiguration[]
                 {
-                    StreamingServerPlugin.CreateSettings(
+                    StreamingServerPlugin.CreatePluginConfiguration(
                         new RpcClientConfiguration("localhost", 9001,
                             ChannelCredentials.Insecure,
                             new IClientFilter[] { }, new ChannelOption[] { }), pool, 2, 30)

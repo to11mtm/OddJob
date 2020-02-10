@@ -20,7 +20,7 @@ namespace OddJob.Rpc.Server.Redis
                             queueName;
             
             Subscriber = multiplexer.GetSubscriber();
-            Subscriber.Subscribe(queueStr,
+            Subscriber.Subscribe(new RedisChannel(queueStr, RedisChannel.PatternMode.Literal),
                 (ch, val) => HandleEvent(ch, val, queueName));
         }
 
@@ -31,7 +31,7 @@ namespace OddJob.Rpc.Server.Redis
                 TimedCaches.GetOrAdd(QueueName, s => new TimedCache<Guid>());
             tc.Freshen(guid,expiresAt);
             Subscriber.Publish(
-                new RedisChannel(QueueName, RedisChannel.PatternMode.Auto),
+                new RedisChannel(QueueName, RedisChannel.PatternMode.Literal),
                 GetPayload(guid, expiresAt));
         }
         
@@ -39,7 +39,8 @@ namespace OddJob.Rpc.Server.Redis
         {
             var toSer = new RedisHubFreshenData()
                 {TheGuid = guid, ExpiresAt = expiresAt};
-            return MessagePackSerializer.Serialize(toSer);
+            var bytes = MessagePackSerializer.Serialize(toSer); 
+            return bytes;
         }
 
         private static void HandleEvent(RedisChannel arg1, RedisValue arg2,string queueName)

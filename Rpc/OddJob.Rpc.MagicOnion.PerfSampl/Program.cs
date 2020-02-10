@@ -7,7 +7,6 @@ using Grpc.Core;
 using MagicOnion.Client;
 using MagicOnion.Server;
 using Moq;
-using Newtonsoft.Json;
 using OddJob.Rpc.Client;
 using OddJob.Rpc.Integration.SimpleInjector;
 using OddJob.RpcServer;
@@ -15,30 +14,6 @@ using SimpleInjector;
 [assembly: System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 namespace OddJob.Rpc.MagicOnion.PerfSampl
 {
-    
-
-    public class MockAdder: ISerializedJobQueueAdder
-    {
-        public void AddJob(SerializableOddJob jobData)
-        {
-            string obj = "";
-            try
-            {
-                 obj = JsonConvert.SerializeObject(jobData);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
-            //Console.WriteLine(obj);
-        }
-
-        public void AddJobs(IEnumerable<SerializableOddJob> jobDataSet)
-        {
-            throw new NotImplementedException();
-        }
-    }
     class Program
     {
         static async Task Main(string[] args)
@@ -55,7 +30,7 @@ namespace OddJob.Rpc.MagicOnion.PerfSampl
         
         private static async Task StreamingSample(Container container)
         {
-            var server = StreamingServiceWrapper.StartService(
+            var server = StreamingServiceWrapper.StartService<StreamingJobCreationServer>(
                 new RpcServerConfiguration("localhost", 9001,
                     ServerCredentials.Insecure,
                     new List<MagicOnionServiceFilterDescriptor>(),

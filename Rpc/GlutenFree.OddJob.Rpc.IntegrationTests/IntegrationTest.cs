@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Concurrent;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Text;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Dataflow;
 using Akka.DI.SimpleInjector;
 using FluentMigrator.Runner.Generators.SQLite;
 using FluentMigrator.Runner.Generators.SqlServer;
@@ -34,29 +30,6 @@ using Xunit.Abstractions;
 
 namespace OddJob.Rpc.IntegrationTests
 {
-public static class AsyncHelpers
-    {
-        public static Task ForEachAsync<TSource>(
-            this IEnumerable<TSource> items,
-            Func<TSource, Task> action,
-            int maxDegreesOfParallelism)
-        {
-            var actionBlock = new ActionBlock<TSource>(action, new ExecutionDataflowBlockOptions
-            {
-                MaxDegreeOfParallelism = maxDegreesOfParallelism
-            });
-
-            foreach (var item in items)
-            {
-                actionBlock.Post(item);
-            }
-
-            actionBlock.Complete();
-
-            return actionBlock.Completion;
-        }
-    }
-
     public class IntegrationTest
     {
         private ITestOutputHelper Console;
@@ -165,7 +138,7 @@ public static class AsyncHelpers
         
         private  async Task StreamingSample(Container container, int iters, int numClients)
         {
-            var server = StreamingServiceWrapper.StartService(
+            var server = StreamingServiceWrapper.StartService<StreamingJobCreationServer>(
                 new RpcServerConfiguration("localhost", 9001,
                     ServerCredentials.Insecure,
                     new List<MagicOnionServiceFilterDescriptor>(),
@@ -179,7 +152,7 @@ public static class AsyncHelpers
             jobServer.StartJobQueue("default", 50, 60,
                 plugins: new IJobExecutionPluginConfiguration[]
                 {
-                    StreamingServerPlugin.CreateSettings(
+                    StreamingServerPlugin.CreatePluginConfiguration(
                         new RpcClientConfiguration("localhost", 9001,
                             ChannelCredentials.Insecure,
                             new IClientFilter[] { }, new ChannelOption[] { }), pool, 2, 30)
@@ -211,22 +184,22 @@ public static class AsyncHelpers
                 }, numClients);
                 Console.WriteLine("Ready to run...");
                 
-                    sw.Start();
-                    for (int i = 0; i < iters; i++)
-                    {
+                sw.Start();
+                for (int i = 0; i < iters; i++)
+                {
                         
-                        await clients.ForEachAsync(async clt =>
-                        {
-                            var now = DateTime.Now.ToString();
-                            await clt.AddJobAsync(
-                                SerializableJobCreator.CreateJobDefinition(
-                                    (SampleJob s) =>
-                                        s.DoThing(now)));
-                        }, numClients);
+                    await clients.ForEachAsync(async clt =>
+                    {
+                        var now = DateTime.Now.ToString();
+                        await clt.AddJobAsync(
+                            SerializableJobCreator.CreateJobDefinition(
+                                (SampleJob s) =>
+                                    s.DoThing(now)));
+                    }, numClients);
                        
-                    }
+                }
 
-                    var elapsed = sw.Elapsed.TotalSeconds;
+                var elapsed = sw.Elapsed.TotalSeconds;
                 
                 
                 //Console.ForegroundColor = ConsoleColor.Blue;
@@ -254,20 +227,6 @@ public static class AsyncHelpers
             Console.WriteLine(
                 $"Took {sw3.Elapsed.TotalSeconds} to shutdown server");
             Assert.True(SampleJob.setter["lol"]>0);
-        }
-    }
-
-    public class SampleJob
-    {
-        public static ConcurrentDictionary<string, int> setter =
-            new ConcurrentDictionary<string, int>();
-        public void DoThing(string thing)
-        {
-            var val = setter.AddOrUpdate("lol", (l) => 1, (s, i) => i + 1);
-            if (val < 2)
-            {
-                Console.WriteLine(thing);
-            }
         }
     }
 }

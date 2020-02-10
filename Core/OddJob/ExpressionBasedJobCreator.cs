@@ -14,8 +14,7 @@ namespace GlutenFree.OddJob
     /// </summary>
     public static class ExpressionBasedJobCreator
     {
-        private static bool UseFastExpressionCompiler { get; set; } = false;
-
+    
         private static readonly ConcurrentDictionary<MethodInfo, string[]>
             paramNameDictionary =
                 new ConcurrentDictionary<MethodInfo, string[]>();
@@ -175,8 +174,6 @@ namespace GlutenFree.OddJob
             return _jobArgs;
         }
         
-        private static ConcurrentDictionary<Type,Type> GuidTypeDict { get; }= new ConcurrentDictionary<Type, Type>();
-        private static ConcurrentDictionary<Type,Type> NormalTypeDict { get; }= new ConcurrentDictionary<Type, Type>();
 
         public static Expression ConvertIfNeeded(Expression toConv)
         {
@@ -219,15 +216,7 @@ namespace GlutenFree.OddJob
         }
         private static T CompileExprWithConvert<T>(Expression<T> lambda) where T : class
         {
-            if (UseFastExpressionCompiler)
-            {
-                return FastExpressionCompiler.ExpressionCompiler.CompileFast(
-                    lambda);
-            }
-            else
-            {
                 return lambda.Compile();
-            }
         }
     }
 }

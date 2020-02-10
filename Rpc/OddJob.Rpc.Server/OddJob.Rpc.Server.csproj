@@ -11,8 +11,8 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\core\GlutenFree.OddJob.Serializable\GlutenFree.OddJob.Serializable.csproj" />
-      <ProjectReference Include="..\OddJob.Rpc\OddJob.Rpc.csproj" />
       <ProjectReference Include="..\..\core\OddJob\GlutenFree.OddJob.csproj" />
+      <ProjectReference Include="..\GlutenFree.OddJob.Rpc\GlutenFree.OddJob.Rpc.csproj" />
     </ItemGroup>
 
 </Project>

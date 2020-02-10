@@ -6,13 +6,14 @@
 
     <ItemGroup>
       <PackageReference Include="MagicOnion" Version="3.0.8" />
+      <PackageReference Include="MagicOnion.Redis" Version="3.0.8" />
       <PackageReference Include="StackExchange.Redis" Version="2.0.601" />
     </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\..\core\GlutenFree.OddJob.Serializable\GlutenFree.OddJob.Serializable.csproj" />
+      <ProjectReference Include="..\GlutenFree.OddJob.Rpc\GlutenFree.OddJob.Rpc.csproj" />
       <ProjectReference Include="..\OddJob.Rpc.Server\OddJob.Rpc.Server.csproj" />
-      <ProjectReference Include="..\OddJob.Rpc\OddJob.Rpc.csproj" />
     </ItemGroup>
 
 </Project>
