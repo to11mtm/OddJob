@@ -5,8 +5,9 @@ using GlutenFree.OddJob.Serializable;
 using Grpc.Core;
 using MagicOnion;
 using MagicOnion.Server;
+using OddJob.RpcServer;
 
-namespace OddJob.RpcServer
+namespace GlutenFree.OddJob.Rpc.Server
 {
     public class RpcJobCreationServer :ServiceBase<IRpcJobCreator>, IRpcJobCreator
     {

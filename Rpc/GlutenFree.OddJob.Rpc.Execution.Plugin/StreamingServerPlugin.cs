@@ -55,9 +55,10 @@ namespace OddJob.Rpc.Execution.Plugin
         private int ShutdownCount = 0;
         private StreamingQueueWorkerClient client;
         private string QueueName;
-
+        private ICancelable loopCancel;
         private async Task StopQueues(ShutDownQueues q)
         {
+            loopCancel.Cancel();
             await client.Stop(QueueName);
             Context.Parent.Tell(new QueueShutDown());
         }
@@ -67,7 +68,7 @@ namespace OddJob.Rpc.Execution.Plugin
             QueueName = _s.QueueName;
             await client.Join(QueueName, DateTime.Now.AddSeconds(SecondsBetweenRefresh));
 
-            Context.System.Scheduler.ScheduleTellRepeatedlyCancelable(
+            loopCancel= Context.System.Scheduler.ScheduleTellRepeatedlyCancelable(
                 TimeSpan.FromSeconds(SecondsBetweenRefresh),
                 TimeSpan.FromSeconds(SecondsBetweenRefresh),
                 Context.Self, new RefreshQueue(), Self);

@@ -3,13 +3,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Xml.XPath;
 using GlutenFree.OddJob.Serializable;
-using MagicOnion;
 using MagicOnion.Server.Hubs;
-using MessagePack;
+using OddJob.RpcServer;
 
-namespace OddJob.RpcServer
+namespace GlutenFree.OddJob.Rpc.Server
 {
 
     public class StreamingJobCreationServer : BaseStreamingJobCreationServer<TimedCache<Guid>>

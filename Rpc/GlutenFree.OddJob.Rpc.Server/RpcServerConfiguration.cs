@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using GlutenFree.OddJob.Interfaces;
 using Grpc.Core;
-using MagicOnion.Client;
 using MagicOnion.Server;
 using OddJob.Rpc;
 
-namespace OddJob.RpcServer
+namespace GlutenFree.OddJob.Rpc.Server
 {
     public class RpcServerConfiguration : RpcConfiguration
     {

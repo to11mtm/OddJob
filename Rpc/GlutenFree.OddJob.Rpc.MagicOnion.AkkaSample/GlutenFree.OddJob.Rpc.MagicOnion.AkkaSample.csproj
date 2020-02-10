@@ -3,6 +3,7 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>netcoreapp3.0</TargetFramework>
+        
     </PropertyGroup>
 
     <ItemGroup>
@@ -10,11 +11,11 @@
       <ProjectReference Include="..\..\storage\GlutenFree.OddJob.Storage.Sql.TableHelper\GlutenFree.OddJob.Storage.Sql.TableHelper.csproj" />
       <ProjectReference Include="..\..\execution\OddJob.Execution.Akka.Test\GlutenFree.OddJob.Execution.Akka.Test.csproj" />
       <ProjectReference Include="..\GlutenFree.OddJob.Rpc.Execution.Plugin\GlutenFree.OddJob.Rpc.Execution.Plugin.csproj" />
-      <ProjectReference Include="..\OddJob.Rpc.MagicOnion.PerfSampl\OddJob.Rpc.MagicOnion.PerfSampl.csproj" />
-      <ProjectReference Include="..\OddJob.Rpc.Server\OddJob.Rpc.Server.csproj" />
+      <ProjectReference Include="..\GlutenFree.OddJob.Rpc.MagicOnion.PerfSampl\GlutenFree.OddJob.Rpc.MagicOnion.PerfSampl.csproj" />
       <ProjectReference Include="..\..\storage\OddJob.Storage.SQL.Common\GlutenFree.OddJob.Storage.Sql.Common.csproj" />
       <ProjectReference Include="..\..\storage\OddJob.Storage.SQLite\GlutenFree.OddJob.Storage.Sql.SQLite.csproj" />
       <ProjectReference Include="..\..\storage\OddJob.Storage.SqlServer.Test\GlutenFree.OddJob.Storage.Sql.SqlServer.Test.csproj" />
+      <ProjectReference Include="..\GlutenFree.OddJob.Rpc.Server\GlutenFree.OddJob.Rpc.Server.csproj" />
     </ItemGroup>
 
     <ItemGroup>

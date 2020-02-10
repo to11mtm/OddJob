@@ -7,7 +7,7 @@
     <ProjectGuid>{8F4D96A6-F2F7-4307-9729-088C3869787A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GlutenFree.OddJob.Execution.ThreadPool</RootNamespace>
+    
     <AssemblyName>GlutenFree.OddJob.Execution.ThreadPool</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

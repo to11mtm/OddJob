@@ -81,7 +81,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GlutenFree.OddJob.Storage.S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GlutenFree.Linq2Db.FluentMigrator.Helpers", "GlutenFree.Linq2Db.FluentMigrator.Helpers\GlutenFree.Linq2Db.FluentMigrator.Helpers.csproj", "{794BDE6E-57A7-45B6-966F-144E814593B2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OddJob.Rpc.Server", "rpc\OddJob.Rpc.Server\OddJob.Rpc.Server.csproj", "{E01E47E9-185C-4348-AEF5-00717528C01A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Rpc.Server", "rpc\GlutenFree.OddJob.Rpc.Server\GlutenFree.OddJob.Rpc.Server.csproj", "{E01E47E9-185C-4348-AEF5-00717528C01A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Execution.Akka.Plugin.JobResultWriter", "execution\GlutenFree.OddJob.Execution.Akka.Plugin.JobResultWriter\GlutenFree.OddJob.Execution.Akka.Plugin.JobResultWriter.csproj", "{A5B8FDBD-5AD0-4B77-B218-5C5062D62AF7}"
 EndProject
@@ -96,25 +96,23 @@ EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Rpc", "rpc\GlutenFree.OddJob.Rpc\GlutenFree.OddJob.Rpc.csproj", "{C01F64C7-51F9-4E73-B5C8-5CA996AA70B7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OddJob.Rpc.MagicOnion.PerfSampl", "rpc\OddJob.Rpc.MagicOnion.PerfSampl\OddJob.Rpc.MagicOnion.PerfSampl.csproj", "{DA9856D7-5184-4600-91CA-4AE9E0D4EDA2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Rpc.MagicOnion.PerfSampl", "rpc\GlutenFree.OddJob.Rpc.MagicOnion.PerfSampl\GlutenFree.OddJob.Rpc.MagicOnion.PerfSampl.csproj", "{DA9856D7-5184-4600-91CA-4AE9E0D4EDA2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Rpc.Client", "rpc\GlutenFree.OddJob.Rpc.Client\GlutenFree.OddJob.Rpc.Client.csproj", "{D73DB4B5-6C30-4323-9717-514B6F67C99A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Rpc.Execution.Plugin", "rpc\GlutenFree.OddJob.Rpc.Execution.Plugin\GlutenFree.OddJob.Rpc.Execution.Plugin.csproj", "{CAF77E59-E7D3-4801-BFCD-07F693459115}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OddJob.Rpc.MagicOnion.AkkaSample", "rpc\OddJob.Rpc.MagicOnion.AkkaSample\OddJob.Rpc.MagicOnion.AkkaSample.csproj", "{FBD2D2BC-A258-4D95-84AC-8C88B416DBE4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Rpc.MagicOnion.AkkaSample", "rpc\GlutenFree.OddJob.Rpc.MagicOnion.AkkaSample\GlutenFree.OddJob.Rpc.MagicOnion.AkkaSample.csproj", "{FBD2D2BC-A258-4D95-84AC-8C88B416DBE4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OddJob.Rpc.Server.Redis", "rpc\OddJob.Rpc.Server.Redis\OddJob.Rpc.Server.Redis.csproj", "{CD2574B5-B8E0-4B88-AF0A-1E0DC8F91757}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Rpc.Server.Redis", "rpc\GlutenFree.OddJob.Rpc.Server.Redis\GlutenFree.OddJob.Rpc.Server.Redis.csproj", "{CD2574B5-B8E0-4B88-AF0A-1E0DC8F91757}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OddJob.Rpc.WebApi", "rpc\OddJob.Rpc.WebApi\OddJob.Rpc.WebApi.csproj", "{9451F3D9-F945-4167-9B76-B16F2807FFB2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Rpc.Integration.SimpleInjector", "rpc\GlutenFree.OddJob.Rpc.Integration.SimpleInjector\GlutenFree.OddJob.Rpc.Integration.SimpleInjector.csproj", "{FB0BA718-C7AC-4902-ABA5-FD063E527070}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OddJob.Rpc.Server.Test", "rpc\OddJob.Rpc.Server.Test\OddJob.Rpc.Server.Test.csproj", "{FCEBD1A8-F756-48DB-842A-43F66387ED0E}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Storage.FileSystem.Test", "Storage\GlutenFree.OddJob.Storage.FileSystem.Test\GlutenFree.OddJob.Storage.FileSystem.Test.csproj", "{059B4B9D-BA43-4CDA-9BAF-3A004C69D7D8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Oddjob.Rpc.Redis.IntegrationTests", "Rpc\Oddjob.Rpc.Redis.IntegrationTests\Oddjob.Rpc.Redis.IntegrationTests.csproj", "{E97C22DD-A389-4967-980C-65AE92A451CD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Rpc.Redis.IntegrationTests", "Rpc\GlutenFree.OddJob.Rpc.Redis.IntegrationTests\GlutenFree.OddJob.Rpc.Redis.IntegrationTests.csproj", "{E97C22DD-A389-4967-980C-65AE92A451CD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Rpc.IntegrationTests", "Rpc\GlutenFree.OddJob.Rpc.IntegrationTests\GlutenFree.OddJob.Rpc.IntegrationTests.csproj", "{C6098574-85F5-424E-8EC9-5D7FA5B03F77}"
 EndProject
@@ -706,22 +704,6 @@ Global
 		{FB0BA718-C7AC-4902-ABA5-FD063E527070}.Release|x64.Build.0 = Release|Any CPU
 		{FB0BA718-C7AC-4902-ABA5-FD063E527070}.Release|x86.ActiveCfg = Release|Any CPU
 		{FB0BA718-C7AC-4902-ABA5-FD063E527070}.Release|x86.Build.0 = Release|Any CPU
-		{FCEBD1A8-F756-48DB-842A-43F66387ED0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FCEBD1A8-F756-48DB-842A-43F66387ED0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FCEBD1A8-F756-48DB-842A-43F66387ED0E}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{FCEBD1A8-F756-48DB-842A-43F66387ED0E}.Debug|ARM.Build.0 = Debug|Any CPU
-		{FCEBD1A8-F756-48DB-842A-43F66387ED0E}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{FCEBD1A8-F756-48DB-842A-43F66387ED0E}.Debug|x64.Build.0 = Debug|Any CPU
-		{FCEBD1A8-F756-48DB-842A-43F66387ED0E}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{FCEBD1A8-F756-48DB-842A-43F66387ED0E}.Debug|x86.Build.0 = Debug|Any CPU
-		{FCEBD1A8-F756-48DB-842A-43F66387ED0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FCEBD1A8-F756-48DB-842A-43F66387ED0E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FCEBD1A8-F756-48DB-842A-43F66387ED0E}.Release|ARM.ActiveCfg = Release|Any CPU
-		{FCEBD1A8-F756-48DB-842A-43F66387ED0E}.Release|ARM.Build.0 = Release|Any CPU
-		{FCEBD1A8-F756-48DB-842A-43F66387ED0E}.Release|x64.ActiveCfg = Release|Any CPU
-		{FCEBD1A8-F756-48DB-842A-43F66387ED0E}.Release|x64.Build.0 = Release|Any CPU
-		{FCEBD1A8-F756-48DB-842A-43F66387ED0E}.Release|x86.ActiveCfg = Release|Any CPU
-		{FCEBD1A8-F756-48DB-842A-43F66387ED0E}.Release|x86.Build.0 = Release|Any CPU
 		{059B4B9D-BA43-4CDA-9BAF-3A004C69D7D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{059B4B9D-BA43-4CDA-9BAF-3A004C69D7D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{059B4B9D-BA43-4CDA-9BAF-3A004C69D7D8}.Debug|ARM.ActiveCfg = Debug|Any CPU
@@ -811,7 +793,6 @@ Global
 		{CD2574B5-B8E0-4B88-AF0A-1E0DC8F91757} = {31F1B59F-0C11-4C3C-8801-1739B78A95C1}
 		{9451F3D9-F945-4167-9B76-B16F2807FFB2} = {31F1B59F-0C11-4C3C-8801-1739B78A95C1}
 		{FB0BA718-C7AC-4902-ABA5-FD063E527070} = {31F1B59F-0C11-4C3C-8801-1739B78A95C1}
-		{FCEBD1A8-F756-48DB-842A-43F66387ED0E} = {31F1B59F-0C11-4C3C-8801-1739B78A95C1}
 		{53C960E7-4D66-472D-8AFB-C6CDDE369C5E} = {A66DC2B1-1CB9-4B98-A141-C684CFF20B89}
 		{EE241625-929A-491C-9358-E90BA7B485BA} = {A66DC2B1-1CB9-4B98-A141-C684CFF20B89}
 		{059B4B9D-BA43-4CDA-9BAF-3A004C69D7D8} = {DD4A99A0-F2EE-4F44-9253-F47121D0F53C}

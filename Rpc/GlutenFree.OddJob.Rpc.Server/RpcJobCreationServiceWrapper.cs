@@ -3,11 +3,11 @@ using Grpc.Core;
 using MagicOnion.Server;
 using OddJob.Rpc;
 
-namespace OddJob.RpcServer
+namespace GlutenFree.OddJob.Rpc.Server
 {
     public static class RpcJobCreationServiceWrapper
     {
-        public static Server StartService(RpcServerConfiguration conf)
+        public static Grpc.Core.Server StartService(RpcServerConfiguration conf)
         {
             var opts = new MagicOnionOptions();
             opts.GlobalFilters = conf.GlobalFilters;

@@ -9,6 +9,7 @@ using GlutenFree.OddJob;
 using GlutenFree.OddJob.Execution.Akka;
 using GlutenFree.OddJob.Execution.Akka.Test;
 using GlutenFree.OddJob.Interfaces;
+using GlutenFree.OddJob.Rpc.Server;
 using GlutenFree.OddJob.Serializable;
 using GlutenFree.OddJob.Storage.Sql.Common;
 using GlutenFree.OddJob.Storage.Sql.SQLite;

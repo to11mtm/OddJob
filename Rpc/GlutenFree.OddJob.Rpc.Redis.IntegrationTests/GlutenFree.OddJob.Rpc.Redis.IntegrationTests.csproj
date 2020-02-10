@@ -5,6 +5,8 @@
         <IsPackable>false</IsPackable>
 
         <TargetFrameworks>netcoreapp2.1;netcoreapp3.0</TargetFrameworks>
+
+        
     </PropertyGroup>
 
     <ItemGroup>
@@ -32,7 +34,7 @@
       <ProjectReference Include="..\GlutenFree.OddJob.Rpc.Client\GlutenFree.OddJob.Rpc.Client.csproj" />
       <ProjectReference Include="..\GlutenFree.OddJob.Rpc.Execution.Plugin\GlutenFree.OddJob.Rpc.Execution.Plugin.csproj" />
       <ProjectReference Include="..\GlutenFree.OddJob.Rpc.Integration.SimpleInjector\GlutenFree.OddJob.Rpc.Integration.SimpleInjector.csproj" />
-      <ProjectReference Include="..\OddJob.Rpc.Server.Redis\OddJob.Rpc.Server.Redis.csproj" />
+      <ProjectReference Include="..\GlutenFree.OddJob.Rpc.Server.Redis\GlutenFree.OddJob.Rpc.Server.Redis.csproj" />
     </ItemGroup>
 
 </Project>

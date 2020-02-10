@@ -3,6 +3,7 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>netcoreapp3.0</TargetFramework>
+        
     </PropertyGroup>
 
     <ItemGroup>
@@ -15,8 +16,8 @@
     <ItemGroup>
       <ProjectReference Include="..\GlutenFree.OddJob.Rpc.Client\GlutenFree.OddJob.Rpc.Client.csproj" />
       <ProjectReference Include="..\GlutenFree.OddJob.Rpc.Integration.SimpleInjector\GlutenFree.OddJob.Rpc.Integration.SimpleInjector.csproj" />
+      <ProjectReference Include="..\GlutenFree.OddJob.Rpc.Server\GlutenFree.OddJob.Rpc.Server.csproj" />
       <ProjectReference Include="..\GlutenFree.OddJob.Rpc\GlutenFree.OddJob.Rpc.csproj" />
-      <ProjectReference Include="..\OddJob.Rpc.Server\OddJob.Rpc.Server.csproj" />
     </ItemGroup>
 
 </Project>

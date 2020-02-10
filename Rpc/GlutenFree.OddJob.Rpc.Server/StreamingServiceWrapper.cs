@@ -3,11 +3,11 @@ using Grpc.Core;
 using MagicOnion.Server;
 using OddJob.Rpc;
 
-namespace OddJob.RpcServer
+namespace GlutenFree.OddJob.Rpc.Server
 {
     public static class StreamingServiceWrapper
     {
-        public static Server StartService<T>(RpcServerConfiguration conf) where T: BaseStreamingJobCreationServer
+        public static Grpc.Core.Server StartService<T>(RpcServerConfiguration conf) where T: BaseStreamingJobCreationServer
         {
             var svcDef = GetServiceDefinition<T>(conf);
             var server = new Grpc.Core.Server()

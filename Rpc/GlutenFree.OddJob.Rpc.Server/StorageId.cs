@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OddJob.RpcServer
+namespace GlutenFree.OddJob.Rpc.Server
 {
     public class StorageId
     {

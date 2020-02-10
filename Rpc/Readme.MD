@@ -10,7 +10,5 @@ RPC Plugins are Currently based on the amazing [MagicOnion](https://github.com/c
  
 Please look at the Integration tests and the Sample folder for usage.
 
-The Redis components are not yet complete, it is recommended to not use them in a production use case until unit tests are ready. 
-
  
 Akka Remoting and SignalR were Considered, but due to the additional challenges of each (be it less natural C# bindings, forcing ASPNETCORE as a full requirement, or lack of built in connection recovery logic...) they were not chosen at this time.

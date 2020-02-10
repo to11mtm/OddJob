@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using GlutenFree.OddJob.Rpc.Server;
 using GlutenFree.OddJob.Serializable;
 using Grpc.Core;
 using MagicOnion.Client;

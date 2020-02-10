@@ -11,7 +11,7 @@
     <WebSharperProject>Site</WebSharperProject>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <WebSharperSourceMap>True</WebSharperSourceMap>
-    <RootNamespace>GlutenFree.OddJob.Manager.Presentation.WS</RootNamespace>
+    
     <AssemblyName>GlutenFree.OddJob.Manager.Presentation.WS</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
