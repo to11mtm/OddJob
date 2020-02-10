@@ -130,6 +130,7 @@ namespace OddJob.Rpc.MagicOnion.AkkaSample
             
             container.Register<RpcJobCreationServer>();
             container.Register<StreamingJobCreationServer>();
+            container.Register(()=> new StreamingJobCreationServerOptions(4,4));
             await StreamingSample(container, 2000,5);
             //RPCSample(container);
         }

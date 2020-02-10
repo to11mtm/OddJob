@@ -18,7 +18,7 @@ namespace OddJob.Rpc.Server.Redis
         ClusteredStreamingJobCreationServer : BaseStreamingJobCreationServer<RedisHubTimedCache>
     { 
         public ClusteredStreamingJobCreationServer(
-            ISerializedJobQueueAdder jobQueueAdder, RedisHubConnectionTracker timeCache) : base(jobQueueAdder, timeCache)
+            ISerializedJobQueueAdder jobQueueAdder, RedisHubConnectionTracker timeCache, StreamingJobCreationServerOptions options) : base(jobQueueAdder, timeCache, options)
         {
         }
 

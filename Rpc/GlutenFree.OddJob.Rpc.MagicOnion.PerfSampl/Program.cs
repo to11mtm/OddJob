@@ -24,6 +24,7 @@ namespace OddJob.Rpc.MagicOnion.PerfSampl
                 Lifestyle.Singleton);
             container.Register<RpcJobCreationServer>();
             container.Register<StreamingJobCreationServer>();
+            container.Register(()=> new StreamingJobCreationServerOptions(4,4));
             container.Verify();
             await StreamingSample(container);
             //RPCSample(container);

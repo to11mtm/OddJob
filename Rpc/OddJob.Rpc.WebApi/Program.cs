@@ -123,6 +123,8 @@ namespace OddJob.Rpc.WebApi
 
             container.Register<RpcJobCreationServer>();
             container.Register<StreamingJobCreationServer>();
+            container.Register(
+                () => new StreamingJobCreationServerOptions(4, 4));
             // setup MagicOnion hosting.
 
             var magicOnionHost = MagicOnionHost.CreateDefaultBuilder()

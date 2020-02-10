@@ -20,7 +20,7 @@ namespace OddJob.RpcServer
         {
             //Get Unexpired Entries
             var results = Items.Where(r => r.Value >= DateTime.Now)
-                .Select(r => r.Key)
+                .OrderByDescending(r=>r.Value).Select(r => r.Key)
                 .ToArray();
             if ((Items.Count - results.Length) > 10)
             {

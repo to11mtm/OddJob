@@ -9,10 +9,9 @@ using OddJob.RpcServer;
 
 namespace GlutenFree.OddJob.Rpc.Server
 {
-
     public class StreamingJobCreationServer : BaseStreamingJobCreationServer<TimedCache<Guid>>
     {
-        public StreamingJobCreationServer(ISerializedJobQueueAdder jobQueueAdder, StandardHubConnectionTracker<Guid> timeCache) : base(jobQueueAdder, timeCache)
+        public StreamingJobCreationServer(ISerializedJobQueueAdder jobQueueAdder, StandardHubConnectionTracker<Guid> timeCache, StreamingJobCreationServerOptions options) : base(jobQueueAdder, timeCache, options)
         {
         }
     }
@@ -32,13 +31,15 @@ namespace GlutenFree.OddJob.Rpc.Server
         public IKeyedTimedCacheStore<TCacheStore,Guid> LiveConnections { get; }
         public  ConcurrentDictionary<string, IGroup> GroupSet { get; }= new ConcurrentDictionary<string, IGroup>();
         protected BaseStreamingJobCreationServer(
-            ISerializedJobQueueAdder jobQueueAdder, IKeyedTimedCacheStore<TCacheStore,Guid> timeCache)
+            ISerializedJobQueueAdder jobQueueAdder, IKeyedTimedCacheStore<TCacheStore,Guid> timeCache, StreamingJobCreationServerOptions options)
         {
             _jobQueueAdder = jobQueueAdder;
             LiveConnections = timeCache;
+            _options = options;
         }
         Random r = new Random();
         private ISerializedJobQueueAdder _jobQueueAdder;
+        private StreamingJobCreationServerOptions _options;
 
         public override Task CreateJob(SerializableOddJob jobData)
         {
@@ -66,18 +67,21 @@ namespace GlutenFree.OddJob.Rpc.Server
                 var nd = r.NextDouble();
 
 
-                Guid[] broadcastlist = null;
+                List<Guid> broadcastlist = null;
                 broadcastlist = set.Select((id, i) => new {id, i}).Where(
                         vidx =>
                             (nd > 0.5) ? vidx.i % 2 > 0 : vidx.i % 2 == 0)
-                    .Select(rec => rec.id).ToArray();
+                    .Select(rec => rec.id).Take(_options.MaxBroadcastToNodes).ToList();
 
-                if (broadcastlist.Length < 4)
+                if (broadcastlist.Count < _options.MinBroadcastToNodes)
                 {
-                    broadcastlist = set.ToArray();
+                    var newSet = set.Where(r=> broadcastlist.Contains(r) == false).ToList();
+                    broadcastlist.AddRange(newSet.Take(
+                        _options.MinBroadcastToNodes - broadcastlist.Count));
+                    
                 }
 
-                BroadcastTo(_group, broadcastlist).JobCreated(jobData);
+                BroadcastTo(_group, broadcastlist.ToArray()).JobCreated(jobData);
             }
             }
             catch (Exception e)
