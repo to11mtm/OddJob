@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FluentMigrator.Builders.Alter.Table;
 using GlutenFree.OddJob.Rpc.Server;
 using GlutenFree.OddJob.Serializable;
 using Grpc.Core;
@@ -47,6 +48,8 @@ namespace Oddjob.Rpc.Redis.IntegrationTests
             var mock = new Mock<ISerializedJobQueueAdder>();
             var container = new Container();
             container.Register(() => mock.Object);
+         //   container.Register(typeof(StreamingRPCServerAbstraction<,,>),
+         //       typeof(StreamingRPCServerAbstraction<,,>));
             container.Register<StreamingJobCreationServer>();
             container.Register(()=> new StreamingJobCreationServerOptions(4,4));
             container.Register(() =>

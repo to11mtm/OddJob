@@ -2,7 +2,7 @@
 
 namespace GlutenFree.OddJob.Execution.Akka.Messages
 {
-    public class GetSpecificJob
+    public class GetSpecificJob  : IMarkJobCommand
     {
         public Guid JobId { get; }
         public string QueueName { get; }

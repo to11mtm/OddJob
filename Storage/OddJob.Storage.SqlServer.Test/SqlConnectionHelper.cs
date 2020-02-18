@@ -89,21 +89,52 @@ namespace OddJob.Storage.Sql.SqlServer.Test
                 throw;
             }
         }
+
+        private static bool _localDbExists = false;
+        private static object _existsLock = new Object();
+
+        public static SqlConnection GetLocalDB(string dbName, string dbLocation,
+            bool deleteIfExists = false)
+        {
+            string outputFolder =
+                (string.IsNullOrWhiteSpace(dbLocation) == false &&
+                 Directory.Exists(dbLocation))
+                    ? dbLocation
+                    : Path.Combine(
+                        Path.GetDirectoryName(Assembly
+                            .GetExecutingAssembly().Location),
+                        DB_DIRECTORY);
+            string mdfFilename = dbName + ".mdf";
+            string dbFileName = Path.Combine(outputFolder, mdfFilename);
+            if (_localDbExists == false)
+            {
+                lock (_existsLock)
+                {
+                    if (_localDbExists == false)
+                    {
+                        GetLocalDBimpl(dbLocation, outputFolder, dbFileName,
+                            deleteIfExists);
+                    }
+                }
+
+                _localDbExists = true;
+            }
+            
+            string connectionString =
+                String.Format(
+                    @"Data Source=(LocalDB)\mssqllocaldb;AttachDBFileName={1};Initial Catalog={0};Integrated Security=True;",
+                    dbName, dbFileName);
+            SqlConnection connection = new SqlConnection(connectionString);
+            connection.Open();
+            return connection;
+        }
+        
         [MethodImpl(MethodImplOptions.Synchronized)]
-        public static SqlConnection GetLocalDB(string dbName,string dbLocation, bool deleteIfExists = false)
+        private static void GetLocalDBimpl(string dbName,string outputFolder,string dbFileName, bool deleteIfExists = false)
         {
             try
             {
-                string outputFolder =
-                    (string.IsNullOrWhiteSpace(dbLocation) == false &&
-                     Directory.Exists(dbLocation))
-                        ? dbLocation
-                        : Path.Combine(
-                            Path.GetDirectoryName(Assembly
-                                .GetExecutingAssembly().Location),
-                            DB_DIRECTORY);
-                string mdfFilename = dbName + ".mdf";
-                string dbFileName = Path.Combine(outputFolder, mdfFilename);
+                
                 string logFileName = Path.Combine(outputFolder, String.Format("{0}_log.ldf", dbName));
                 // Create Data Directory If It Doesn't Already Exist.
                 if (!Directory.Exists(outputFolder))
@@ -125,13 +156,7 @@ namespace OddJob.Storage.Sql.SqlServer.Test
                 }
 
                 // Open newly created, or old database.
-                string connectionString =
-                    String.Format(
-                        @"Data Source=(LocalDB)\mssqllocaldb;AttachDBFileName={1};Initial Catalog={0};Integrated Security=True;",
-                        dbName, dbFileName);
-                SqlConnection connection = new SqlConnection(connectionString);
-                connection.Open();
-                return connection;
+
             }
             catch
             {

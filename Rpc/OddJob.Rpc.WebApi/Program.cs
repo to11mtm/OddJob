@@ -5,6 +5,7 @@ using FluentMigrator.Runner.Generators.SqlServer;
 using GlutenFree.OddJob;
 using GlutenFree.OddJob.Execution.Akka;
 using GlutenFree.OddJob.Execution.Akka.Test;
+using GlutenFree.OddJob.Integration.SimpleInjector;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Rpc.Server;
 using GlutenFree.OddJob.Serializable;
@@ -37,8 +38,8 @@ namespace OddJob.Rpc.WebApi
         {
             var container = new Container();
             container
-                .Register<IContainerFactory, TestSimpleInjectorContainerFactory
-                >();
+                .Register<IContainerFactory, 
+                    SimpleInjectorContainerFactory>();
             bool useSqlServer = false;
 
             if (useSqlServer)

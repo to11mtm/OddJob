@@ -199,7 +199,7 @@ namespace GlutenFree.OddJob.Storage.BaseTests
 
 
             jobMgrStore.MarkJobSuccess(jobGuid);
-            var job = jobMgrStore.GetJob((jobGuid));
+            var job = jobMgrStore.GetJob((jobGuid),false,false);
             Assert.Equal(JobStates.Processed, job.Status);
         }
 
@@ -223,7 +223,7 @@ namespace GlutenFree.OddJob.Storage.BaseTests
 
 
             jobMgrStore.MarkJobFailed(jobGuid);
-            var job = jobMgrStore.GetJob((jobGuid));
+            var job = jobMgrStore.GetJob((jobGuid), false,false);
             Assert.Equal(JobStates.Failed, job.Status);
         }
 
@@ -247,9 +247,9 @@ namespace GlutenFree.OddJob.Storage.BaseTests
                     }), null, null, "test");
 
 
-            jobMgrStore.MarkJobFailed(jobGuid);
-            var job = jobMgrStore.GetJob((jobGuid));
-            Assert.Equal(JobStates.Failed, job.Status);
+            jobMgrStore.MarkJobInProgress(jobGuid);
+            var job = jobMgrStore.GetJob((jobGuid),false,false );
+            Assert.Equal(JobStates.InProgress, job.Status);
         }
 
         [Fact]

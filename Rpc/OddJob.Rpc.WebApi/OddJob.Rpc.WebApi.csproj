@@ -17,6 +17,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\Core\GlutenFree.OddJob.Integration.SimpleInjector\GlutenFree.OddJob.Integration.SimpleInjector.csproj" />
       <ProjectReference Include="..\..\storage\GlutenFree.OddJob.Storage.Sql.SQLite.Test\GlutenFree.OddJob.Storage.Sql.SQLite.Test.csproj" />
       <ProjectReference Include="..\..\execution\OddJob.Execution.Akka.Test\GlutenFree.OddJob.Execution.Akka.Test.csproj" />
       <ProjectReference Include="..\..\execution\OddJob.Execution.Akka\GlutenFree.OddJob.Execution.Akka.csproj" />

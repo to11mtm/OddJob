@@ -1,4 +1,5 @@
-﻿using GlutenFree.OddJob.Serializable;
+﻿using System.Threading.Tasks;
+using GlutenFree.OddJob.Serializable;
 
 namespace OddJob.RpcServer
 {

@@ -90,6 +90,10 @@ namespace GlutenFree.OddJob.Execution.Akka
             {
                 HandleJobFailed((JobFailed)message);
             }
+            else if (message is PluginRecoveryRequest)
+            {
+                Context.Sender.Tell(message);
+            }
             else
             {
                 return OnCustomMessage(message);
@@ -98,7 +102,7 @@ namespace GlutenFree.OddJob.Execution.Akka
             }
             catch (Exception e)
             {
-                Context.GetLogger().Error(e, "Error Running Handler!");
+                Context.System.Log.Error(e, "Error Running Handler!");
                 throw;
             }
         }
@@ -144,6 +148,7 @@ namespace GlutenFree.OddJob.Execution.Akka
         private void HandleJobSet(JobSweepResponse jobset)
         {
             var jobsToQueue = jobset.Jobs;
+            PendingSweeps.Remove(jobset.SweepGuid);
             foreach (var job in jobsToQueue)
             {
                 if (job.TypeExecutedOn == null)
@@ -197,11 +202,29 @@ namespace GlutenFree.OddJob.Execution.Akka
                 ? config.NumWriters
                 : config.NumWorkers;
 
+            //Under heavy loads where plugins trigger reads,
+            //Small numbers here cause starvation.
+            //Because actors are cheap we just make a bunch here.
+            
             QueueName = config.QueueName;
-            JobQueueReaderRef = Context.ActorOf(config.QueueProps, "jobQueue");
+            JobQueueReaderRef = Context.ActorOf(
+                config.QueueProps.WithRouter(new RoundRobinPool(WriterCount)),
+                "jobQueue");
+            
+            //For Writers, we want to use a Consistent hashing pool
+            //This will make sure that fast jobs don't accidentally have
+            //Races in writing Inprogress and the result (Success/fail/etc.)
             JobQueueWritersRef = Context.ActorOf(
                 config.QueueProps.WithRouter(
-                    new RoundRobinPool(WriterCount)), "writerQueue");
+                    new ConsistentHashingPool(WriterCount, msg =>
+                    {
+                        if (msg is IMarkJobCommand _mjc)
+                        {
+                            return _mjc.JobId;
+                        }
+
+                        return msg;
+                    })), "writerQueue");
             WorkerProps = config.WorkerProps;
             AggressiveSweep = config.AggressiveSweep;
             AllowedPendingSweeps = config.AllowedPendingSweeps;

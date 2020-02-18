@@ -16,7 +16,7 @@ namespace GlutenFree.OddJob.Samples.Serialized.CommandAggregator
             return _container.GetInstance(typeToCreate);
         }
 
-        public void Relase(object usedInstance)
+        public void Release(object usedInstance)
         {
 
         }

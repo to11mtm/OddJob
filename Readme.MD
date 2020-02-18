@@ -1,4 +1,4 @@
-Oddjob is a Library meant to provide Lightweight Job Workers in a distributed environment.
+Oddjob is a Library meant to provide Lightweight Job Workers in a distributed or local environment.
 
 The Overall goal is to have a modular architecture for both Job Storage and Execution.
 
@@ -180,7 +180,7 @@ Missing Type handling:
   - The SQL Storage has to modes of behavior for Missing types:
 	- First (If no `IStorageJobTypeResolver` is defined, or `NullOnMissingTypeJobTypeResolver` is used) will cause the job to have a null type; This will cause the Execution layer to mark the job in a failed state and fire the `OnJobTypeMissing` handler.
 	- First (If `DefaltStorageJobTypeResolver` is used) will cause a failure on the storage layer.
-	  - This can eventaully cause the queue to back up!
+	  - This can eventually cause the queue to back up!
 
 Extensibility:
   - Everything except the core Job Creator is an interface.

@@ -4,10 +4,10 @@ using MessagePack;
 namespace OddJob.Rpc.Server.Redis
 {
     [MessagePackObject]
-    public class RedisHubFreshenData
+    public class RedisHubFreshenData<T>
     {
         [MessagePack.Key(1)]
-        public Guid TheGuid { get; set; }
+        public T ConnectionId { get; set; }
         [MessagePack.Key(2)]
         public DateTime ExpiresAt { get; set; }
     }

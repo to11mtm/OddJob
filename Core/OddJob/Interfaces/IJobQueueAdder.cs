@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace GlutenFree.OddJob.Interfaces
 {
@@ -23,5 +25,10 @@ namespace GlutenFree.OddJob.Interfaces
         /// <param name="queueName">The Queue to place the job in.</param>
         /// <returns>GUID for the added Job</returns>
         Guid AddJob<TJob>(Expression<Action<TJob>> jobExpression, RetryParameters retryParameters=null, DateTimeOffset? executionTime = null, string queueName = "default");
+
+        Task<Guid> AddJobAsync<TJob>(Expression<Action<TJob>> jobExpression,
+            RetryParameters retryParameters = null,
+            DateTimeOffset? executionTime = null, string queueName = "default",
+            CancellationToken cancellationToken = default);
     }
 }

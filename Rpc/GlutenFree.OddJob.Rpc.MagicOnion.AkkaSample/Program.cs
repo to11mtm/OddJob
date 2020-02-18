@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Akka.DI.SimpleInjector;
@@ -10,6 +11,7 @@ using FluentMigrator.Runner.Generators.SqlServer;
 using GlutenFree.OddJob;
 using GlutenFree.OddJob.Execution.Akka;
 using GlutenFree.OddJob.Execution.Akka.Test;
+using GlutenFree.OddJob.Integration.SimpleInjector;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Rpc.Server;
 using GlutenFree.OddJob.Serializable;
@@ -59,8 +61,9 @@ namespace OddJob.Rpc.MagicOnion.AkkaSample
 
         static async Task Main(string[] args)
         {
+            ServicePointManager.DefaultConnectionLimit = 50;
             var container = new Container();           
-            container.Register<IContainerFactory, TestSimpleInjectorContainerFactory>();
+            container.Register<IContainerFactory, SimpleInjectorContainerFactory>();
             bool useSqlServer = true;
             
             if (useSqlServer)
@@ -131,7 +134,7 @@ namespace OddJob.Rpc.MagicOnion.AkkaSample
             container.Register<RpcJobCreationServer>();
             container.Register<StreamingJobCreationServer>();
             container.Register(()=> new StreamingJobCreationServerOptions(4,4));
-            await StreamingSample(container, 2000,5);
+            await StreamingSample(container, 20000,5);
             //RPCSample(container);
         }
         
@@ -148,7 +151,7 @@ namespace OddJob.Rpc.MagicOnion.AkkaSample
             var sw = new Stopwatch();
             var jobServer = new DependencyInjectedJobExecutorShell(ac=> new SimpleInjectorDependencyResolver(container,ac),null );
             var pool = new GRPCChannelPool();
-            jobServer.StartJobQueue("default", 50, 60,
+            jobServer.StartJobQueue("default", 500, 60,
                 plugins: new IJobExecutionPluginConfiguration[]
                 {
                     StreamingServerPlugin.CreatePluginConfiguration(
@@ -222,7 +225,13 @@ namespace OddJob.Rpc.MagicOnion.AkkaSample
     {
         public void DoThing(string thing)
         {
-            Console.WriteLine(thing);
+            if (DateTime.TryParse(thing, out DateTime time))
+            {
+                if (time.Second % 5 == 0)
+                {
+                    Console.WriteLine(time);
+                }
+            }
         }
     }
 }

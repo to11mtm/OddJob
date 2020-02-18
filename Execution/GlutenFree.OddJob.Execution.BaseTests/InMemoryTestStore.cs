@@ -3,6 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 using GlutenFree.OddJob.Interfaces;
 
 namespace GlutenFree.OddJob.Execution.BaseTests
@@ -39,6 +41,14 @@ namespace GlutenFree.OddJob.Execution.BaseTests
                 jobStore[queueName].Add(newJob);
             }
             return newJob.JobId;
+        }
+
+        public Task<Guid> AddJobAsync<TJob>(Expression<Action<TJob>> jobExpression,
+            RetryParameters retryParameters = null,
+            DateTimeOffset? executionTime = null, string queueName = "default",
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<Guid>(AddJob(jobExpression,retryParameters,executionTime,queueName));
         }
 
         public IEnumerable<IOddJobWithMetadata> GetJobs(string[] queueNames, int fetchSize, Expression<Func<JobLockData,object>> orderPredicate)
@@ -118,10 +128,46 @@ namespace GlutenFree.OddJob.Execution.BaseTests
             });
         }
 
-        public IOddJobWithMetadata GetJob(Guid jobId, bool mustLock = true)
+        public IOddJobWithMetadata GetJob(Guid jobId, bool mustLock = true, bool requireValidState = true)
         {
             return jobStore.FirstOrDefault(q => q.Value.Any(r => r.JobId == jobId)).Value
                 .FirstOrDefault(q => q.JobId == jobId);
+        }
+
+        public Task MarkJobSuccessAsync(Guid jobGuid, CancellationToken cancellationToken=default)
+        {
+            MarkJobSuccess(jobGuid);
+            return Task.FromResult(0);
+        }
+
+        public Task MarkJobFailedAsync(Guid jobGuid, CancellationToken cancellationToken=default)
+        {
+            MarkJobFailed(jobGuid);
+            return Task.FromResult(0);
+        }
+
+        public Task<IEnumerable<IOddJobWithMetadata>> GetJobsAsync(string[] queueNames, int fetchSize,
+            Expression<Func<JobLockData, object>> orderPredicate, CancellationToken cancellationToken=default)
+        {
+            return Task.FromResult(GetJobs(queueNames, fetchSize,
+                orderPredicate));
+        }
+
+        public Task MarkJobInProgressAsync(Guid jobId, CancellationToken cancellationToken=default)
+        {
+            MarkJobInProgress(jobId);
+            return Task.FromResult(0);
+        }
+
+        public Task MarkJobInRetryAndIncrementAsync(Guid jobId, DateTime lastAttempt, CancellationToken cancellationToken=default)
+        {
+            MarkJobInRetryAndIncrement(jobId,lastAttempt);
+            return Task.FromResult(0);
+        }
+
+        public Task<IOddJobWithMetadata> GetJobAsync(Guid jobId, bool needLock = true, bool requireValidStatus = true, CancellationToken cancellationToken=default)
+        {
+            return Task.FromResult(GetJob(jobId, needLock));
         }
 
         public void MarkJobSuccess(Guid jobGuid)

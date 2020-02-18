@@ -2,7 +2,11 @@
 
 namespace GlutenFree.OddJob.Execution.Akka.Messages
 {
-    public class MarkJobFailed
+    public interface IMarkJobCommand
+    {
+        Guid JobId { get; }
+    }
+    public class MarkJobFailed : IMarkJobCommand
     {
         public Guid JobId { get; protected set; }
 

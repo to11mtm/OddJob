@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq.Expressions;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using GlutenFree.OddJob.Interfaces;
 using Newtonsoft.Json;
 
@@ -86,6 +88,14 @@ namespace GlutenFree.OddJob.Storage.FileSystem
             };
             WriteJobToQueue(toSer);
             return toSer.JobId;
+        }
+
+        public Task<Guid> AddJobAsync<TJob>(Expression<Action<TJob>> jobExpression,
+            RetryParameters retryParameters = null,
+            DateTimeOffset? executionTime = null, string queueName = "default", CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(AddJob(jobExpression, retryParameters,
+                executionTime, queueName));
         }
     }
 }

@@ -25,16 +25,16 @@ namespace OddJob.RpcServer
             if ((Items.Count - results.Length) > 10)
             {
                 //Run cleanup on BG Thread.
-                Task.Run(() => Cleanup(Items));
+                Task.Run(() => Cleanup(Items, cleanupLock));
             }
 
             return results;
         }
         
-        private static object cleanupLock = new object();
-        private static void Cleanup(ConcurrentDictionary<T, DateTime> container)
+        private object cleanupLock = new object();
+        private static void Cleanup(ConcurrentDictionary<T, DateTime> container, object lockState)
         {
-            lock (cleanupLock)
+            lock (lockState)
             {
                 //Look for expired entries
                 var res = container.Where(r => r.Value < DateTime.Now);

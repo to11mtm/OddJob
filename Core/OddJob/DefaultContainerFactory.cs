@@ -10,7 +10,7 @@ namespace GlutenFree.OddJob
             return Activator.CreateInstance(typeToCreate);
         }
 
-        public void Relase(object usedInstance)
+        public void Release(object usedInstance)
         {
         }
     }

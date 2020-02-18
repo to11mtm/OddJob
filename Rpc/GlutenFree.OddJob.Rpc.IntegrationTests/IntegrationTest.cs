@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net;
 using System.Threading.Tasks;
 using Akka.DI.SimpleInjector;
 using FluentMigrator.Runner.Generators.SQLite;
@@ -8,6 +9,7 @@ using FluentMigrator.Runner.Generators.SqlServer;
 using GlutenFree.OddJob;
 using GlutenFree.OddJob.Execution.Akka;
 using GlutenFree.OddJob.Execution.Akka.Test;
+using GlutenFree.OddJob.Integration.SimpleInjector;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Rpc.Server;
 using GlutenFree.OddJob.Serializable;
@@ -39,10 +41,11 @@ namespace OddJob.Rpc.IntegrationTests
             Console = output;
         }
         [Fact]
-        async Task Main()
+        public async Task Main()
         {
+            ServicePointManager.DefaultConnectionLimit = 50;
             var container = new Container();           
-            container.Register<IContainerFactory, TestSimpleInjectorContainerFactory>();
+            container.Register<IContainerFactory, SimpleInjectorContainerFactory>();
             bool useSqlServer = true;
             
             if (useSqlServer)
@@ -152,7 +155,7 @@ namespace OddJob.Rpc.IntegrationTests
             var sw = new Stopwatch();
             var jobServer = new DependencyInjectedJobExecutorShell(ac=> new SimpleInjectorDependencyResolver(container,ac),null );
             var pool = new GRPCChannelPool();
-            jobServer.StartJobQueue("default", 50, 60,
+            jobServer.StartJobQueue("default", 10, 60,
                 plugins: new IJobExecutionPluginConfiguration[]
                 {
                     StreamingServerPlugin.CreatePluginConfiguration(

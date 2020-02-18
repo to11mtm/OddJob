@@ -2,7 +2,7 @@
 
 namespace GlutenFree.OddJob.Execution.Akka.Messages
 {
-    public class MarkJobInRetryAndIncrement
+    public class MarkJobInRetryAndIncrement : IMarkJobCommand
     {
         public Guid JobId { get; protected set; }
         public DateTime LastAttempt { get; protected set; }

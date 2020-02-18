@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using GlutenFree.OddJob.Interfaces;
 using Newtonsoft.Json;
 
@@ -105,7 +107,7 @@ namespace GlutenFree.OddJob.Storage.FileSystem
             return results;
         }
 
-        public IOddJobWithMetadata GetJob(Guid jobId, bool mustLock = true)
+        public IOddJobWithMetadata GetJob(Guid jobId, bool mustLock = true, bool requireValidStatus = true)
         {
             IOddJobWithMetadata results = null;
             bool written = false;
@@ -154,6 +156,41 @@ namespace GlutenFree.OddJob.Storage.FileSystem
             }
 
             return results;
+        }
+
+        public Task MarkJobSuccessAsync(Guid jobGuid, CancellationToken cancellationToken=default)
+        {
+            MarkJobSuccess(jobGuid);
+            return Task.FromResult(0);
+        }
+
+        public Task MarkJobFailedAsync(Guid jobGuid, CancellationToken cancellationToken=default)
+        {
+            MarkJobFailed(jobGuid);
+            return Task.FromResult(0);
+        }
+
+        public Task<IEnumerable<IOddJobWithMetadata>> GetJobsAsync(string[] queueNames, int fetchSize,
+            Expression<Func<JobLockData, object>> orderPredicate, CancellationToken cancellationToken=default)
+        {
+            return Task.FromResult<IEnumerable<IOddJobWithMetadata>>(GetJobs(queueNames,fetchSize,orderPredicate));
+        }
+
+        public Task MarkJobInProgressAsync(Guid jobId, CancellationToken cancellationToken=default)
+        {
+            MarkJobInProgress(jobId);
+            return Task.FromResult(0);
+        }
+
+        public Task MarkJobInRetryAndIncrementAsync(Guid jobId, DateTime lastAttempt, CancellationToken cancellationToken=default)
+        {
+            MarkJobInRetryAndIncrement(jobId,lastAttempt);
+            return Task.FromResult(0);
+        }
+
+        public Task<IOddJobWithMetadata> GetJobAsync(Guid jobId, bool needLock = true, bool requireValidStatus =true, CancellationToken cancellationToken=default)
+        {
+            return Task.FromResult(GetJob(jobId, needLock));
         }
 
         public void WriteJobState(Guid jobId,
@@ -233,7 +270,7 @@ namespace GlutenFree.OddJob.Storage.FileSystem
         {
             WriteJobState(jobId, (q) =>
             {
-                q.Status = "In-Progress";
+                q.Status = "InProgress";
                 q.LastAttemptTime = DateTime.Now;
             });
         }

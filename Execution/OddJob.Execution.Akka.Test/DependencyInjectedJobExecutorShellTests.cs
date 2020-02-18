@@ -2,6 +2,7 @@
 using System.Threading;
 using Akka.DI.SimpleInjector;
 using GlutenFree.OddJob.Execution.Akka.Test.Mocks;
+using GlutenFree.OddJob.Integration.SimpleInjector;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Serializable;
 using GlutenFree.OddJob.Storage.Sql.Common;
@@ -23,7 +24,7 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
 
             var queueName = QueueNameHelper.CreateQueueName();
             var container = new SimpleInjector.Container();
-            container.Register<IContainerFactory, TestSimpleInjectorContainerFactory>();
+            container.Register<IContainerFactory, SimpleInjectorContainerFactory>();
             container.Register<ISqlDbJobQueueTableConfiguration, SqlDbJobQueueDefaultTableConfiguration>();
             container.Register<IJobAdderQueueTableResolver,DefaultJobAdderQueueTableResolver>();
             container.Register<SQLiteJobQueueDataConnectionFactory>(()=>new SQLiteJobQueueDataConnectionFactory(AkkaTestUnitTestTableHelper.connString));
@@ -47,7 +48,7 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
         {
             var queueName = QueueNameHelper.CreateQueueName();
             var container = new SimpleInjector.Container();
-            container.Register<IContainerFactory, TestSimpleInjectorContainerFactory>();
+            container.Register<IContainerFactory, SimpleInjectorContainerFactory>();
             container.Register<ISqlDbJobQueueTableConfiguration, SqlDbJobQueueDefaultTableConfiguration>();
             container.Register<IJobAdderQueueTableResolver, DefaultJobAdderQueueTableResolver>();
             container.Register<SQLiteJobQueueDataConnectionFactory>(() => new SQLiteJobQueueDataConnectionFactory(AkkaTestUnitTestTableHelper.connString));
@@ -76,7 +77,7 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
         {
             var queueName = QueueNameHelper.CreateQueueName();
             var container = new SimpleInjector.Container();
-            container.Register<IContainerFactory, TestSimpleInjectorContainerFactory>();
+            container.Register<IContainerFactory, SimpleInjectorContainerFactory>();
             container.Register<ISqlDbJobQueueTableConfiguration, SqlDbJobQueueDefaultTableConfiguration>();
             container.Register<IJobAdderQueueTableResolver, DefaultJobAdderQueueTableResolver>();
             container.Register<IJobQueueManager, SQLiteJobQueueManager>();

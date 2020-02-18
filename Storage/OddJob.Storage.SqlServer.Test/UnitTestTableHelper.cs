@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Data;
+using System.Runtime.CompilerServices;
 using FluentMigrator.Runner.Generators.SqlServer;
 using GlutenFree.OddJob.Storage.Sql.SqlServer;
 using GlutenFree.OddJob.Storage.Sql.Common;
@@ -15,6 +16,11 @@ namespace OddJob.Storage.Sql.SqlServer.Test
         {
             using (var db = SqlConnectionHelper.GetLocalDB(dbName,localLocation))
             {
+                if (db.State == ConnectionState.Closed)
+                {
+                    db.Open();
+                }
+
                 var helper =
                     new SqlTableHelper(
                         new SqlServerDataConnectionFactory(new TestDbConnectionFactory(localLocation,dbName), SqlServerVersion.v2008),

@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Akka.Actor;
 using GlutenFree.OddJob.Execution.Akka.Messages;
 using GlutenFree.OddJob.Serializable;
+using Grpc.Core;
 using MagicOnion.Client;
 using OddJob.Rpc.Client;
 using OddJob.RpcServer;
@@ -16,12 +17,14 @@ namespace OddJob.Rpc.Execution.Plugin
 
         private IJobHub client;
         private IActorRef _parent;
+        private IActorRef _pluginRef;
 
-        public StreamingQueueWorkerClient(GRPCChannelPool pool, RpcClientConfiguration conf, IActorRef parent)
+        public StreamingQueueWorkerClient(GRPCChannelPool pool, RpcClientConfiguration conf, IActorRef parent, IActorRef pluginRef)
         {
             _conf = conf;
             _pool = pool;
             _parent = parent;
+            _pluginRef = pluginRef;
             Create();
         }
         public void Create()
@@ -33,8 +36,9 @@ namespace OddJob.Rpc.Execution.Plugin
 
         public void JobCreated(SerializableOddJob jobData)
         {
-            
-            _parent.Tell(new GetSpecificJob(jobData.JobId, jobData.QueueName));
+            var jobID = jobData.JobId;
+            var qn = jobData.QueueName;
+            _parent.Tell(new GetSpecificJob(jobID, qn));
         }
 
         public async Task Join(string queueName, DateTime expiresAt)

@@ -13,6 +13,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\core\GlutenFree.OddJob.Serializable\GlutenFree.OddJob.Serializable.csproj" />
+      <ProjectReference Include="..\GlutenFree.OddJob.Rpc.Redis\GlutenFree.OddJob.Rpc.Redis.csproj" />
       <ProjectReference Include="..\GlutenFree.OddJob.Rpc.Server\GlutenFree.OddJob.Rpc.Server.csproj" />
       <ProjectReference Include="..\GlutenFree.OddJob.Rpc\GlutenFree.OddJob.Rpc.csproj" />
     </ItemGroup>

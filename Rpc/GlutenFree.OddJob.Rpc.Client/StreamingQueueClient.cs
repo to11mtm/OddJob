@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using GlutenFree.OddJob.Serializable;
 using MagicOnion.Client;
@@ -35,7 +36,8 @@ namespace OddJob.Rpc.Client
             client.CreateJob(jobData).Wait();
         }
 
-        public async Task AddJobAsync(SerializableOddJob jobData)
+        public async Task AddJobAsync(SerializableOddJob jobData,
+            CancellationToken cancellationToken = default)
         {
             await client.CreateJob(jobData);
         }
@@ -45,10 +47,13 @@ namespace OddJob.Rpc.Client
             client.CreateJobs(jobDataSet).Wait();
         }
 
-        public async Task AddJobsAsync(IEnumerable<SerializableOddJob> jobDataSet)
+        public   Task AddJobsAsync(IEnumerable<SerializableOddJob> jobDataSet,
+            CancellationToken cancellationToken = default)
         {
-            await client.CreateJobs(jobDataSet);
+            return client.CreateJobs(jobDataSet);
         }
+
+
 
         public async Task CloseAsync()
         {

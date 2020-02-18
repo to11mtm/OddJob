@@ -73,7 +73,7 @@ namespace GlutenFree.OddJob
             
             //var method = expr.TypeExecutedOn.GetMethod(expr.MethodName, expr.JobArgs.Select(q=>q.Value.GetType()).ToArray());
             var result = method.Invoke(instance, expr.JobArgs.Select(q=>q.Value).ToArray());
-            _containerFactory.Relase(instance);
+            _containerFactory.Release(instance);
             if (method.ReturnType != typeof(void))
             {
                 return new OddJobResult() {Result = result, ReturnType = method.ReturnType};
