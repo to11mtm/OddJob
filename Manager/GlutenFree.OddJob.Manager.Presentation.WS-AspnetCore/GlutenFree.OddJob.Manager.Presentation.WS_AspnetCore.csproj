@@ -24,7 +24,7 @@
     <PackageReference Include="FSharp.Core" Version="4.5.4" />
     <PackageReference Include="SimpleInjector" Version="4.9.0" />
     <PackageReference Include="SimpleInjector.Integration.AspNetCore" Version="4.4.2" />
-    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.109.0" />    
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.112" />    
     <PackageReference Include="WebSharper" Version="4.6.0.361" />    
     <PackageReference Include="WebSharper.CSharp" Version="4.6.0.361" />
     <PackageReference Include="WebSharper.UI" Version="4.6.0.190" />

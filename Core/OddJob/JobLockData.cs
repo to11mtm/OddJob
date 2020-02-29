@@ -6,6 +6,7 @@ namespace GlutenFree.OddJob
     public class JobLockData : IJobFilterMetadata
     {
         public long JobId { get; set; }
+        public Guid JobGuid { get; set; }
         public DateTime? MostRecentDate { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? LastAttempt { get; set; }

@@ -29,7 +29,7 @@ namespace Oddjob.Rpc.Redis.IntegrationTests
                 serializerOptions: UnregisteredSerializerOptions.Instance);
         }
 
-        public void JobCreated(SerializableOddJob jobData)
+        public void JobCreated(StreamingJobRequest jobData)
         {
             count.AddOrUpdate(jobData.MethodName, mn => 1, (mn, v) => v + 1);
         }

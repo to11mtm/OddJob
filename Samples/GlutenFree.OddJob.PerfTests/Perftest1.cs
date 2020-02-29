@@ -93,7 +93,27 @@ namespace GlutenFree.OddJob.PerfTests
                 return $"Iterations {iters} - Values/Members - {sw1.Elapsed.TotalSeconds}, ops/Sec - {(double)iters/sw1.Elapsed.TotalSeconds}";
             
         }
-        
+
+        [InlineData(5000000)]
+        [Theory]
+        public string PerfTest_Execute(int iters)
+        {
+            var sw1 = Stopwatch.StartNew();
+            var myvalue = new ClassTest()
+                {classTestValue = TestConstants.classTestValue};
+            var next = JobCreator.Create<SampleJobInGenericClass<string>>(j =>
+                j.DoThing(TestConstants.derp, TestConstants.herp, myvalue));
+            var executor =
+                new DefaultJobExecutor(new DefaultContainerFactory());
+            for (int i = 0; i < iters; i++)
+            {
+                executor.ExecuteJob(next);
+            }
+
+            sw1.Stop();
+            return sw1.Elapsed.TotalSeconds.ToString();
+        }
+
         [InlineData(50000)]
         [Theory]
             public string PerfTest(int iters)
@@ -108,6 +128,7 @@ namespace GlutenFree.OddJob.PerfTests
                 sw1.Stop();
                 return sw1.Elapsed.TotalSeconds.ToString();
             }
+            
             
             [InlineData(new object[]{4,50000})]
             [Theory]

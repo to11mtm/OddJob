@@ -23,7 +23,7 @@ namespace OddJob.Rpc.MagicOnion.PerfSampl
             container.Register<ISerializedJobQueueAdder>(() => new MockAdder(),
                 Lifestyle.Singleton);
             container.Register<RpcJobCreationServer>();
-            container.Register<StreamingJobCreationServer>();
+            container.Register<StreamingJobCreationServer<TimedCache<Guid>>>();
             container.Register(()=> new StreamingJobCreationServerOptions(4,4));
             container.Verify();
             await StreamingSample(container);
@@ -32,7 +32,7 @@ namespace OddJob.Rpc.MagicOnion.PerfSampl
         
         private static async Task StreamingSample(Container container)
         {
-            var server = StreamingServiceWrapper.StartService<StreamingJobCreationServer>(
+            var server = StreamingServiceWrapper.StartService<StreamingJobCreationServer<TimedCache<Guid>>>(
                 new RpcServerConfiguration("localhost", 9001,
                     ServerCredentials.Insecure,
                     new List<MagicOnionServiceFilterDescriptor>(),

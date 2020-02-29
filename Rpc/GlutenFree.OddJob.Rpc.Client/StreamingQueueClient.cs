@@ -26,7 +26,7 @@ namespace OddJob.Rpc.Client
                 serializerOptions: UnregisteredSerializerOptions.Instance);
         }
 
-        public void JobCreated(SerializableOddJob jobData)
+        public void JobCreated(StreamingJobRequest jobData)
         {
             
         }

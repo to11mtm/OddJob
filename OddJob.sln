@@ -16,6 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_", "_", "{C890D84B-9DE8-4A
 		PushNuget.ps1 = PushNuget.ps1
 		Readme.MD = Readme.MD
 		FAQ.MD = FAQ.MD
+		Notice.MD = Notice.MD
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GlutenFree.OddJob.Tests", "core\OddJob.Tests\GlutenFree.OddJob.Tests.csproj", "{FC326F53-373D-4C40-B5F5-C307A96B49A3}"

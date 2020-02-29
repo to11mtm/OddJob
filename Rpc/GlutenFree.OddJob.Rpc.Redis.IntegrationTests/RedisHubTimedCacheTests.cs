@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using OddJob.Rpc.Server.Redis;
+using OddJob.RpcServer;
 using StackExchange.Redis;
 using Xunit;
 using Xunit.Abstractions;
@@ -30,7 +31,7 @@ namespace Oddjob.Rpc.Redis.IntegrationTests
                     {
                         ClientName = "hub", EndPoints = {{"localhost", 9901}}
                     });
-                var hub = new RedisHubTimedCache<Guid>(c2,testqName);
+                var hub = new RedisHubTimedCache<Guid,TimedCache<Guid>>(c2,testqName);
                 var toTest = StreamingConstants.RedisString + testqName;
                 var testGuid = Guid.NewGuid();
 
@@ -57,9 +58,9 @@ namespace Oddjob.Rpc.Redis.IntegrationTests
                     {
                         ClientName = "hub", EndPoints = {{"localhost", 9901}}
                     });
-                var hub = new RedisHubTimedCache<Guid>(c2,testqName);
+                var hub = new RedisHubTimedCache<Guid,TimedCache<Guid>>(c2,testqName);
                 
-                var hub2 = new RedisHubTimedCache<Guid>(c2,testqName);
+                var hub2 = new RedisHubTimedCache<Guid,TimedCache<Guid>>(c2,testqName);
 
                 var getPrimary = GetAnyMaster(c2);
                 

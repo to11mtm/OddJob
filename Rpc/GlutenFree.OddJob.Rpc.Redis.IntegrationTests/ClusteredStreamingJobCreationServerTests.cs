@@ -50,7 +50,7 @@ namespace Oddjob.Rpc.Redis.IntegrationTests
             container.Register(() => mock.Object);
          //   container.Register(typeof(StreamingRPCServerAbstraction<,,>),
          //       typeof(StreamingRPCServerAbstraction<,,>));
-            container.Register<StreamingJobCreationServer>();
+            container.Register<StreamingJobCreationServer<TimedCache<Guid>>>();
             container.Register(()=> new StreamingJobCreationServerOptions(4,4));
             container.Register(() =>
                 ConnectionMultiplexer.Connect(new ConfigurationOptions()
@@ -60,14 +60,14 @@ namespace Oddjob.Rpc.Redis.IntegrationTests
 
             container.Verify();
             var server1 = StreamingServiceWrapper
-                .StartService<ClusteredStreamingJobCreationServer>(
+                .StartService<ClusteredStreamingJobCreationServer<TimedCache<Guid>>>(
                     new RpcServerConfiguration("localhost", 9001,
                         ServerCredentials.Insecure,
                         new List<MagicOnionServiceFilterDescriptor>(),
                         new SimpleInjectorServiceLocator(container),
                         new SimpleInjectorActivator()));
             var server2 = StreamingServiceWrapper
-                .StartService<ClusteredStreamingJobCreationServer>(
+                .StartService<ClusteredStreamingJobCreationServer<TimedCache<Guid>>>(
                     new RpcServerConfiguration("localhost", 9002,
                         ServerCredentials.Insecure,
                         new List<MagicOnionServiceFilterDescriptor>(),

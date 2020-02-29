@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using GlutenFree.OddJob.SequentialValueGenerator;
 
 namespace GlutenFree.OddJob
 {
@@ -22,9 +23,15 @@ namespace GlutenFree.OddJob
         private static readonly Type _staticClassType = typeof(StaticClassJob);
         private static readonly Type _objectType = typeof(object);
         private static readonly Type _guidType = typeof(Guid);
+        
+        public static bool UseSequentialGuids = true;
         public static OddJob CreateInternal<T>(MethodCallExpression methodCall, ParameterExpression parameterExpression = null)
         {
-            var jobGuid = Guid.NewGuid();
+            var jobGuid =
+                UseSequentialGuids
+                    ? SequentialGuidValueGenerator.Next()
+                    : Guid.NewGuid();
+            //var jobGuid = Guid.NewGuid();
             var TypeExecutedOn = typeof(T); //jobExpr.Parameters[0].Type;
 
 
@@ -46,8 +53,7 @@ namespace GlutenFree.OddJob
                 (mi) => mi.GetParameters().Select(r => r.Name).ToArray());
 
             var _jobArgs = ParseJobArgs<T>(parameterExpression, argCount, argProv, jobGuid, paramNames);
-
-
+            
             var genericArgs = methodInfo.GetGenericArguments();
             return new OddJob(jobGuid, methodInfo.Name, _jobArgs,
                 TypeExecutedOn, genericArgs);
@@ -130,7 +136,8 @@ namespace GlutenFree.OddJob
                     _jobArgs[i] = new OddJobParameter()
                     {
                         Name = paramNames[i],
-                        Value = val
+                        Value = val,
+                        Type = val.GetType().ToString()
                     };
                 }
                 catch (Exception exception)
@@ -158,7 +165,8 @@ namespace GlutenFree.OddJob
                         _jobArgs[i] = new OddJobParameter()
                         {
                             Name = paramNames[i],
-                            Value = fallbackVal
+                            Value = fallbackVal,
+                            Type =  fallbackVal.GetType().ToString()
                         };
                     }
 

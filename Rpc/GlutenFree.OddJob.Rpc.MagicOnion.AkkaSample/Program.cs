@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
+using System.Runtime;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using Akka.DI.SimpleInjector;
@@ -59,41 +60,12 @@ namespace OddJob.Rpc.MagicOnion.AkkaSample
     class Program
     {
 
-        static async Task Main(string[] args)
+        public static Container createContainer(bool useSqlServer)
         {
-            ServicePointManager.DefaultConnectionLimit = 50;
             var container = new Container();           
             container.Register<IContainerFactory, SimpleInjectorContainerFactory>();
-            bool useSqlServer = true;
-            
             if (useSqlServer)
             {
-                var cs = SqlConnectionHelper.CheckConnString("rpcsample", "f:\\", false);
-                SqlServerUnitTestTableHelper.EnsureTablesExist("rpcsample", "f:\\");
-                using (var conn =
-                    SqlConnectionHelper.GetLocalDB("rpcsample", "f:\\", false))
-                {
-                    var cmd = conn.CreateCommand();
-                    var tableHelper = new SqlTableHelper(
-                        new SqlServerDataConnectionFactory(
-                            new TestDbConnectionFactory("f:\\", "rpcsample"),
-                            SqlServerVersion.v2008),
-                        new SqlServer2008Generator());
-                    tableHelper
-                        .GetCreateMainTableIndexes(
-                            new SqlDbJobQueueDefaultTableConfiguration())
-                        .ForEach(t =>
-                        {
-                            try
-                            { 
-                                cmd.CommandText = t;
-                                cmd.ExecuteNonQuery();
-                            }
-                            catch (Exception e)
-                            {
-                            }
-                        });
-                }
 
                 container.Register<IJobQueueDbConnectionFactory>(()=>new TestDbConnectionFactory("f:\\", "rpcsample"));
                 container.Register<IJobQueueDataConnectionFactory>(() =>
@@ -103,22 +75,8 @@ namespace OddJob.Rpc.MagicOnion.AkkaSample
             }
             else
             {
-                SQLiteUnitTestTableHelper.EnsureTablesExist();
-                var cmd = AkkaTestUnitTestTableHelper.heldConnection.CreateCommand();
-                var tableHelper = new SqlTableHelper(
-                    new SQLiteJobQueueDataConnectionFactory(SQLiteUnitTestTableHelper
-                        .connString), new SQLiteGenerator());
-                tableHelper
-                    .GetCreateMainTableIndexes(
-                        new SqlDbJobQueueDefaultTableConfiguration()).ForEach(t =>
-                    {
-                        cmd.CommandText = t;
-                        cmd.ExecuteNonQuery();
-                    });
                 container.Register<IJobQueueDataConnectionFactory>(()=>new SQLiteJobQueueDataConnectionFactory(AkkaTestUnitTestTableHelper.connString));
-
             }
-            
             container.Register<IJobQueueManager, BaseSqlJobQueueManager>();
             container.Register<IJobQueueAdder, BaseSqlJobQueueAdder>();
             
@@ -132,15 +90,122 @@ namespace OddJob.Rpc.MagicOnion.AkkaSample
             container.Register<JobQueueCoordinator,OverriddenJobCoordinator>();
             
             container.Register<RpcJobCreationServer>();
-            container.Register<StreamingJobCreationServer>();
-            container.Register(()=> new StreamingJobCreationServerOptions(4,4));
-            await StreamingSample(container, 20000,5);
+            container.Register<StreamingJobCreationServer<LruTimedCache<Guid>>>();
+            container.Register(()=> new StreamingJobCreationServerOptions(2,2));
+            return container;
+        }
+
+        static async Task Main(string[] args)
+        {
+            System.Runtime.GCSettings.LatencyMode =
+                GCLatencyMode.SustainedLowLatency;
+            Console.WriteLine(System.Runtime.GCSettings.IsServerGC);
+            ServicePointManager.DefaultConnectionLimit = 50;
+            bool useSqlServer = true;
+            
+            if (useSqlServer)
+            {
+                InitializeSqlServer();
+                
+            }
+            else
+            {
+                InitializeSQLite();
+                 }
+            
+            
+            await StreamingSample(createContainer(useSqlServer), 20000,5);
             //RPCSample(container);
         }
-        
+
+        private static void InitializeSQLite()
+        {
+            SQLiteUnitTestTableHelper.EnsureTablesExist();
+            var cmd = AkkaTestUnitTestTableHelper.heldConnection.CreateCommand();
+            var tableHelper = new SqlTableHelper(
+                new SQLiteJobQueueDataConnectionFactory(SQLiteUnitTestTableHelper
+                    .connString), new SQLiteGenerator());
+            tableHelper
+                .GetCreateMainTableIndexes(
+                    new SqlDbJobQueueDefaultTableConfiguration()).ForEach(t =>
+                {
+                    cmd.CommandText = t;
+                    cmd.ExecuteNonQuery();
+                });
+        }
+
+        private static void InitializeSqlServer()
+        {
+            var cs = SqlConnectionHelper.CheckConnString("rpcsample", "f:\\", false);
+            SqlServerUnitTestTableHelper.EnsureTablesExist("rpcsample", "f:\\");
+            using (var conn =
+                SqlConnectionHelper.GetLocalDB("rpcsample", "f:\\", false))
+            {
+                var cmd = conn.CreateCommand();
+                var tableHelper = new SqlTableHelper(
+                    new SqlServerDataConnectionFactory(
+                        new TestDbConnectionFactory("f:\\", "rpcsample"),
+                        SqlServerVersion.v2008),
+                    new SqlServer2008Generator());
+
+                // When we create indexes, if clusteredJobGuid is TRUE,
+                // We create replace the Clustered PK
+                // With a NonClustered PK, and create a Clustered index
+                // On JobGuid for each table.
+                // This greatly improves performance,
+                // And by default we use semi-sequential Guids
+                // to prevent over-fragmentation of indexes.
+                tableHelper
+                    .GetCreateMainTableIndexes(
+                        new SqlDbJobQueueDefaultTableConfiguration(), true)
+                    .ForEach(t =>
+                    {
+                        try
+                        {
+                            cmd.CommandText = t;
+                            cmd.ExecuteNonQuery();
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                        }
+                    });
+                tableHelper
+                    .CreateParamIndexes(
+                        new SqlDbJobQueueDefaultTableConfiguration(), true)
+                    .ForEach(t =>
+                    {
+                        try
+                        {
+                            cmd.CommandText = t;
+                            cmd.ExecuteNonQuery();
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                        }
+                    });
+                tableHelper
+                    .CreateQueueParamIndexes(
+                        new SqlDbJobQueueDefaultTableConfiguration(), true)
+                    .ForEach(t =>
+                    {
+                        try
+                        {
+                            cmd.CommandText = t;
+                            cmd.ExecuteNonQuery();
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine(e);
+                        }
+                    });
+            }
+        }
+
         private static async Task StreamingSample(Container container, int iters, int numClients)
         {
-            var server = StreamingServiceWrapper.StartService<StreamingJobCreationServer>(
+            var server = StreamingServiceWrapper.StartService<StreamingJobCreationServer<LruTimedCache<Guid>>>(
                 new RpcServerConfiguration("localhost", 9001,
                     ServerCredentials.Insecure,
                     new List<MagicOnionServiceFilterDescriptor>(),
@@ -151,14 +216,32 @@ namespace OddJob.Rpc.MagicOnion.AkkaSample
             var sw = new Stopwatch();
             var jobServer = new DependencyInjectedJobExecutorShell(ac=> new SimpleInjectorDependencyResolver(container,ac),null );
             var pool = new GRPCChannelPool();
-            jobServer.StartJobQueue("default", 500, 60,
+            jobServer.StartJobQueue("default", 100, 60,
                 plugins: new IJobExecutionPluginConfiguration[]
                 {
                     StreamingServerPlugin.CreatePluginConfiguration(
                         new RpcClientConfiguration("localhost", 9001,
                             ChannelCredentials.Insecure,
-                            new IClientFilter[] { }, new ChannelOption[] { }), pool, 2, 30)
+                            new IClientFilter[] { }, new ChannelOption[] { }), pool, 10, 30)
                 });
+            /*var jobServer2 = new DependencyInjectedJobExecutorShell(ac=> new SimpleInjectorDependencyResolver(container,ac),null );
+            jobServer2.StartJobQueue("default", 100, 60,
+                plugins: new IJobExecutionPluginConfiguration[]
+                {
+                    StreamingServerPlugin.CreatePluginConfiguration(
+                        new RpcClientConfiguration("localhost", 9001,
+                            ChannelCredentials.Insecure,
+                            new IClientFilter[] { }, new ChannelOption[] { }), pool, 10, 30)
+                });
+            var jobServer3 = new DependencyInjectedJobExecutorShell(ac=> new SimpleInjectorDependencyResolver(container,ac),null );
+            jobServer3.StartJobQueue("default", 100, 60,
+                plugins: new IJobExecutionPluginConfiguration[]
+                {
+                    StreamingServerPlugin.CreatePluginConfiguration(
+                        new RpcClientConfiguration("localhost", 9001,
+                            ChannelCredentials.Insecure,
+                            new IClientFilter[] { }, new ChannelOption[] { }), pool, 10, 30)
+                });*/
             Console.WriteLine("Server Started...");
             Console.ReadLine();
             {
@@ -227,7 +310,7 @@ namespace OddJob.Rpc.MagicOnion.AkkaSample
         {
             if (DateTime.TryParse(thing, out DateTime time))
             {
-                if (time.Second % 5 == 0)
+                if (time.Second % 10 == 0)
                 {
                     Console.WriteLine(time);
                 }

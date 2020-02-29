@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Akka.Actor;
 using GlutenFree.OddJob.Execution.Akka.Messages;
@@ -10,6 +11,7 @@ using OddJob.RpcServer;
 
 namespace OddJob.Rpc.Execution.Plugin
 {
+    
     public class StreamingQueueWorkerClient : IJobHubReceiver
     {
         private GRPCChannelPool _pool;
@@ -18,7 +20,6 @@ namespace OddJob.Rpc.Execution.Plugin
         private IJobHub client;
         private IActorRef _parent;
         private IActorRef _pluginRef;
-
         public StreamingQueueWorkerClient(GRPCChannelPool pool, RpcClientConfiguration conf, IActorRef parent, IActorRef pluginRef)
         {
             _conf = conf;
@@ -26,6 +27,7 @@ namespace OddJob.Rpc.Execution.Plugin
             _parent = parent;
             _pluginRef = pluginRef;
             Create();
+            
         }
         public void Create()
         {
@@ -34,11 +36,11 @@ namespace OddJob.Rpc.Execution.Plugin
                 serializerOptions: UnregisteredSerializerOptions.Instance);
         }
 
-        public void JobCreated(SerializableOddJob jobData)
+        public void JobCreated(StreamingJobRequest jobData)
         {
-            var jobID = jobData.JobId;
-            var qn = jobData.QueueName;
-            _parent.Tell(new GetSpecificJob(jobID, qn));
+            
+            
+            _pluginRef.Tell(jobData);
         }
 
         public async Task Join(string queueName, DateTime expiresAt)
@@ -54,6 +56,8 @@ namespace OddJob.Rpc.Execution.Plugin
 
         public async Task Refresh(string queueName, DateTime expiresAt)
         {
+            //If the Connection is dead, this will throw.
+            //However we will 'let it crash' and the plugin will AutoRecover.
             await client.JoinMonitoringAsync(queueName, expiresAt);
         }
     }

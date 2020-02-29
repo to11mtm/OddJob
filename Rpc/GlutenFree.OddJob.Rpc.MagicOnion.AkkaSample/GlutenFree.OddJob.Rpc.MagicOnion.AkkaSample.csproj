@@ -5,7 +5,9 @@
         <TargetFramework>netcoreapp3.0</TargetFramework>
         
     </PropertyGroup>
-
+<PropertyGroup>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+</PropertyGroup>
     <ItemGroup>
       <ProjectReference Include="..\..\Core\GlutenFree.OddJob.Integration.SimpleInjector\GlutenFree.OddJob.Integration.SimpleInjector.csproj" />
       <ProjectReference Include="..\..\storage\GlutenFree.OddJob.Storage.Sql.SQLite.Test\GlutenFree.OddJob.Storage.Sql.SQLite.Test.csproj" />
@@ -21,7 +23,7 @@
 
     <ItemGroup>
       <PackageReference Include="FluentMigrator.Runner.SQLite" Version="3.2.1" />
-      <PackageReference Include="MagicOnion" Version="3.0.8" />
+      <PackageReference Include="MagicOnion" Version="3.0.9" />
     </ItemGroup>
 
     <ItemGroup>

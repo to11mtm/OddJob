@@ -18,18 +18,18 @@ namespace GlutenFree.OddJob.Rpc.Server
             _jobQueueAdder = jobQueueAdder;
         }
 
-        public UnaryResult<Guid?> AddJob(SerializableOddJob jobData)
+        public async UnaryResult<Guid?> AddJob(SerializableOddJob jobData)
         {
             try
             {
                 
-                _jobQueueAdder.AddJob(jobData);
+                await _jobQueueAdder.AddJobAsync(jobData);
                 
-                return new UnaryResult<Guid?>(jobData.JobId);
+                return jobData.JobId;
             }
             catch (Exception e)
             {
-                return ReturnStatus<Guid?>(StatusCode.Internal, e.ToString());
+                return await ReturnStatus<Guid?>(StatusCode.Internal, e.ToString());
             }  
         }
 

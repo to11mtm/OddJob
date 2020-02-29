@@ -4,21 +4,21 @@ using StackExchange.Redis;
 
 namespace OddJob.Rpc.Server.Redis
 {
-    public class RedisHubConnectionTracker<TKey> : IKeyedTimedCacheStore<RedisHubTimedCache<TKey>,TKey>
+    public class RedisHubConnectionTracker<TKey,TTimedCache> : IKeyedTimedCacheStore<RedisHubTimedCache<TKey,TTimedCache>,TKey> where TTimedCache : ITimedCache<TKey>, new()
     {
         private ConnectionMultiplexer _multiplexer;
 
-        public static ConcurrentDictionary<string, RedisHubTimedCache<TKey>>
-            InternalDictionary { get; } = new ConcurrentDictionary<string, RedisHubTimedCache<TKey>>();
+        public static ConcurrentDictionary<string, RedisHubTimedCache<TKey, TTimedCache>>
+            InternalDictionary { get; } = new ConcurrentDictionary<string, RedisHubTimedCache<TKey,TTimedCache>>();
 
         public RedisHubConnectionTracker(ConnectionMultiplexer multiplexer)
         {
             _multiplexer = multiplexer;
         }
-        public RedisHubTimedCache<TKey> GetOrCreate(string key)
+        public RedisHubTimedCache<TKey,TTimedCache> GetOrCreate(string key)
         {
             return InternalDictionary.GetOrAdd(key,
-                (k) => new RedisHubTimedCache<TKey>(_multiplexer, k));
+                (k) => new RedisHubTimedCache<TKey,TTimedCache>(_multiplexer, k));
         }
     }
 }

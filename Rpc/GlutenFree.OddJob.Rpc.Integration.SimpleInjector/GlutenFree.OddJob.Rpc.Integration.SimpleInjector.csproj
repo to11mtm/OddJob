@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="MagicOnion" Version="3.0.8" />
+      <PackageReference Include="MagicOnion" Version="3.0.9" />
       <PackageReference Include="SimpleInjector" Version="4.9.0" />
     </ItemGroup>
 

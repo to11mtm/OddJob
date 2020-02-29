@@ -6,8 +6,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="MagicOnion" Version="3.0.8" />
-      <PackageReference Include="MagicOnion.Redis" Version="3.0.8" />
+      <PackageReference Include="MagicOnion" Version="3.0.9" />
+      <PackageReference Include="MagicOnion.Redis" Version="3.0.9" />
       <PackageReference Include="StackExchange.Redis" Version="2.0.601" />
     </ItemGroup>
 

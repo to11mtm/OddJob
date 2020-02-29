@@ -109,6 +109,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
                     ).Where(expression).Select(lockProjection => new JobLockData
                     {
                         JobId = lockProjection.Id,
+                        JobGuid =  lockProjection.JobGuid,
                         MostRecentDate =
                             (lockProjection.CreatedDate ?? defaultMinCoalesce)
                             > (lockProjection.LastAttempt ?? defaultMinCoalesce)
@@ -121,7 +122,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
                         Status = lockProjection.Status
                     }).OrderBy(orderPredicate).Take(fetchSize);
             var updateWhere = QueueTable(conn)
-                .Where(q => lockingCheckQuery.Any(r => r.JobId == q.Id));
+                .Where(q => lockingCheckQuery.Any(r => r.JobGuid == q.JobGuid));
             var updateCmd = updateWhere.Set(q => q.LockGuid, lockGuid)
                 .Set(q => q.LockClaimTime, lockTime);
             return updateCmd;

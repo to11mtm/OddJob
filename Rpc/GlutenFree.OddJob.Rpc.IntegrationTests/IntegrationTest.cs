@@ -75,26 +75,35 @@ namespace OddJob.Rpc.IntegrationTests
                             {
                             }
                         });
-                    try
-                    {
-                        cmd.CommandText =
-                            tableHelper.CreateParamIndexes(
-                                new SqlDbJobQueueDefaultTableConfiguration());
-                        cmd.ExecuteNonQuery();
-                    }
-                    catch (Exception e)
-                    {
-                    }
+                    tableHelper
+                        .CreateParamIndexes(
+                            new SqlDbJobQueueDefaultTableConfiguration())
+                        .ForEach(t =>
+                        {
+                            try
+                            { 
+                                cmd.CommandText = t;
+                                cmd.ExecuteNonQuery();
+                            }
+                            catch (Exception e)
+                            {
+                            }
+                        });
+                    tableHelper
+                        .CreateQueueParamIndexes(
+                            new SqlDbJobQueueDefaultTableConfiguration())
+                        .ForEach(t =>
+                        {
+                            try
+                            { 
+                                cmd.CommandText = t;
+                                cmd.ExecuteNonQuery();
+                            }
+                            catch (Exception e)
+                            {
+                            }
+                        });
 
-                    try
-                    {
-                        cmd.CommandText= tableHelper.CreateQueueParamIndexes(
-                            new SqlDbJobQueueDefaultTableConfiguration());
-                        cmd.ExecuteNonQuery();
-                    }
-                    catch (Exception e)
-                    {
-                    }
                         
                 }
 
@@ -135,7 +144,7 @@ namespace OddJob.Rpc.IntegrationTests
             container.Register<JobQueueCoordinator,OverriddenJobCoordinator>();
             
             container.Register<RpcJobCreationServer>();
-            container.Register<StreamingJobCreationServer>();
+            container.Register<StreamingJobCreationServer<TimedCache<Guid>>>();
             container.Register(()=> new StreamingJobCreationServerOptions(4,4));
             await StreamingSample(container, 2000,5);
             
@@ -144,7 +153,7 @@ namespace OddJob.Rpc.IntegrationTests
         
         private  async Task StreamingSample(Container container, int iters, int numClients)
         {
-            var server = StreamingServiceWrapper.StartService<StreamingJobCreationServer>(
+            var server = StreamingServiceWrapper.StartService<StreamingJobCreationServer<TimedCache<Guid>>>(
                 new RpcServerConfiguration("localhost", 9001,
                     ServerCredentials.Insecure,
                     new List<MagicOnionServiceFilterDescriptor>(),

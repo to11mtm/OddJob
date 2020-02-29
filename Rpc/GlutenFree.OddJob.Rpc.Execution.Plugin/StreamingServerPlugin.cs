@@ -14,6 +14,7 @@ namespace OddJob.Rpc.Execution.Plugin
         {
 
             Receive<SetStreamingServerConfiguration>(r => SetConfig(r));
+            Receive<StreamingJobRequest>(StreamingJobRequest);
             ReceiveAsync<RefreshQueue>(Refresh);
             ReceiveAsync<SetJobQueueConfiguration>(SetQueueAndConnect);
             ReceiveAsync<ShutDownQueues>(StopQueues);
@@ -66,7 +67,7 @@ namespace OddJob.Rpc.Execution.Plugin
         private string QueueName;
         private ICancelable loopCancel;
         private IActorRef coordinator;
-
+        private Random _rand;
         private async Task StopQueues(ShutDownQueues q)
         {
             loopCancel.Cancel();
@@ -79,6 +80,8 @@ namespace OddJob.Rpc.Execution.Plugin
 
         private async Task SetQueueAndConnect(SetJobQueueConfiguration jobQueueConfiguration)
         {
+            
+            _rand = new Random(Guid.NewGuid().GetHashCode());
             _jobQueueConfiguration = jobQueueConfiguration;
             QueueName = jobQueueConfiguration.QueueName;
             await client.Join(QueueName,
@@ -93,8 +96,24 @@ namespace OddJob.Rpc.Execution.Plugin
 
         private async Task Refresh(RefreshQueue q)
         {
+            //This may Throw. If it does, it just means we recover.
             await client.Refresh(QueueName,
                 DateTime.Now.AddSeconds(SecondsTillExpiration));
+        }
+
+        private void StreamingJobRequest(StreamingJobRequest request)
+        {
+            var jobID = request.JobId;
+            var qn = request.QueueName;
+            
+            // HACK:
+            // To help avoid contention we introduce a tiny delay in our requesting to get the job.
+            // The idea is that because our lock request should be on a well (ideally clustered)
+            // Indexed field, so our DB call will be fast enough that a tiny delay avoids
+            // Deadlock exceptions.
+            Context.System.Scheduler.ScheduleTellOnce(_rand.Next(15, 25),
+                coordinator, new GetSpecificJob(jobID, qn), Self);
+            //coordinator.Tell(new GetSpecificJob(jobID, qn));
         }
 
         private void SetConfig(SetStreamingServerConfiguration serverConfig)
@@ -110,6 +129,8 @@ namespace OddJob.Rpc.Execution.Plugin
 
         public override void AroundPreRestart(Exception cause, object message)
         {
+            //If we crashed (probably because connection keepalive failed)
+            //We tell the coordinator that we want to recover.
             coordinator.Tell(new PluginRecoveryRequest(
                 new RecoveryPayload(_jobQueueConfiguration, _serverConfiguration)));
             base.AroundPreRestart(cause, message);

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
+    <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
     <Description>Wire-Safe Serializable Job Model and functionality</Description>
     <PackageTags>job jobs jobscheduler scheduler oddjob task future later serializable</PackageTags>
   </PropertyGroup>

@@ -15,10 +15,10 @@ namespace OddJob.Rpc.Server.Redis
 {
     [GroupConfiguration(typeof(RedisGroupRepositoryFactory))]
     public class
-        ClusteredStreamingJobCreationServer : BaseStreamingJobCreationServer<RedisHubConnectionTracker<Guid>,
-            RedisHubTimedCache<Guid>>
+        ClusteredStreamingJobCreationServer<TTimedCache> : BaseStreamingJobCreationServer<RedisHubConnectionTracker<Guid,TTimedCache>,
+            RedisHubTimedCache<Guid, TTimedCache>> where TTimedCache : ITimedCache<Guid>, new()
     {
-        public ClusteredStreamingJobCreationServer(StreamingRPCServerAbstraction<RedisHubConnectionTracker<Guid>,RedisHubTimedCache<Guid>,Guid> abstraction) : base(abstraction)
+        public ClusteredStreamingJobCreationServer(StreamingRPCServerAbstraction<RedisHubConnectionTracker<Guid,TTimedCache>,RedisHubTimedCache<Guid,TTimedCache>,Guid> abstraction) : base(abstraction)
         {
         }
 

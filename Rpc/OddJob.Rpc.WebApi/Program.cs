@@ -123,7 +123,7 @@ namespace OddJob.Rpc.WebApi
             container.Register<JobQueueCoordinator, JobQueueCoordinator>();
 
             container.Register<RpcJobCreationServer>();
-            container.Register<StreamingJobCreationServer>();
+            container.Register<StreamingJobCreationServer<TimedCache<Guid>>>();
             container.Register(
                 () => new StreamingJobCreationServerOptions(4, 4));
             // setup MagicOnion hosting.
@@ -132,7 +132,7 @@ namespace OddJob.Rpc.WebApi
                 .UseMagicOnion(
                     new Type[]
                     {
-                        typeof(StreamingJobCreationServer),
+                        typeof(StreamingJobCreationServer<TimedCache<Guid>>),
                         typeof(RpcJobCreationServer)
                     },
                     new MagicOnionOptions()

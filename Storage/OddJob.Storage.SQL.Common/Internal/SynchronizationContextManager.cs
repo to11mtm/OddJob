@@ -1,5 +1,7 @@
 ﻿//Please do not remove this copyright notice on this file.
 //This is the only file that should have this notice.
+// See Notice.MD for full attribution
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 //-----------------------------------------------------------------------
 // <copyright file="SynchronizationContextManager.cs" company="Akka.NET Project">
 //     Copyright (C) 2009-2019 Lightbend Inc. <http://www.lightbend.com>

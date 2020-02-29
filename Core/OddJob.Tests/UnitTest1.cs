@@ -50,6 +50,8 @@ namespace GlutenFree.OddJob.Tests
             jobEx.ExecuteJob(next);
         }
 
+ 
+
         [Fact]
         public void Can_Run_Job_With_Simple_Method_Calls()
         {

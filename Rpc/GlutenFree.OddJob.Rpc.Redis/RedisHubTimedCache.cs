@@ -13,14 +13,18 @@ namespace OddJob.Rpc.Server.Redis
     /// This allows for multiple subscribers.
     /// </summary>
     /// <typeparam name="TKey">The type of key to cache</typeparam>
-    public class RedisHubTimedCache<TKey> : ITimedCache<TKey>
+    public class RedisHubTimedCache<TKey,TTimedCache> : ITimedCache<TKey> where TTimedCache :  ITimedCache<TKey>,new()
     {
+        public bool ShouldNotRandomize
+        {
+            get { return false; }
+        }
         public string QueueName { get; protected set; }
         public ISubscriber Subscriber { get; set; }
         
         public string QueueStr { get; protected set; }
         
-        public ConcurrentDictionary<string,TimedCache<TKey>>TimedCaches = new ConcurrentDictionary<string, TimedCache<TKey>>();
+        public ConcurrentDictionary<string,TTimedCache>TimedCaches = new ConcurrentDictionary<string, TTimedCache>();
 
         public RedisHubTimedCache(ConnectionMultiplexer multiplexer,
             string queueName)
@@ -39,7 +43,7 @@ namespace OddJob.Rpc.Server.Redis
         {
             
             var tc =
-                TimedCaches.GetOrAdd(QueueName, s => new TimedCache<TKey>());
+                TimedCaches.GetOrAdd(QueueName, s => new TTimedCache());
             tc.Freshen(guid,expiresAt);
             Subscriber.Publish(
                 new RedisChannel(QueueStr, RedisChannel.PatternMode.Literal),
@@ -54,20 +58,20 @@ namespace OddJob.Rpc.Server.Redis
             return bytes;
         }
 
-        private static void HandleEvent(RedisChannel arg1, RedisValue arg2,string queueName, ConcurrentDictionary<string,TimedCache<TKey>>timedCaches)
+        private static void HandleEvent(RedisChannel arg1, RedisValue arg2,string queueName, ConcurrentDictionary<string,TTimedCache>timedCaches)
         {
             byte[] bytes = arg2;
             var datas =
                 MessagePackSerializer.Deserialize<RedisHubFreshenData<TKey>>(bytes);
             var tc =
-                timedCaches.GetOrAdd(queueName, s => new TimedCache<TKey>());
+                timedCaches.GetOrAdd(queueName, s => new TTimedCache());
             tc.Freshen(datas.ConnectionId, datas.ExpiresAt);
         }
 
         public TKey[] GetItems()
         {
             var tc =
-                TimedCaches.GetOrAdd(QueueName, s => new TimedCache<TKey>());
+                TimedCaches.GetOrAdd(QueueName, s => new TTimedCache());
             return tc.GetItems();
         }
     }
