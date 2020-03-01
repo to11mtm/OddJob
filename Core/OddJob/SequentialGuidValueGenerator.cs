@@ -23,20 +23,20 @@ namespace GlutenFree.OddJob.SequentialValueGenerator
         /// <remarks>We use ThreadStatic here,
         /// Because we don't want to thrash a single variable on Interlocked.Increment()</remarks>
         [ThreadStatic]
-        private static long? localLong;
+        private static long localLong;
         
         public static Guid Next()
         {
             var guidBytes = Guid.NewGuid().ToByteArray();
             
             //Don't remove this line unless you replace it with something better.
-            if (localLong.HasValue == false)
+            if (localLong==0)
             {
-                localLong = DateTime.UtcNow.Ticks;
+                Interlocked.CompareExchange(ref localLong,
+                    DateTime.UtcNow.Ticks, 0);
             }
 
-            var _counter = localLong.Value;
-            var counterBytes = BitConverter.GetBytes(Interlocked.Increment(ref _counter));
+            var counterBytes = BitConverter.GetBytes(Interlocked.Increment(ref localLong));
 
             if (!BitConverter.IsLittleEndian)
             {
