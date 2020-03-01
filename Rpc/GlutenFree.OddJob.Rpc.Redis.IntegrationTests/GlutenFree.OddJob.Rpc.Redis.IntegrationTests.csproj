@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+
+        <IsPackable>false</IsPackable>
+
+        <TargetFrameworks>netcoreapp2.1;netcoreapp3.0</TargetFrameworks>
+
+        
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Akka.DI.SimpleInjector" Version="1.3.0" />
+        <PackageReference Include="FluentMigrator.Runner.SQLite" Version="3.2.1" />
+        <PackageReference Include="FluentMigrator.Runner.SqlServer" Version="3.2.1" />
+        <PackageReference Include="linq2db" Version="2.9.6" />
+        <PackageReference Include="MagicOnion" Version="3.0.9" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.2.0" />
+        <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+        <PackageReference Include="redis-inside" Version="3.3.0" />
+        <PackageReference Include="SimpleInjector" Version="4.9.0" />
+        <PackageReference Include="StackExchange.Redis" Version="2.0.601" />
+        <PackageReference Include="xunit" Version="2.4.0" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
+        <PackageReference Include="coverlet.collector" Version="1.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\execution\OddJob.Execution.Akka.Test\GlutenFree.OddJob.Execution.Akka.Test.csproj" />
+      <ProjectReference Include="..\..\execution\OddJob.Execution.Akka\GlutenFree.OddJob.Execution.Akka.csproj" />
+      <ProjectReference Include="..\..\storage\GlutenFree.OddJob.Storage.Sql.SQLite.Test\GlutenFree.OddJob.Storage.Sql.SQLite.Test.csproj" />
+      <ProjectReference Include="..\..\Storage\OddJob.Storage.SqlServer.Test\GlutenFree.OddJob.Storage.Sql.SqlServer.Test.csproj" />
+      <ProjectReference Include="..\..\storage\OddJob.Storage.SqlServer\GlutenFree.OddJob.Storage.Sql.SqlServer.csproj" />
+      <ProjectReference Include="..\GlutenFree.OddJob.Rpc.Client\GlutenFree.OddJob.Rpc.Client.csproj" />
+      <ProjectReference Include="..\GlutenFree.OddJob.Rpc.Execution.Plugin\GlutenFree.OddJob.Rpc.Execution.Plugin.csproj" />
+      <ProjectReference Include="..\GlutenFree.OddJob.Rpc.Integration.SimpleInjector\GlutenFree.OddJob.Rpc.Integration.SimpleInjector.csproj" />
+      <ProjectReference Include="..\GlutenFree.OddJob.Rpc.Server.Redis\GlutenFree.OddJob.Rpc.Server.Redis.csproj" />
+    </ItemGroup>
+
+</Project>

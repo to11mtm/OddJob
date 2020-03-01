@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentMigrator">
+      <Version>3.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="FluentMigrator.Abstractions">
+      <Version>3.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="FluentMigrator.Runner.Core">
+      <Version>3.2.1</Version>
+    </PackageReference>
+    <PackageReference Include="linq2db" Version="2.9.6" />
+  </ItemGroup>
+
+</Project>

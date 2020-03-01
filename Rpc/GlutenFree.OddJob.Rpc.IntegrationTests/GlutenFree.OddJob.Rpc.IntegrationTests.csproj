@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+
+        <IsPackable>false</IsPackable>
+
+        <TargetFrameworks>netcoreapp2.1;netcoreapp3.0</TargetFrameworks>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Akka.DI.SimpleInjector" Version="1.3.0" />
+        <PackageReference Include="FluentMigrator.Runner.SqlServer" Version="3.2.1" />
+        <PackageReference Include="Grpc.Core" Version="2.27.0" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.2.0" />
+        <PackageReference Include="SimpleInjector" Version="4.9.0" />
+        <PackageReference Include="xunit" Version="2.4.0" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
+        <PackageReference Include="coverlet.collector" Version="1.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\Core\GlutenFree.OddJob.Integration.SimpleInjector\GlutenFree.OddJob.Integration.SimpleInjector.csproj" />
+      <ProjectReference Include="..\..\core\GlutenFree.OddJob.Serializable\GlutenFree.OddJob.Serializable.csproj" />
+      <ProjectReference Include="..\..\storage\GlutenFree.OddJob.Storage.Sql.SQLite.Test\GlutenFree.OddJob.Storage.Sql.SQLite.Test.csproj" />
+      <ProjectReference Include="..\..\storage\GlutenFree.OddJob.Storage.Sql.TableHelper\GlutenFree.OddJob.Storage.Sql.TableHelper.csproj" />
+      <ProjectReference Include="..\..\execution\OddJob.Execution.Akka.Test\GlutenFree.OddJob.Execution.Akka.Test.csproj" />
+      <ProjectReference Include="..\..\execution\OddJob.Execution.Akka\GlutenFree.OddJob.Execution.Akka.csproj" />
+      <ProjectReference Include="..\GlutenFree.OddJob.Rpc.Execution.Plugin\GlutenFree.OddJob.Rpc.Execution.Plugin.csproj" />
+      <ProjectReference Include="..\GlutenFree.OddJob.Rpc.Integration.SimpleInjector\GlutenFree.OddJob.Rpc.Integration.SimpleInjector.csproj" />
+      <ProjectReference Include="..\..\storage\OddJob.Storage.SQL.Common\GlutenFree.OddJob.Storage.Sql.Common.csproj" />
+      <ProjectReference Include="..\..\storage\OddJob.Storage.SQLite\GlutenFree.OddJob.Storage.Sql.SQLite.csproj" />
+      <ProjectReference Include="..\..\storage\OddJob.Storage.SqlServer.Test\GlutenFree.OddJob.Storage.Sql.SqlServer.Test.csproj" />
+      <ProjectReference Include="..\..\storage\OddJob.Storage.SqlServer\GlutenFree.OddJob.Storage.Sql.SqlServer.csproj" />
+      <ProjectReference Include="..\..\core\OddJob\GlutenFree.OddJob.csproj" />
+      <ProjectReference Include="..\GlutenFree.OddJob.Rpc.Server\GlutenFree.OddJob.Rpc.Server.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
+      <PackageReference Include="Microsoft.NETCore.App" Version="2.1.0" />
+    </ItemGroup>
+
+</Project>

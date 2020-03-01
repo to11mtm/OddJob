@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MagicOnion" Version="3.0.9" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\core\GlutenFree.OddJob.Serializable\GlutenFree.OddJob.Serializable.csproj" />
+      <ProjectReference Include="..\..\core\OddJob\GlutenFree.OddJob.csproj" />
+      <ProjectReference Include="..\GlutenFree.OddJob.Rpc\GlutenFree.OddJob.Rpc.csproj" />
+    </ItemGroup>
+
+</Project>
