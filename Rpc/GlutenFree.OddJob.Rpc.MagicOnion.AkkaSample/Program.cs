@@ -99,6 +99,7 @@ namespace OddJob.Rpc.MagicOnion.AkkaSample
         {
             System.Runtime.GCSettings.LatencyMode =
                 GCLatencyMode.SustainedLowLatency;
+            
             Console.WriteLine(System.Runtime.GCSettings.IsServerGC);
             ServicePointManager.DefaultConnectionLimit = 50;
             bool useSqlServer = true;
@@ -224,7 +225,8 @@ namespace OddJob.Rpc.MagicOnion.AkkaSample
                             ChannelCredentials.Insecure,
                             new IClientFilter[] { }, new ChannelOption[] { }), pool, 10, 30)
                 });
-            /*var jobServer2 = new DependencyInjectedJobExecutorShell(ac=> new SimpleInjectorDependencyResolver(container,ac),null );
+            /*
+            var jobServer2 = new DependencyInjectedJobExecutorShell(ac=> new SimpleInjectorDependencyResolver(container,ac),null );
             jobServer2.StartJobQueue("default", 100, 60,
                 plugins: new IJobExecutionPluginConfiguration[]
                 {
@@ -241,7 +243,8 @@ namespace OddJob.Rpc.MagicOnion.AkkaSample
                         new RpcClientConfiguration("localhost", 9001,
                             ChannelCredentials.Insecure,
                             new IClientFilter[] { }, new ChannelOption[] { }), pool, 10, 30)
-                });*/
+                });
+            */
             Console.WriteLine("Server Started...");
             Console.ReadLine();
             {

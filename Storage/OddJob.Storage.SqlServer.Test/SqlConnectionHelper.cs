@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
@@ -92,38 +93,42 @@ namespace OddJob.Storage.Sql.SqlServer.Test
 
         private static bool _localDbExists = false;
         private static object _existsLock = new Object();
-
+        private static ConcurrentDictionary<string, string> builtConnString = new ConcurrentDictionary<string, string>();
         public static SqlConnection GetLocalDB(string dbName, string dbLocation,
             bool deleteIfExists = false)
         {
-            string outputFolder =
-                (string.IsNullOrWhiteSpace(dbLocation) == false &&
-                 Directory.Exists(dbLocation))
-                    ? dbLocation
-                    : Path.Combine(
-                        Path.GetDirectoryName(Assembly
-                            .GetExecutingAssembly().Location),
-                        DB_DIRECTORY);
-            string mdfFilename = dbName + ".mdf";
-            string dbFileName = Path.Combine(outputFolder, mdfFilename);
-            if (_localDbExists == false)
+            var key = dbName + dbLocation;
+            var connectionString=  builtConnString.GetOrAdd(key, k =>
             {
-                lock (_existsLock)
+                string outputFolder =
+                    (string.IsNullOrWhiteSpace(dbLocation) == false &&
+                     Directory.Exists(dbLocation))
+                        ? dbLocation
+                        : Path.Combine(
+                            Path.GetDirectoryName(Assembly
+                                .GetExecutingAssembly().Location),
+                            DB_DIRECTORY);
+                string mdfFilename = dbName + ".mdf";
+                string dbFileName = Path.Combine(outputFolder, mdfFilename);
+                if (_localDbExists == false)
                 {
-                    if (_localDbExists == false)
+                    lock (_existsLock)
                     {
-                        GetLocalDBimpl(dbLocation, outputFolder, dbFileName,
-                            deleteIfExists);
+                        if (_localDbExists == false)
+                        {
+                            GetLocalDBimpl(dbLocation, outputFolder, dbFileName,
+                                deleteIfExists);
+                        }
                     }
+
+                    _localDbExists = true;
                 }
 
-                _localDbExists = true;
-            }
-            
-            string connectionString =
-                String.Format(
-                    @"Data Source=(LocalDB)\mssqllocaldb;AttachDBFileName={1};Initial Catalog={0};Integrated Security=True;",
-                    dbName, dbFileName);
+               return 
+                    String.Format(
+                        @"Data Source=(LocalDB)\mssqllocaldb;AttachDBFileName={1};Initial Catalog={0};Integrated Security=True;",
+                        dbName, dbFileName);
+            });
             SqlConnection connection = new SqlConnection(connectionString);
             connection.Open();
             return connection;
