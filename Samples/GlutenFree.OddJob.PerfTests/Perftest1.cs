@@ -40,8 +40,13 @@ namespace GlutenFree.OddJob.PerfTests
             sw1.Stop();
             return sw1.Elapsed.TotalSeconds.ToString();
         }
-        [InlineData(new object[]{4,50000})]
+
+        [InlineData(new object[] { 4, 50000 })]
         [Theory]
+        public void PerfTest_MultiThread_Serialized_tst(int threads, int iters)
+        {
+            PerfTest_MultiThread_Serialized(threads, iters);
+        }
         public string PerfTest_MultiThread_Serialized(int threads, int iters)
         {
             return PerfTest_MultiThread(threads, iters, () =>
@@ -58,8 +63,13 @@ namespace GlutenFree.OddJob.PerfTests
                 }
             });
         }
+
         [InlineData(50000)]
         [Theory]
+        public void JobSerialzierPerfTestSlow_tsT(int iters)
+        {
+            JobSerialzierPerfTestSlow(iters);
+        }
         public string JobSerialzierPerfTestSlow(int iters)
         {
             
@@ -78,6 +88,10 @@ namespace GlutenFree.OddJob.PerfTests
         }
         [InlineData(50000)]
         [Theory]
+        public void JobSerialzierPerfTest_Fast_tst(int iters)
+        {
+            JobSerialzierPerfTest_Fast(iters);
+        }
         public string JobSerialzierPerfTest_Fast(int iters)
         {
             
@@ -96,6 +110,10 @@ namespace GlutenFree.OddJob.PerfTests
 
         [InlineData(5000000)]
         [Theory]
+        public void PerfTest_Execute_tst(int iters)
+        {
+            PerfTest_Execute(iters);
+        }
         public string PerfTest_Execute(int iters)
         {
             var sw1 = Stopwatch.StartNew();
@@ -116,6 +134,10 @@ namespace GlutenFree.OddJob.PerfTests
 
         [InlineData(50000)]
         [Theory]
+        public void PerfTest_tst(int iters)
+        {
+            PerfTest(iters);
+        }
             public string PerfTest(int iters)
             {
                 var sw1  = Stopwatch.StartNew();
@@ -132,6 +154,10 @@ namespace GlutenFree.OddJob.PerfTests
             
             [InlineData(new object[]{4,50000})]
             [Theory]
+            public void PerfTest_MultiThread_Base_tst(int threads, int iters)
+            {
+                PerfTest_MultiThread_Base(threads, iters);
+            }
             public string PerfTest_MultiThread_Base(int threads, int iters)
             {
                 return PerfTest_MultiThread(threads, iters, () =>
