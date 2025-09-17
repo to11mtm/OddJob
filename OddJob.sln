@@ -121,6 +121,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OddJob.SignalR.Test", "Rpc\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Rpc.Redis", "Rpc\GlutenFree.OddJob.Rpc.Redis\GlutenFree.OddJob.Rpc.Redis.csproj", "{A044DED4-74F5-41CE-BB99-0725D2BC683D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GlutenFree.OddJob.Manager.Blazor", "GlutenFree.OddJob.Manager.Blazor\GlutenFree.OddJob.Manager.Blazor.csproj", "{36DC8CD3-373A-4ED5-A133-A15791A29478}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -789,6 +791,22 @@ Global
 		{A044DED4-74F5-41CE-BB99-0725D2BC683D}.Release|x64.Build.0 = Release|Any CPU
 		{A044DED4-74F5-41CE-BB99-0725D2BC683D}.Release|x86.ActiveCfg = Release|Any CPU
 		{A044DED4-74F5-41CE-BB99-0725D2BC683D}.Release|x86.Build.0 = Release|Any CPU
+		{36DC8CD3-373A-4ED5-A133-A15791A29478}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36DC8CD3-373A-4ED5-A133-A15791A29478}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36DC8CD3-373A-4ED5-A133-A15791A29478}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{36DC8CD3-373A-4ED5-A133-A15791A29478}.Debug|ARM.Build.0 = Debug|Any CPU
+		{36DC8CD3-373A-4ED5-A133-A15791A29478}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{36DC8CD3-373A-4ED5-A133-A15791A29478}.Debug|x64.Build.0 = Debug|Any CPU
+		{36DC8CD3-373A-4ED5-A133-A15791A29478}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{36DC8CD3-373A-4ED5-A133-A15791A29478}.Debug|x86.Build.0 = Debug|Any CPU
+		{36DC8CD3-373A-4ED5-A133-A15791A29478}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36DC8CD3-373A-4ED5-A133-A15791A29478}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36DC8CD3-373A-4ED5-A133-A15791A29478}.Release|ARM.ActiveCfg = Release|Any CPU
+		{36DC8CD3-373A-4ED5-A133-A15791A29478}.Release|ARM.Build.0 = Release|Any CPU
+		{36DC8CD3-373A-4ED5-A133-A15791A29478}.Release|x64.ActiveCfg = Release|Any CPU
+		{36DC8CD3-373A-4ED5-A133-A15791A29478}.Release|x64.Build.0 = Release|Any CPU
+		{36DC8CD3-373A-4ED5-A133-A15791A29478}.Release|x86.ActiveCfg = Release|Any CPU
+		{36DC8CD3-373A-4ED5-A133-A15791A29478}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -837,6 +855,7 @@ Global
 		{62ECB042-DD3C-4F67-BF01-17E7789EA847} = {485C90AE-0202-4A4A-9894-4678926966AB}
 		{16B003BC-E195-46CF-BF2E-74BA5CF1F51E} = {31F1B59F-0C11-4C3C-8801-1739B78A95C1}
 		{A044DED4-74F5-41CE-BB99-0725D2BC683D} = {31F1B59F-0C11-4C3C-8801-1739B78A95C1}
+		{36DC8CD3-373A-4ED5-A133-A15791A29478} = {0096598A-6564-4255-A1CD-B4097FC07179}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FCDAA670-41E2-41AE-A098-36F68A02ED70}
