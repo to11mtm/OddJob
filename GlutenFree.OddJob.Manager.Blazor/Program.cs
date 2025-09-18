@@ -1,10 +1,25 @@
+using GlutenFree.OddJob.Manager.Blazor;
 using GlutenFree.OddJob.Manager.Blazor.Components;
+using GlutenFree.OddJob.Serializable;
+using GlutenFree.OddJob.Storage.Sql.Common;
+using GlutenFree.OddJob.Storage.Sql.SQLite;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+// OddJob DI setup (Ami-chan magic, uwu!)
+// Use SQLite by default; swap to SqlServerDataConnectionFactory if needed
+builder.Services.AddScoped<OddJobRemotingHandler>();
+builder.Services.AddScoped<IJobSearchProvider, SqlDbJobSearchProvider>();
+builder.Services.AddScoped<IJobQueueDataConnectionFactory>(sp =>
+    new SQLiteJobQueueDataConnectionFactory(
+        builder.Configuration.GetConnectionString("OddJobDb") ?? "Data Source=oddjob.db;Version=3;"
+    ));
+builder.Services.AddScoped<ISqlDbJobQueueTableConfiguration, SqlDbJobQueueDefaultTableConfiguration>();
+builder.Services.AddScoped<IJobTypeResolver, NullOnMissingTypeJobTypeResolver>();
 
 var app = builder.Build();
 

@@ -9,6 +9,7 @@
     <ItemGroup>
       <ProjectReference Include="..\GlutenFree.Linq2Db.Helpers\GlutenFree.Linq2Db.Helpers.csproj" />
       <ProjectReference Include="..\storage\OddJob.Storage.SQL.Common\GlutenFree.OddJob.Storage.Sql.Common.csproj" />
+      <ProjectReference Include="..\storage\OddJob.Storage.SQLite\GlutenFree.OddJob.Storage.Sql.SQLite.csproj" />
     </ItemGroup>
 
 </Project>
