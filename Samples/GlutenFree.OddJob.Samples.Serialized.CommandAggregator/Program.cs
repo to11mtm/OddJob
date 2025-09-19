@@ -1,9 +1,10 @@
 ﻿using System;
-using System.Data.SQLite;
 using System.Linq;
 using Akka.Actor;
 using GlutenFree.OddJob.Execution.Akka;
 using GlutenFree.OddJob.Storage.Sql.Common;
+using Microsoft.Data.Sqlite;
+
 [assembly: System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
 namespace GlutenFree.OddJob.Samples.Serialized.CommandAggregator
 {
@@ -15,7 +16,7 @@ namespace GlutenFree.OddJob.Samples.Serialized.CommandAggregator
     class Program
     {
 
-        private static SQLiteConnection _heldConnection;
+        private static SqliteConnection _heldConnection;
 
         private static BaseJobExecutorShell counterEngine;
         private static BaseJobExecutorShell consoleEngine;

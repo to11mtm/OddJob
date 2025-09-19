@@ -15,7 +15,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
 {
     public class BaseSqlJobQueueAdder : IJobQueueAdder, ISerializedJobQueueAdder
     {
-        private readonly FluentMappingBuilder _mappingSchema;
+        private readonly MappingSchema _mappingSchema;
         private readonly IJobAdderQueueTableResolver _tableResolver;
 
         public BaseSqlJobQueueAdder(IJobQueueDataConnectionFactory jobQueueDataConnectionFactory,
@@ -23,7 +23,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
         {
             _jobQueueConnectionFactory = jobQueueDataConnectionFactory;
 
-            _mappingSchema = MappingSchema.Default.GetFluentMappingBuilder();
+            _mappingSchema = MappingSchema.Default;
             _tableResolver = tableResolver;
         }
 
@@ -34,7 +34,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
 
         public virtual void AddJobs(IEnumerable<SerializableOddJob> jobDataSet)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 foreach (var job in jobDataSet)
                 {
@@ -46,7 +46,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
         public virtual async Task AddJobsAsync(IEnumerable<SerializableOddJob> jobDataSet, CancellationToken cancellationToken = default)
         {
             await SynchronizationContextManager.RemoveContext;
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 foreach (var job in jobDataSet)
                 {
@@ -57,7 +57,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
 
         public virtual void AddJob(SerializableOddJob jobData)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 _addJobImpl(jobData, conn);
             }
@@ -69,8 +69,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
         {
             await SynchronizationContextManager.RemoveContext;
             using (var conn =
-                _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema
-                    .MappingSchema))
+                _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 await _addJobImplAsync(jobData, conn, cancellationToken);
             }
@@ -262,7 +261,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
         public virtual Guid AddJob<TJob>(Expression<Action<Guid,TJob>> jobExpression, RetryParameters retryParameters = null,
             DateTimeOffset? executionTime = null, string queueName = "default")
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 var ser = SerializableJobCreator.CreateJobDefinition(jobExpression, retryParameters, executionTime,queueName);
                 AddJob(ser);

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq.Expressions;
 using LinqToDB.Data;
 using LinqToDB.DataProvider;
@@ -44,13 +45,13 @@ namespace GlutenFree.Linq2Db.Helpers
             this.customVisitors = customVisitors;
         }
 
-        public ExpressionReplacingLinq2DbConnection(IDataProvider dataProvider, IDbConnection connection, List<ExpressionVisitor> customVisitors) : base(
+        public ExpressionReplacingLinq2DbConnection(IDataProvider dataProvider, DbConnection connection, List<ExpressionVisitor> customVisitors) : base(
             dataProvider, connection)
         {
             this.customVisitors = customVisitors;
         }
 
-        public ExpressionReplacingLinq2DbConnection(IDataProvider dataProvider, IDbTransaction transaction, List<ExpressionVisitor> customVisitors) : base(
+        public ExpressionReplacingLinq2DbConnection(IDataProvider dataProvider, DbTransaction transaction, List<ExpressionVisitor> customVisitors) : base(
             dataProvider, transaction)
         {
             this.customVisitors = customVisitors;
@@ -68,19 +69,19 @@ namespace GlutenFree.Linq2Db.Helpers
             this.customVisitors = customVisitors;
         }
 
-        public ExpressionReplacingLinq2DbConnection(IDataProvider dataProvider, IDbConnection connection,
+        public ExpressionReplacingLinq2DbConnection(IDataProvider dataProvider, DbConnection connection,
             MappingSchema mappingSchema, List<ExpressionVisitor> customVisitors) : base(dataProvider, connection, mappingSchema)
         {
             this.customVisitors = customVisitors;
         }
 
-        public ExpressionReplacingLinq2DbConnection(IDataProvider dataProvider, IDbConnection connection,
+        public ExpressionReplacingLinq2DbConnection(IDataProvider dataProvider, DbConnection connection,
             bool disposeConnection, List<ExpressionVisitor> customVisitors) : base(dataProvider, connection, disposeConnection)
         {
             this.customVisitors = customVisitors;
         }
 
-        public ExpressionReplacingLinq2DbConnection(IDataProvider dataProvider, IDbTransaction transaction,
+        public ExpressionReplacingLinq2DbConnection(IDataProvider dataProvider, DbTransaction transaction,
             MappingSchema mappingSchema, List<ExpressionVisitor> customVisitors) : base(dataProvider, transaction, mappingSchema)
         {
             this.customVisitors = customVisitors;

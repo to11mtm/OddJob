@@ -18,7 +18,7 @@ namespace GlutenFree.OddJob.Storage.Sql.SQLite
         }
         public DataConnection CreateDataConnection(MappingSchema mappingSchema)
         {
-            return new DataConnection(ProviderName.SQLiteClassic, _connectionString, mappingSchema);
+            return new DataConnection(ProviderName.SQLiteMS, _connectionString, mappingSchema);
         }
     }
 }

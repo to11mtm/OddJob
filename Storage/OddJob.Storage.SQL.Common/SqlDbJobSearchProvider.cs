@@ -22,7 +22,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
         public IEnumerable<SerializableOddJob> GetSerializableJobsByCriteria(
             Expression<Func<SqlCommonDbOddJobMetaData, bool>> criteria)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 var criteriaQuery = QueueTable(conn).Where(criteria);
                 var resultSet = ExecuteSerializableJoinQuery(criteriaQuery, conn);
@@ -32,7 +32,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
 
         public IEnumerable<IOddJobWithMetadata> GetJobsByCriteria(Expression<Func<SqlCommonDbOddJobMetaData, bool>> criteria)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 var criteriaQuery = QueueTable(conn).Where(criteria);
                 var resultSet = ExecuteJoinQuery(criteriaQuery, conn);
@@ -44,7 +44,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
         public IEnumerable<IOddJobWithMetadata> GetJobsByParameterAndMainCriteria(
             Expression<Func<SqlCommonDbOddJobMetaData, bool>> jobQueryable, Expression<Func<SqlCommonOddJobParamMetaData, bool>> paramQueryable)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
 
                 var criteria = QueueTable(conn)
@@ -59,7 +59,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
 
         public IEnumerable<T> GetJobCriteriaValues<T>(Expression<Func<SqlCommonDbOddJobMetaData, T>> selector)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 return QueueTable(conn)
                     .Select(selector).Distinct().ToList();
@@ -68,7 +68,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
 
         public IEnumerable<T> GetJobCriteriaByCriteria<T>(Expression<Func<SqlCommonDbOddJobMetaData, bool>> criteria, Expression<Func<SqlCommonDbOddJobMetaData, T>> selector)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 var criteriaQuery = QueueTable(conn).Where(criteria);
                 var resultSet = criteriaQuery.Select(selector);
@@ -79,7 +79,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
 
         public IEnumerable<T> GetJobParamCriteriaValues<T>(Expression<Func<SqlCommonOddJobParamMetaData, T>> selector)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 return ParamTable(conn)
                     .Select(selector).Distinct().ToList();
@@ -88,7 +88,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
 
         public bool UpdateJobParameterValues(IEnumerable<SqlCommonOddJobParamMetaData> metaDatas)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 foreach (var metaData in metaDatas)
                 {
@@ -115,7 +115,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
         public bool UpdateJobMetadataAndParameters(JobUpdateCommand commandData)
         {
             //TODO: Make this even safer.
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 bool ableToUpdateJob = true;
                 var updatable = QueueTable(conn)
@@ -175,7 +175,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
             IDictionary<Expression<Func<SqlCommonDbOddJobMetaData, object>>, object> setters, Guid jobGuid,
             string oldStatusIfRequired)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 var updatable = QueueTable(conn)
                     .Where(q => q.JobGuid == jobGuid);
@@ -202,7 +202,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
 
         public bool UpdateJobMetadataFull(SqlCommonDbOddJobMetaData metaDataToUpdate, string oldStatusIfRequired)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 var updatable = QueueTable(conn)
                     .Where(q => q.JobGuid == metaDataToUpdate.JobGuid);

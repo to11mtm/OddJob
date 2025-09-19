@@ -22,7 +22,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
     public class BaseSqlJobQueueManager : IJobQueueManager
     {
         protected readonly ISqlDbJobQueueTableConfiguration _jobQueueTableConfiguration;
-        protected readonly  FluentMappingBuilder _mappingSchema;
+        protected readonly  MappingSchema _mappingSchema;
         private readonly IJobTypeResolver _typeResolver;
 
 
@@ -34,7 +34,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
             _jobQueueTableConfiguration = jobQueueTableConfiguration;
             _typeResolver = typeResolver;
 
-            _mappingSchema = MappingSchema.Default.GetFluentMappingBuilder();
+            _mappingSchema = MappingSchema.Default;
         }
 
         public virtual async Task<IEnumerable<IOddJobWithMetadata>> GetJobsAsync(string[] queueNames,
@@ -43,7 +43,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
         {
             await SynchronizationContextManager.RemoveContext;
             token.ThrowIfCancellationRequested();
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 var lockGuid = Guid.NewGuid();
                 var updateCmd = LockUpdateQuery(fetchSize, orderPredicate, conn,
@@ -67,7 +67,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
             int fetchSize, Expression<Func<JobLockData, object>> orderPredicate)
         {
             
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 //Because our Lock Update Does the lock, we don't bother with a transaction.
                 var lockGuid = Guid.NewGuid();
@@ -153,7 +153,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
 
         public virtual void MarkJobInProgress(Guid jobId)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
 
                 QueueTable(conn)
@@ -169,7 +169,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
         public virtual async Task MarkJobInProgressAsync(Guid jobId, CancellationToken cancellationToken = default)
         {
             await SynchronizationContextManager.RemoveContext;
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
 
                 await QueueTable(conn)
@@ -184,7 +184,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
 
         public virtual void MarkJobInRetryAndIncrement(Guid jobId, DateTime lastAttempt)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
 
                 QueueTable(conn)
@@ -201,7 +201,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
         public virtual async Task MarkJobInRetryAndIncrementAsync(Guid jobId, DateTime lastAttempt, CancellationToken cancellationToken = default)
         {
             await SynchronizationContextManager.RemoveContext;
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
 
                 await QueueTable(conn)
@@ -220,7 +220,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
 
         public virtual IOddJobWithMetadata GetJob(Guid jobId, bool withLock, bool requiresValidStatus)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 var canGet = 1;
                 if (withLock)
@@ -262,7 +262,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
         public virtual async Task<IOddJobWithMetadata> GetJobAsync(Guid jobId, bool withLock,bool requiresValidStatus, CancellationToken cancellationToken = default)
         {
             await SynchronizationContextManager.RemoveContext;
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 var canGet = 1;
                 if (withLock)
@@ -299,7 +299,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
 
         public virtual void MarkJobSuccess(Guid jobGuid)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 QueueTable(conn)
                     .Where(q => q.JobGuid == jobGuid)
@@ -312,7 +312,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
         public virtual async Task MarkJobSuccessAsync(Guid jobGuid, CancellationToken cancellationToken = default)
         {
             await SynchronizationContextManager.RemoveContext;
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
 
                 await QueueTable(conn)
@@ -326,7 +326,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
 
         public virtual void MarkJobFailed(Guid jobGuid)
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                  QueueTable(conn)
                      .Where(q => q.JobGuid == jobGuid)
@@ -340,7 +340,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
         public virtual async Task MarkJobFailedAsync(Guid jobGuid, CancellationToken cancellationToken = default)
         {
             await SynchronizationContextManager.RemoveContext;
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema.MappingSchema))
+            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 await QueueTable(conn)
                     .Where(q => q.JobGuid == jobGuid)

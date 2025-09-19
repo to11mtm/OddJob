@@ -14,7 +14,7 @@ namespace GlutenFree.OddJob.Storage.Sql.BaseTests
         protected SqlStorageTests(ITestOutputHelper outputHelper)
         {
             LinqToDB.Data.DataConnection.TurnTraceSwitchOn();
-            LinqToDB.Data.DataConnection.OnTrace = info =>
+            LinqToDB.Data.DataConnection.DefaultOnTraceConnection = info =>
             {
                 try
                 {

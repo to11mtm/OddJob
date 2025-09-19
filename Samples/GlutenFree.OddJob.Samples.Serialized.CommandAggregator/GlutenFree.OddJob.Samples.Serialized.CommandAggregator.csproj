@@ -10,7 +10,6 @@
   <ItemGroup>
     <PackageReference Include="Akka" Version="1.5.49" />
     <PackageReference Include="SimpleInjector" Version="4.9.0" />
-    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.112" />
   </ItemGroup>
 
   <ItemGroup>

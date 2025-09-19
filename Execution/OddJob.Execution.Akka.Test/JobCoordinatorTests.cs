@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Akka.Actor;
 using Akka.Routing;
 using GlutenFree.OddJob.Execution.Akka.Messages;
@@ -54,7 +55,7 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
         }
 
         [Fact]
-        public void JobCoordinator_Will_Fire_OnJobQueueSaturation()
+        public async Task JobCoordinator_Will_Fire_OnJobQueueSaturation()
         {
             var queueName = QueueNameHelper.CreateQueueName();
             //TODO: Make this less like an integration test; there's no reason we couldn't mock this out with just testprobe.
@@ -72,7 +73,7 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             coordinator.Tell(new JobSweep());
             coordinator.Tell(new JobSweep());
             coordinator.Tell(new JobSweep());
-            SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(3));
+            await Task.Delay(TimeSpan.FromSeconds(5));
             Xunit.Assert.True(0<CountingOnJobQueueSaturatedCoordinator.pulseCount[queueName]);
             Xunit.Assert.True(DelayJob.MsgCounter.ContainsKey("qs-1"));
             Xunit.Assert.True(DelayJob.MsgCounter.ContainsKey("qs-2"));

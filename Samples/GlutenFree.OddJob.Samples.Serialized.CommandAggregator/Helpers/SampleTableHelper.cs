@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Data;
-using System.Data.SQLite;
 using System.Runtime.CompilerServices;
 using GlutenFree.OddJob.Storage.Sql.SQLite;
 using GlutenFree.OddJob.Storage.Sql.Common;
+using Microsoft.Data.Sqlite;
 
 namespace GlutenFree.OddJob.Samples.Serialized.CommandAggregator
 {
@@ -13,12 +13,12 @@ namespace GlutenFree.OddJob.Samples.Serialized.CommandAggregator
         /// <summary>
         /// This is here because SQLite will only hold In-memory DBs as long as ONE connection is open. so we just open one here and keep it around for appdomain life.
         /// </summary>
-        public static readonly SQLiteConnection heldConnection;
+        public static readonly SqliteConnection heldConnection;
 
         public static bool TablesCreated = false;
         static SampleTableHelper()
         {
-            heldConnection = new SQLiteConnection(connString);
+            heldConnection = new SqliteConnection(connString);
         }
 
         //We only want this to execute once for the sample.
@@ -38,7 +38,7 @@ namespace GlutenFree.OddJob.Samples.Serialized.CommandAggregator
 
             foreach (var tableConfiguration in configs)
             {
-                using (var db = new SQLiteConnection(connString))
+                using (var db = new SqliteConnection(connString))
                 {
                     db.Open();
                     using (var cmd = db.CreateCommand())

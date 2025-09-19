@@ -46,7 +46,7 @@ namespace OddJob.Rpc.IntegrationTests
             ServicePointManager.DefaultConnectionLimit = 50;
             var container = new Container();           
             container.Register<IContainerFactory, SimpleInjectorContainerFactory>();
-            bool useSqlServer = true;
+            bool useSqlServer = false;
             
             if (useSqlServer)
             {
@@ -116,7 +116,8 @@ namespace OddJob.Rpc.IntegrationTests
             else
             {
                 SQLiteUnitTestTableHelper.EnsureTablesExist();
-                var cmd = AkkaTestUnitTestTableHelper.heldConnection.OpenAndReturn().CreateCommand();
+                AkkaTestUnitTestTableHelper.heldConnection.Open();
+                var cmd = AkkaTestUnitTestTableHelper.heldConnection.CreateCommand();
                 var tableHelper = new SqlTableHelper(
                     new SQLiteJobQueueDataConnectionFactory(SQLiteUnitTestTableHelper
                         .connString), new SQLiteGenerator());
