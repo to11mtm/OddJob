@@ -195,7 +195,7 @@ namespace GlutenFree.OddJob.Execution.Akka
             {
                 ShutDownQueue(key);
             }
-            _actorSystem.Terminate().RunSynchronously();
+            _actorSystem.Terminate().Wait();
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using Akka.Actor;
+using Akka.Event;
 using GlutenFree.OddJob.Execution.Akka.Messages;
 using GlutenFree.OddJob.Interfaces;
 
