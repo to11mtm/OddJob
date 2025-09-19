@@ -1,19 +1,22 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Akka.Actor;
 using GlutenFree.OddJob.Execution.Akka.Messages;
 
 namespace GlutenFree.OddJob.Execution.Akka
 {
-    public class JobWorkerActor : ActorBase
+    public class JobWorkerActor : ReceiveActor
     {
         public IJobExecutor _jobExecutor { get; protected set; }
 
         public JobWorkerActor(IJobExecutor jobExecutor)
         {
             _jobExecutor = jobExecutor;
+            ReceiveAsync<object>(ReceiveMethod, message => 
+                message is ExecuteJobRequest || message is ShutDownQueues);
         }
 
-        protected override bool Receive(object message)
+        protected async Task<bool> ReceiveMethod(object message)
         {
             if (message is ShutDownQueues)
             {
@@ -22,7 +25,7 @@ namespace GlutenFree.OddJob.Execution.Akka
             }
             else if (message is ExecuteJobRequest)
             {
-                RunJob(message as ExecuteJobRequest);
+                await RunJob(message as ExecuteJobRequest);
             }
             else
             {
@@ -31,11 +34,11 @@ namespace GlutenFree.OddJob.Execution.Akka
             }
             return true;
         }
-        public void RunJob(ExecuteJobRequest request)
+        public async Task RunJob(ExecuteJobRequest request)
         {
             try
             {
-                var res = _jobExecutor.ExecuteJob(request.JobData);
+                var res = await _jobExecutor.ExecuteJobAsync(request.JobData);
                 Context.Sender.Tell(new JobSuceeded(request.JobData,res));
             }
             catch(Exception ex)

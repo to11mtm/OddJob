@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using GlutenFree.OddJob.Interfaces;
 
 namespace GlutenFree.OddJob
@@ -114,16 +116,17 @@ namespace GlutenFree.OddJob
     public static class ExecutionCacheContainer
     {
         private static ConcurrentDictionary<Type, ConcurrentDictionary<int,
-            Func<object, object[], object>>> cache =
-            new ConcurrentDictionary<Type, ConcurrentDictionary<int,
-                Func<object, object[], object>>>();
+            (bool isAsync, Func<object, object[], Task<object>> func)>> cache =
+            new ConcurrentDictionary<Type, ConcurrentDictionary<int, (bool isAsync, Func<object, object[], Task<object>> func)>>();
 
-        public  static ConcurrentDictionary<int, Func<object, object[], object>>
-            GetContainer(Type forType)
+        public static ConcurrentDictionary<
+                int,
+                (bool isAsync, Func<object, object[], Task<object>> func)>
+            GetContainer(
+                Type forType)
         {
             return cache.GetOrAdd(forType,
-                type=> new ConcurrentDictionary<int, Func<object, object[], object>
-                >());
+                type => new ConcurrentDictionary<int, (bool isAsync, Func<object, object[], Task<object>> func)>());
         }
     }
     public class DefaultJobExecutor : IJobExecutor
@@ -135,12 +138,45 @@ namespace GlutenFree.OddJob
 
         private IContainerFactory _containerFactory;
      
+        public static Task<T> FromResult<T>(T result)
+        {
+            return Task.FromResult<T>(result);
+        }
+        
+        public static async Task<object> FromValueTaskT<T>(ValueTask<T> valueTask)
+        {
+            var result = await valueTask;
+            return result;
+        }
+        
+        public static async Task<object> FromValueTask(ValueTask valueTask)
+        {
+            await valueTask.AsTask();
+            return null;
+        }
+        
+        public static async Task<object> FromTaskT<T>(Task<T> task)
+        {
+            return await task;
+        }
+
+        public static async Task<object> FromTask(Task task)
+        {
+            await task;
+            return null;
+        }
+
+        public static Task<object> FromVoid()
+        {
+            return Task.FromResult<object>(null);
+        }
+        
         /// <summary>
         /// Creates a Delegate to execute a given MethodInfo
         /// </summary>
         /// <param name="method">The Method to execute</param>
         /// <returns>A built Delegate</returns>
-        private Func<object,object[],object> CreateExpr(MethodInfo method)
+        private (bool isAsync, Func<object, object[], Task<object>> builtFunc) CreateExpr(MethodInfo method)
         {
             var args = method.GetParameters();
             Expression inInstance = null;
@@ -148,6 +184,7 @@ namespace GlutenFree.OddJob
             var instancePar = Expression.Parameter(typeof(object), "instance");
             var param = Expression.Parameter(typeof(object[]), "inArgs");
             Expression[] convArgs = new Expression[args.Length];
+            bool isAsync = false;
             // (inArgs[0],inArgs[1].....)
             for(int i=0; i<args.Length;i++)
             {
@@ -165,22 +202,115 @@ namespace GlutenFree.OddJob
             }
             if (method.ReturnType == typeof(void))
             {
+                var mi = typeof(DefaultJobExecutor)
+                    .GetMethod(nameof(FromVoid), BindingFlags.Static|BindingFlags.Public);
+                
                 // If void, we return NULL.
                 // Our calling convention ensures we still show VOID
                 // When the call returns.
                 call = Expression.Block(
                     Expression.Call(inInstance, method, convArgs),
-                    Expression.Constant(null, typeof(object)));
+                    Expression.Call(mi));
+            }
+            else if (method.ReturnType.IsGenericType && method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
+            {
+                isAsync = true;
+                var mi = typeof(DefaultJobExecutor).GetMethod(nameof(FromTaskT),
+                    BindingFlags.Static | BindingFlags.Public);
+                var genMi = mi.MakeGenericMethod(method.ReturnType.GetGenericArguments());
+                call = Expression.Block(
+                    Expression.Call(null, genMi, Expression.Call(inInstance, method, convArgs)));
+            }
+            else if (method.ReturnType.IsGenericType &&
+                     method.ReturnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
+                {
+                    isAsync = true;
+                    var mi = typeof(DefaultJobExecutor).GetMethod(nameof(FromValueTaskT),
+                        BindingFlags.Static | BindingFlags.Public);
+                    var genMi = mi.MakeGenericMethod(method.ReturnType.GetGenericArguments());
+                    call = Expression.Block(
+                        Expression.Call(null, genMi, Expression.Call(inInstance, method, convArgs)));
+                }
+                else if (method.ReturnType == typeof(Task))
+                {
+                    isAsync = true;
+                    var mi = typeof(DefaultJobExecutor).GetMethod(nameof(FromTask),
+                        BindingFlags.Static | BindingFlags.Public);
+                    var genMi = mi;//.MakeGenericMethod(method.ReturnType.GetGenericParameterConstraints());
+                    call = Expression.Block(
+                        Expression.Call(null, genMi, Expression.Call(inInstance, method, convArgs)));
+                }
+                else if (method.ReturnType == typeof(ValueTask))
+            {
+                isAsync = true;
+                var mi = typeof(DefaultJobExecutor).GetMethod(nameof(FromValueTask),
+                    BindingFlags.Static | BindingFlags.Public);
+                var genMi = mi;//.MakeGenericMethod(method.ReturnType.GetGenericParameterConstraints());
+                call = Expression.Block(
+                    Expression.Call(null, genMi, Expression.Call(inInstance, method, convArgs)));
             }
             else
             {
                 // Do the call. Convert is relatively cheap when not needed,
                 // So for now we don't worry about whether to box or not.
-                call = Expression.Convert(Expression.Call(inInstance, method, convArgs), typeof(object));
+                var mi = typeof(DefaultJobExecutor).GetMethod(nameof(FromResult),
+                    BindingFlags.Static | BindingFlags.Public);
+                var genMi = mi.MakeGenericMethod(method.ReturnType);
+                call = Expression.Block(
+                    Expression.Call(null, genMi, Expression.Call(inInstance, method, convArgs)));
             }
-            return Expression.Lambda<Func<object, object[], object>>(call, instancePar, param).Compile();
+
+            return (isAsync, Expression.Lambda<Func<object, object[], Task<object>>>(call, instancePar, param).Compile());
         }
         public static bool UseBuiltExpressions = true;
+
+        public async Task<IOddJobResult> ExecuteJobAsync(IOddJob expr)
+        {
+            //IsAbstract and IsSealed means we are dealing with a static class invocation and want NULL.
+            var instance = (expr.TypeExecutedOn.IsAbstract && expr.TypeExecutedOn.IsSealed)
+                    ? null
+                    : _containerFactory.CreateInstance(expr.TypeExecutedOn)
+                ;
+            MethodInfo method = null;
+            
+            method = MethodInfoHelper.GetMethodInfoForExpr(expr);
+
+            //var method = expr.TypeExecutedOn.GetMethod(expr.MethodName, expr.JobArgs.Select(q=>q.Value.GetType()).ToArray());
+
+            var args = expr.JobArgs;
+            object result = null;
+            try
+            {
+
+            
+            if (UseBuiltExpressions)
+            {
+                var mc = ExecutionCacheContainer
+                    .GetContainer(expr.TypeExecutedOn)
+                    .GetOrAdd(method.GetHashCode(), (mi) => CreateExpr(method));
+                result = await mc.func(instance, GetValues(args));
+
+            }
+            else
+            {
+                result = method.Invoke(instance, GetValues(args));
+            }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+            _containerFactory.Release(instance);
+            if (method.ReturnType != typeof(void))
+            {
+                return new OddJobResult() {Result = result, ReturnType = method.ReturnType};
+            }
+            else
+            {
+                return new OddJobResult() {Result = result, ReturnType = method.ReturnType};
+            }
+        }
         public IOddJobResult ExecuteJob(IOddJob expr)
         {
             //IsAbstract and IsSealed means we are dealing with a static class invocation and want NULL.
@@ -201,7 +331,7 @@ namespace GlutenFree.OddJob
                 var mc = ExecutionCacheContainer
                     .GetContainer(expr.TypeExecutedOn)
                     .GetOrAdd(method.GetHashCode(), (mi) => CreateExpr(method));
-                result = mc(instance, GetValues(args));
+                result = mc.func(instance, GetValues(args)).Result;
             }
             else
             {

@@ -1,4 +1,5 @@
-﻿using GlutenFree.OddJob.Interfaces;
+﻿using System.Threading.Tasks;
+using GlutenFree.OddJob.Interfaces;
 
 namespace GlutenFree.OddJob.Execution.Akka.Test.Mocks
 {
@@ -10,6 +11,16 @@ namespace GlutenFree.OddJob.Execution.Akka.Test.Mocks
             {
                 ReturnType =
                     MethodInfoHelper.GetMethodInfoForExpr(job).ReturnType,
+                Result = null
+            };
+        }
+
+        public async Task<IOddJobResult> ExecuteJobAsync(IOddJob requestJobData)
+        {
+            return new OddJobResult()
+            {
+                ReturnType =
+                    MethodInfoHelper.GetMethodInfoForExpr(requestJobData).ReturnType,
                 Result = null
             };
         }

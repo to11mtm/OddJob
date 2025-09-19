@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Akka.DI.SimpleInjector;
 using GlutenFree.OddJob.Execution.Akka.Test.Mocks;
 using GlutenFree.OddJob.Integration.SimpleInjector;
@@ -73,7 +74,7 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
         }
 
         [Fact]
-        public void DI_Semantics_Allow_Overridden_Coordinator()
+        public async Task DI_Semantics_Allow_Overridden_Coordinator()
         {
             var queueName = QueueNameHelper.CreateQueueName();
             var container = new SimpleInjector.Container();
@@ -97,7 +98,8 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
                 () => new JobWorkerActor(new DefaultJobExecutor(new DefaultContainerFactory())), null);*/
             jobStore.AddJob((DIShellMockJob m) => m.DoThing(nameof(DI_Semantics_Allow_Overridden_Coordinator), 0), null, null, queueName);
             executor.StartJobQueue(queueName, 5, 3, 1);
-            SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(5));
+            await Task.Delay(TimeSpan.FromSeconds(5));
+            //SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(5));
             Xunit.Assert.True(
                 DIShellMockJob.MyCounter.ContainsKey(nameof(DI_Semantics_Allow_Overridden_Coordinator)));
             Xunit.Assert.Equal(1, OverriddenJobCoordinator.Succeeded);
