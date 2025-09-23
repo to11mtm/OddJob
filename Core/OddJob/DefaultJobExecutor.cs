@@ -13,8 +13,12 @@ namespace GlutenFree.OddJob
 
     public static class MethodInfoHelper
     {
-        public static ConcurrentDictionary<int, MethodInfo> genericMethodInfoHash = new ConcurrentDictionary<int, MethodInfo>();
-        public static ConcurrentDictionary<int, MethodInfo> nonGenericMethodInfoHash = new ConcurrentDictionary<int, MethodInfo>();
+        public static ConcurrentDictionary<int, MethodInfo> genericMethodInfoHash =
+            new ConcurrentDictionary<int, MethodInfo>();
+
+        public static ConcurrentDictionary<int, MethodInfo> nonGenericMethodInfoHash =
+            new ConcurrentDictionary<int, MethodInfo>();
+
         public static MethodInfo GetMethodInfoForExpr(IOddJob expr)
         {
             var args = expr.JobArgs;
@@ -32,20 +36,23 @@ namespace GlutenFree.OddJob
                                    expr.MethodGenericTypes[i]
                                        .GetHashCode());
                 }
+
                 hc = unchecked(hc * 31 + args.Length);
                 for (int i = 0; i < args.Length; i++)
                 {
                     hc = unchecked(hc * 31 +
                                    args[i].Type.GetHashCode());
                 }
+
                 method = genericMethodInfoHash.GetOrAdd(hc,
                     i => createGenericMethod(expr));
                 if (expr.TypeExecutedOn.IsAssignableFrom(
-                    method.DeclaringType) == false)
+                        method.DeclaringType) == false)
                 {
                     //Hash Collision. unlikely we'd get here, but let's be sure. :)
                     method = createGenericMethod(expr);
                 }
+
                 if (method == null)
                 {
                     throw new ArgumentException(
@@ -64,7 +71,7 @@ namespace GlutenFree.OddJob
                     (h) => expr.TypeExecutedOn.GetMethod(expr.MethodName,
                         expr.JobArgs.Select(q => q.Value.GetType()).ToArray()));
                 if (expr.TypeExecutedOn.IsAssignableFrom(
-                    method.DeclaringType) == false)
+                        method.DeclaringType) == false)
                 {
                     //Hash Collision. unlikely we'd get here, but let's be sure. :)
                     method = expr.TypeExecutedOn.GetMethod(expr.MethodName,
@@ -73,7 +80,8 @@ namespace GlutenFree.OddJob
 
                 if (method == null)
                 {
-                    throw new ArgumentException($"Could not find method for Type {expr.TypeExecutedOn.Name}, Method {expr.MethodName}");
+                    throw new ArgumentException(
+                        $"Could not find method for Type {expr.TypeExecutedOn.Name}, Method {expr.MethodName}");
                 }
             }
 
@@ -117,7 +125,8 @@ namespace GlutenFree.OddJob
     {
         private static ConcurrentDictionary<Type, ConcurrentDictionary<int,
             (bool isAsync, Func<object, object[], Task<object>> func)>> cache =
-            new ConcurrentDictionary<Type, ConcurrentDictionary<int, (bool isAsync, Func<object, object[], Task<object>> func)>>();
+            new ConcurrentDictionary<Type,
+                ConcurrentDictionary<int, (bool isAsync, Func<object, object[], Task<object>> func)>>();
 
         public static ConcurrentDictionary<
                 int,
@@ -129,6 +138,7 @@ namespace GlutenFree.OddJob
                 type => new ConcurrentDictionary<int, (bool isAsync, Func<object, object[], Task<object>> func)>());
         }
     }
+
     public class DefaultJobExecutor : IJobExecutor
     {
         public DefaultJobExecutor(IContainerFactory containerFactory)
@@ -137,24 +147,24 @@ namespace GlutenFree.OddJob
         }
 
         private IContainerFactory _containerFactory;
-     
+
         public static Task<T> FromResult<T>(T result)
         {
             return Task.FromResult<T>(result);
         }
-        
+
         public static async Task<object> FromValueTaskT<T>(ValueTask<T> valueTask)
         {
             var result = await valueTask;
             return result;
         }
-        
+
         public static async Task<object> FromValueTask(ValueTask valueTask)
         {
             await valueTask.AsTask();
             return null;
         }
-        
+
         public static async Task<object> FromTaskT<T>(Task<T> task)
         {
             return await task;
@@ -170,7 +180,7 @@ namespace GlutenFree.OddJob
         {
             return Task.FromResult<object>(null);
         }
-        
+
         /// <summary>
         /// Creates a Delegate to execute a given MethodInfo
         /// </summary>
@@ -186,12 +196,14 @@ namespace GlutenFree.OddJob
             Expression[] convArgs = new Expression[args.Length];
             bool isAsync = false;
             // (inArgs[0],inArgs[1].....)
-            for(int i=0; i<args.Length;i++)
+            for (int i = 0; i < args.Length; i++)
             {
-                convArgs[i] = Expression.Convert(Expression.ArrayAccess(param, Expression.Constant(i)), args[i].ParameterType);
+                convArgs[i] = Expression.Convert(Expression.ArrayAccess(param, Expression.Constant(i)),
+                    args[i].ParameterType);
             }
+
             Expression call = null;
-            if (method.IsStatic && method.IsDefined(typeof(ExtensionAttribute), false) == false) 
+            if (method.IsStatic && method.IsDefined(typeof(ExtensionAttribute), false) == false)
             {
                 // don't set an instance for a static/extension,
                 // will throw if we do
@@ -200,11 +212,12 @@ namespace GlutenFree.OddJob
             {
                 inInstance = Expression.Convert(instancePar, method.DeclaringType);
             }
+
             if (method.ReturnType == typeof(void))
             {
                 var mi = typeof(DefaultJobExecutor)
-                    .GetMethod(nameof(FromVoid), BindingFlags.Static|BindingFlags.Public);
-                
+                    .GetMethod(nameof(FromVoid), BindingFlags.Static | BindingFlags.Public);
+
                 // If void, we return NULL.
                 // Our calling convention ensures we still show VOID
                 // When the call returns.
@@ -223,29 +236,29 @@ namespace GlutenFree.OddJob
             }
             else if (method.ReturnType.IsGenericType &&
                      method.ReturnType.GetGenericTypeDefinition() == typeof(ValueTask<>))
-                {
-                    isAsync = true;
-                    var mi = typeof(DefaultJobExecutor).GetMethod(nameof(FromValueTaskT),
-                        BindingFlags.Static | BindingFlags.Public);
-                    var genMi = mi.MakeGenericMethod(method.ReturnType.GetGenericArguments());
-                    call = Expression.Block(
-                        Expression.Call(null, genMi, Expression.Call(inInstance, method, convArgs)));
-                }
-                else if (method.ReturnType == typeof(Task))
-                {
-                    isAsync = true;
-                    var mi = typeof(DefaultJobExecutor).GetMethod(nameof(FromTask),
-                        BindingFlags.Static | BindingFlags.Public);
-                    var genMi = mi;//.MakeGenericMethod(method.ReturnType.GetGenericParameterConstraints());
-                    call = Expression.Block(
-                        Expression.Call(null, genMi, Expression.Call(inInstance, method, convArgs)));
-                }
-                else if (method.ReturnType == typeof(ValueTask))
+            {
+                isAsync = true;
+                var mi = typeof(DefaultJobExecutor).GetMethod(nameof(FromValueTaskT),
+                    BindingFlags.Static | BindingFlags.Public);
+                var genMi = mi.MakeGenericMethod(method.ReturnType.GetGenericArguments());
+                call = Expression.Block(
+                    Expression.Call(null, genMi, Expression.Call(inInstance, method, convArgs)));
+            }
+            else if (method.ReturnType == typeof(Task))
+            {
+                isAsync = true;
+                var mi = typeof(DefaultJobExecutor).GetMethod(nameof(FromTask),
+                    BindingFlags.Static | BindingFlags.Public);
+                var genMi = mi; //.MakeGenericMethod(method.ReturnType.GetGenericParameterConstraints());
+                call = Expression.Block(
+                    Expression.Call(null, genMi, Expression.Call(inInstance, method, convArgs)));
+            }
+            else if (method.ReturnType == typeof(ValueTask))
             {
                 isAsync = true;
                 var mi = typeof(DefaultJobExecutor).GetMethod(nameof(FromValueTask),
                     BindingFlags.Static | BindingFlags.Public);
-                var genMi = mi;//.MakeGenericMethod(method.ReturnType.GetGenericParameterConstraints());
+                var genMi = mi; //.MakeGenericMethod(method.ReturnType.GetGenericParameterConstraints());
                 call = Expression.Block(
                     Expression.Call(null, genMi, Expression.Call(inInstance, method, convArgs)));
             }
@@ -260,8 +273,10 @@ namespace GlutenFree.OddJob
                     Expression.Call(null, genMi, Expression.Call(inInstance, method, convArgs)));
             }
 
-            return (isAsync, Expression.Lambda<Func<object, object[], Task<object>>>(call, instancePar, param).Compile());
+            return (isAsync,
+                Expression.Lambda<Func<object, object[], Task<object>>>(call, instancePar, param).Compile());
         }
+
         public static bool UseBuiltExpressions = true;
 
         public async Task<IOddJobResult> ExecuteJobAsync(IOddJob expr)
@@ -272,7 +287,7 @@ namespace GlutenFree.OddJob
                     : _containerFactory.CreateInstance(expr.TypeExecutedOn)
                 ;
             MethodInfo method = null;
-            
+
             method = MethodInfoHelper.GetMethodInfoForExpr(expr);
 
             //var method = expr.TypeExecutedOn.GetMethod(expr.MethodName, expr.JobArgs.Select(q=>q.Value.GetType()).ToArray());
@@ -282,35 +297,37 @@ namespace GlutenFree.OddJob
             try
             {
 
-            
-            if (UseBuiltExpressions)
-            {
-                var mc = ExecutionCacheContainer
-                    .GetContainer(expr.TypeExecutedOn)
-                    .GetOrAdd(method.GetHashCode(), (mi) => CreateExpr(method));
-                result = await mc.func(instance, GetValues(args));
 
-            }
-            else
-            {
-                result = method.Invoke(instance, GetValues(args));
-            }
+                if (UseBuiltExpressions)
+                {
+                    var mc = ExecutionCacheContainer
+                        .GetContainer(expr.TypeExecutedOn)
+                        .GetOrAdd(method.GetHashCode(), (mi) => CreateExpr(method));
+                    result = await mc.func(instance, GetValues(args));
+
+                }
+                else
+                {
+                    result = method.Invoke(instance, GetValues(args));
+                }
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
                 throw;
             }
+
             _containerFactory.Release(instance);
             if (method.ReturnType != typeof(void))
             {
-                return new OddJobResult() {Result = result, ReturnType = method.ReturnType};
+                return new OddJobResult() { Result = result, ReturnType = method.ReturnType };
             }
             else
             {
-                return new OddJobResult() {Result = result, ReturnType = method.ReturnType};
+                return new OddJobResult() { Result = result, ReturnType = method.ReturnType };
             }
         }
+
         public IOddJobResult ExecuteJob(IOddJob expr)
         {
             //IsAbstract and IsSealed means we are dealing with a static class invocation and want NULL.
@@ -319,7 +336,7 @@ namespace GlutenFree.OddJob
                     : _containerFactory.CreateInstance(expr.TypeExecutedOn)
                 ;
             MethodInfo method = null;
-            
+
             method = MethodInfoHelper.GetMethodInfoForExpr(expr);
 
             //var method = expr.TypeExecutedOn.GetMethod(expr.MethodName, expr.JobArgs.Select(q=>q.Value.GetType()).ToArray());
@@ -337,24 +354,27 @@ namespace GlutenFree.OddJob
             {
                 result = method.Invoke(instance, GetValues(args));
             }
+
             _containerFactory.Release(instance);
             if (method.ReturnType != typeof(void))
             {
-                return new OddJobResult() {Result = result, ReturnType = method.ReturnType};
+                return new OddJobResult() { Result = result, ReturnType = method.ReturnType };
             }
             else
             {
-                return new OddJobResult() {Result = result, ReturnType = method.ReturnType};
+                return new OddJobResult() { Result = result, ReturnType = method.ReturnType };
             }
         }
+
         //private ArrayPool<object> arrayPool = new ArrayPool<object>
         private static object[] GetValues(OddJobParameter[] args)
         {
             var objArr = new object[args.Length];
-            for(int i=0; i<args.Length; i++)
+            for (int i = 0; i < args.Length; i++)
             {
                 objArr[i] = args[i].Value;
             }
+
             return objArr;
         }
 
