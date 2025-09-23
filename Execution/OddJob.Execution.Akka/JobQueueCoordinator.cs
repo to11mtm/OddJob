@@ -295,6 +295,14 @@ namespace GlutenFree.OddJob.Execution.Akka
                 JobQueueReaderRef.Tell(message);
             }
         }
+
+        protected override void PreRestart(Exception reason, object message)
+        {
+            Context.GetLogger().Log(LogLevel.ErrorLevel, reason, "Boom! Restarting Queue Coordinator for Queue {0}",
+                QueueName);
+            base.PreRestart(reason, message);
+        }
+
         private void HandleSweep(object message)
         {
             //Naieve Backpressure:

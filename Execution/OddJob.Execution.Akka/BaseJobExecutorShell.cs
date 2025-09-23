@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Akka.Actor;
 using Akka.Configuration;
 using GlutenFree.OddJob.Execution.Akka.Messages;
@@ -188,6 +189,38 @@ namespace GlutenFree.OddJob.Execution.Akka
                 }
             }
         }
+
+        public async Task ShutDownQueueAsync(string queueName, int timeoutInSeconds = 120)
+        {
+            try
+            {
+                if (cancelPulsePool.ContainsKey(queueName))
+                {
+                    if (!cancelPulsePool[queueName].IsCancellationRequested)
+                    {
+                        cancelPulsePool[queueName].Cancel();
+                    }
+                }
+
+                if (coordinatorPool.ContainsKey(queueName))
+                {
+                    var result = await coordinatorPool[queueName]
+                        .Ask(new ShutDownQueues(), TimeSpan.FromSeconds(timeoutInSeconds))
+                        .ConfigureAwait(false) as QueueShutDown;
+                }
+
+                if (coordinatorPool.ContainsKey(queueName))
+                {
+                    coordinatorPool[queueName].Tell(PoisonPill.Instance);
+                }
+            }
+            finally
+            {
+                cancelPulsePool.Remove(queueName);
+                coordinatorPool.Remove(queueName);
+            }
+        }
+
         public void Dispose()
         {
             var keys = cancelPulsePool.Select(q => q.Key).ToList();

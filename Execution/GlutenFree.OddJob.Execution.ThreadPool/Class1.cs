@@ -251,7 +251,7 @@ namespace GlutenFree.OddJob.Execution.ThreadPool
                 {
                     try
                     {
-                        _jobExecutor.ExecuteJob(jobWithMetadata);
+                        _jobExecutor.ExecuteJobAsync(jobWithMetadata).Wait();
                         _jobStateHandler.HandleSuccess(jobWithMetadata);
                     }
                     catch (Exception e)
