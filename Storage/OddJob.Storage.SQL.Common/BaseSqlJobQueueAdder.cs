@@ -270,7 +270,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
             RetryParameters retryParameters,
             DateTimeOffset? executionTime, string queueName, CancellationToken cancellationToken)
         {
-            var ser = SerializableJobCreator.CreateJobDefinition<TJob>(jobExpression, retryParameters, executionTime,
+            var ser = SerializableJobCreator.CreateJobDefinitionImpl<TJob>(jobExpression, retryParameters, executionTime,
                 queueName);
             await AddJobAsync(ser, cancellationToken);
             return ser.JobId;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using GlutenFree.OddJob.Interfaces;
 using Newtonsoft.Json;
 
@@ -61,8 +62,26 @@ namespace GlutenFree.OddJob.Serializable
             var job = JobCreator.Create(jobExpression);
             return Serialize<T>(retryParameters, executionTime, queueName, typeNameSerializer, job);
         }
+
+        public static SerializableOddJob CreateJobDefinition<T>(Expression<Func<Task>> jobExpression,
+            RetryParameters retryParameters = null, DateTimeOffset? executionTime = null, string queueName = "default",
+            ITypeNameSerializer typeNameSerializer = null)
+            => CreateJobDefinitionImpl<T>(jobExpression, retryParameters, executionTime,
+                queueName, typeNameSerializer);
         
-        public static SerializableOddJob CreateJobDefinition<T>(LambdaExpression jobExpression,
+        public static SerializableOddJob CreateJobDefinition<T>(Expression<Func<T, ValueTask>> jobExpression,
+            RetryParameters retryParameters = null, DateTimeOffset? executionTime = null, string queueName = "default",
+            ITypeNameSerializer typeNameSerializer = null)
+            => CreateJobDefinitionImpl<T>(jobExpression, retryParameters, executionTime,
+                queueName, typeNameSerializer);
+        
+        public static SerializableOddJob CreateJobDefinition<T,TOut>(Expression<Func<T, ValueTask<TOut>>> jobExpression,
+            RetryParameters retryParameters = null, DateTimeOffset? executionTime = null, string queueName = "default",
+            ITypeNameSerializer typeNameSerializer = null)
+            => CreateJobDefinitionImpl<T>(jobExpression, retryParameters, executionTime,
+                queueName, typeNameSerializer);
+        
+        public static SerializableOddJob CreateJobDefinitionImpl<T>(LambdaExpression jobExpression,
             RetryParameters retryParameters = null, DateTimeOffset? executionTime = null, string queueName = "default", ITypeNameSerializer typeNameSerializer=null)
         {
             var job = JobCreator.Create<T>(jobExpression);
