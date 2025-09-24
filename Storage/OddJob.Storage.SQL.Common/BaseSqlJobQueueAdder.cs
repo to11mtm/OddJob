@@ -36,10 +36,12 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
         {
             using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
+                using var tx = conn.BeginTransaction();
                 foreach (var job in jobDataSet)
                 {
                     _addJobImpl(job, conn);
                 }
+                tx.Commit();
             }
         }
 
@@ -49,10 +51,14 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
             await SynchronizationContextManager.RemoveContext;
             using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
+                //TODO: Better handling of transactions between this and impl.
+                using var tx = await conn.BeginTransactionAsync(cancellationToken);
                 foreach (var job in jobDataSet)
                 {
                     await _addJobImplAsync(job, conn, cancellationToken);
                 }
+
+                await tx.CommitAsync(cancellationToken);
             }
         }
 
@@ -63,7 +69,9 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
         {
             using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
+                using var tx = conn.BeginTransaction();
                 _addJobImpl(jobData, conn);
+                tx.Commit();
             }
 
         }
@@ -75,7 +83,9 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
             using (var conn =
                    _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
+                await using var tx = await conn.BeginTransactionAsync(cancellationToken);
                 await _addJobImplAsync(jobData, conn, cancellationToken);
+                await tx.CommitAsync(cancellationToken);
             }
         }
 
@@ -159,7 +169,6 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
         private async Task _addJobImplAsync(SerializableOddJob jobData, DataConnection conn,
             CancellationToken cancellationToken = default)
         {
-            await using var tx = await conn.BeginTransactionAsync(cancellationToken);
             var table = _tableResolver.GetConfigurationForJob(jobData);
             //var jobMetaData = GetMetaDataForJob(jobData);
             var paramData = GetParamDataForJob(jobData);
@@ -207,13 +216,10 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
                 .TableName(table.QueueTableName).Where(q => q.Id == insertedId)
                 .Set(q => q.Status, JobStates.New)
                 .UpdateAsync(cancellationToken);
-            await tx.CommitAsync(cancellationToken);
         }
 
         private void _addJobImpl(SerializableOddJob jobData, DataConnection conn)
         {
-
-            using var tx = conn.BeginTransaction();
             var table = _tableResolver.GetConfigurationForJob(jobData);
             //var jobMetaData = GetMetaDataForJob(jobData);
             var paramData = GetParamDataForJob(jobData);
@@ -249,7 +255,6 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
             conn.GetTable<SqlCommonDbOddJobMetaData>().TableName(table.QueueTableName).Where(q => q.Id == insertedId)
                 .Set(q => q.Status, JobStates.New)
                 .Update();
-            tx.CommitAsync();
         }
 
         public virtual Guid AddJob<TJob>(Expression<Action<TJob>> jobExpression, RetryParameters retryParameters = null,
