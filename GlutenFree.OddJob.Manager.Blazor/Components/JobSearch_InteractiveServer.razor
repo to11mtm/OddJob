@@ -1,0 +1,192 @@
+﻿@page "/jobsearch"
+@rendermode InteractiveServer
+@using System.Diagnostics
+@using GlutenFree.OddJob.Manager.Blazor.Controllers
+@using GlutenFree.OddJob.Manager.Blazor
+
+<h3>Job Search (Blazor ver. by Ami-chan, uwu!)</h3>
+
+<button @onclick="SearchJobs">Test Search (Ami-chan debug)</button>
+
+<div style="width:100%">
+    <div>
+        <label><input type="checkbox" @bind="criteria.UseQueue" /> Queue Name:</label>
+        <select @bind="criteria.QueueName">
+            <option value="">Please Select a Queue...</option>
+            @foreach (var q in QueueNames)
+            {
+                <option value="@q">@q</option>
+            }
+        </select>
+        <button @onclick="SearchJobs">Search</button>
+    </div>
+    <div>
+        <label><input type="checkbox" @bind="criteria.UseMethod" /> Method Name:</label>
+        <input @bind="criteria.MethodName" placeholder="Method Name" />
+    </div>
+    <div>
+        <label><input type="checkbox" @bind="criteria.UseStatus" /> Status:</label>
+        <select @bind="criteria.Status">
+            <option value="">Please Select a Status...</option>
+            @foreach (var s in StatusOptions)
+            {
+                <option value="@s">@s</option>
+            }
+        </select>
+    </div>
+    <div>
+        <label><input type="checkbox" @bind="criteria.useCreatedDate" /> Created Date Range:</label>
+        <input type="date" @bind="criteria.createdBefore" />
+        <input type="time" @bind="criteria.createdBeforeTime" />
+        <input type="date" @bind="criteria.createdAfter" />
+        <input type="time" @bind="criteria.createdAfterTime" />
+    </div>
+    <div>
+        <label><input type="checkbox" @bind="criteria.useLastAttemptDate" /> Attempted Date Range:</label>
+        <input type="date" @bind="criteria.attemptedBeforeDate" />
+        <input type="time" @bind="criteria.attemptedBeforeTime" />
+        <input type="date" @bind="criteria.attemptedAfterDate" />
+        <input type="time" @bind="criteria.attemptedAfterTime" />
+    </div>
+    <div>
+        <button @onclick="SearchJobs">Search</button>
+    </div>
+</div>
+
+@if (IsLoading)
+{
+    <p>Loading... (Ami-chan is working hard, uwu!)</p>
+}
+@if (JobResults != null)
+{
+    <h4>Results:</h4>
+    @foreach (var job in JobResults)
+    {
+        <div style="border:1px solid #ccc; margin:10px; padding:10px;">
+            <b>Method:</b> @job.MethodName <br />
+            <b>Queue:</b> @job.Queue <br />
+            <b>Status:</b> @job.Status <br />
+            <b>JobId:</b> @job.JobId <br />
+            <button @onclick="() => EditJob(job)">Edit</button>
+        </div>
+    }
+}
+
+@if (EditingJob != null)
+{
+    <EditForm Model="EditingJob" OnValidSubmit="UpdateJob">
+        <h5>Edit Job (@EditingJob.JobGuid)</h5>
+        <div>
+            <label>Status:</label>
+            <input @bind="EditingJob.UpdateData.UpdateStatus" placeholder="@EditingJob.MetaData.Status" />
+        </div>
+        <div>
+            <label>Method Name:</label>
+            <input @bind="EditingJob.UpdateData.UpdateMethodName" placeholder="@EditingJob.MetaData.MethodName" />
+        </div>
+        <div>
+            <label>Queue Name:</label>
+            <input @bind="EditingJob.UpdateData.UpdateQueueName" placeholder="@EditingJob.MetaData.Queue" />
+        </div>
+        <div>
+            <label>Max Retry Count:</label>
+            <input type="number" @bind="EditingJob.UpdateData.UpdateRetryCount" placeholder="@EditingJob.MetaData.RetryParameters.MaxRetries" />
+        </div>
+        <button type="submit">Update</button>
+        <button type="button" @onclick="CancelEdit">Cancel</button>
+    </EditForm>
+    @if (UpdateResult != null)
+    {
+        <div>@UpdateResult</div>
+    }
+}
+
+@if (!string.IsNullOrEmpty(LastSearchFired))
+{
+    <div style="color: green;">@LastSearchFired</div>
+}
+
+@code {
+    [Inject] OddJobRemotingHandler RemotingHandler { get; set; }
+
+    private JobSearchCriteria criteria = new JobSearchCriteria();
+    private List<string> QueueNames = new(); // Will be loaded from server
+    private List<string> StatusOptions = new() { "Processed", "New", "Failed", "Retry", "InProgress", "Inserting" };
+    private List<JobMetadataResult>? JobResults;
+    private bool IsLoading = false;
+    private JobUpdateViewModel EditingJob;
+    private string UpdateResult;
+    private string LastSearchFired;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var queueNames = await RemotingHandler.Handle(new QueueNameListRequest());
+            QueueNames = queueNames?.ToList() ?? new List<string>();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            QueueNames = new List<string>();
+            UpdateResult = $"Failed to load queues: {ex.Message}";
+        }
+    }
+
+    private async Task SearchJobs()
+    {
+        IsLoading = true;
+        JobResults = null;
+        LastSearchFired = DateTime.Now.ToString("HH:mm:ss");
+        StateHasChanged();
+        try
+        {
+            var results = await RemotingHandler.Handle(criteria);
+            JobResults = results?.ToList();
+        }
+        catch (Exception ex)
+        {
+            UpdateResult = $"Search error: {ex.Message}";
+        }
+        StateHasChanged();
+        IsLoading = false;
+    }
+
+    private void EditJob(JobMetadataResult job)
+    {
+        EditingJob = new JobUpdateViewModel
+        {
+            JobGuid = job.JobId,
+            MetaData = job,
+            UpdateData = new UpdateForJob
+            {
+                JobGuid = job.JobId,
+                OldStatus = job.Status,
+                ParamUpdates = job.JobArgs.Select(arg => new UpdateForParam { ParamOrdinal = arg.Ordinal }).ToArray()
+            }
+        };
+        UpdateResult = null;
+    }
+
+    private async Task UpdateJob()
+    {
+        try
+        {
+            var result = await RemotingHandler.Handle(EditingJob);
+            UpdateResult = result ? "Updated! (Ami-chan did her best, nyaa~)" : "Update failed!";
+        }
+        catch (Exception ex)
+        {
+            UpdateResult = $"Update error: {ex.Message}";
+        }
+        StateHasChanged();
+        EditingJob = null;
+        await SearchJobs();
+    }
+
+    private void CancelEdit()
+    {
+        EditingJob = null;
+        UpdateResult = null;
+    }
+}

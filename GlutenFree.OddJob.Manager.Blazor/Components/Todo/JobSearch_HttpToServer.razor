@@ -1,8 +1,12 @@
-﻿@page "/jobsearch"
+﻿@page "/jobsearch_HttpClientWat"
+@rendermode InteractiveServer
+@using System.Diagnostics
 @using System.Net.Http.Json
 @using GlutenFree.OddJob.Manager.Blazor.Controllers
 
 <h3>Job Search (Blazor ver. by Ami-chan, uwu!)</h3>
+
+<button @onclick="SearchJobs">Test Search (Ami-chan debug)</button>
 
 <div style="width:100%">
     <div>
@@ -97,8 +101,14 @@
     }
 }
 
+@if (!string.IsNullOrEmpty(LastSearchFired))
+{
+    <div style="color: green;">@LastSearchFired</div>
+}
+
 @code {
-    [Inject] HttpClient Http { get; set; }
+    [Inject] IHttpClientFactory ClientFactory { get; set; }
+    private HttpClient Http => ClientFactory.CreateClient("ServerAPI");
 
     private JobSearchCriteria criteria = new JobSearchCriteria();
     private List<string> QueueNames = new(); // Will be loaded from server
@@ -107,12 +117,15 @@
     private bool IsLoading = false;
     private JobUpdateViewModel EditingJob;
     private string UpdateResult;
+    private string LastSearchFired;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            QueueNames = await Http.GetFromJsonAsync<List<string>>("/api/queues");
+            var queueNames = await Http.GetFromJsonAsync<List<string>>("/api/queues");
+            QueueNames = queueNames;
+            StateHasChanged();
         }
         catch (Exception ex)
         {
@@ -125,6 +138,8 @@
     {
         IsLoading = true;
         JobResults = null;
+        LastSearchFired = DateTime.Now.ToString("HH:mm:ss");
+        StateHasChanged();
         try
         {
             var response = await Http.PostAsJsonAsync("/api/jobs/search", criteria);
@@ -141,6 +156,7 @@
         {
             UpdateResult = $"Search error: {ex.Message}";
         }
+        StateHasChanged();
         IsLoading = false;
     }
 
@@ -179,6 +195,7 @@
         {
             UpdateResult = $"Update error: {ex.Message}";
         }
+        StateHasChanged();
         EditingJob = null;
         await SearchJobs();
     }

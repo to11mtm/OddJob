@@ -18,12 +18,12 @@ namespace GlutenFree.OddJob.Manager.Blazor.Controllers
         /// <param name="queueName">The queue name to filter methods by.</param>
         /// <returns>List of method names.</returns>
         [HttpGet("methods")]
-        public async Task<ActionResult<string[]>> GetMethods([FromQuery] string queueName)
+        public async Task<ActionResult<List<string>>> GetMethods([FromQuery] string queueName)
         {
             try
             {
                 var result = await _remotingHandler.Handle(new GetMethodsForQueueNameRequest { QueueName = queueName });
-                return Ok(result);
+                return Ok(result.ToList());
             }
             catch (Exception ex)
             {

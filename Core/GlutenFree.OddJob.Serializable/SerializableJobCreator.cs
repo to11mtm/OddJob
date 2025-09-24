@@ -61,6 +61,13 @@ namespace GlutenFree.OddJob.Serializable
             var job = JobCreator.Create(jobExpression);
             return Serialize<T>(retryParameters, executionTime, queueName, typeNameSerializer, job);
         }
+        
+        public static SerializableOddJob CreateJobDefinition<T>(LambdaExpression jobExpression,
+            RetryParameters retryParameters = null, DateTimeOffset? executionTime = null, string queueName = "default", ITypeNameSerializer typeNameSerializer=null)
+        {
+            var job = JobCreator.Create<T>(jobExpression);
+            return Serialize<T>(retryParameters, executionTime, queueName, typeNameSerializer, job);
+        }
 
         private static SerializableOddJob Serialize<T>(RetryParameters retryParameters,
             DateTimeOffset? executionTime, string queueName,

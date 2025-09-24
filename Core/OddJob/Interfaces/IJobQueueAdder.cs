@@ -30,5 +30,20 @@ namespace GlutenFree.OddJob.Interfaces
             RetryParameters retryParameters = null,
             DateTimeOffset? executionTime = null, string queueName = "default",
             CancellationToken cancellationToken = default);
+        
+        Task<Guid> AddJobAsync<TJob>(Expression<Func<TJob,Task>> jobExpression,
+            RetryParameters retryParameters = null,
+            DateTimeOffset? executionTime = null, string queueName = "default",
+            CancellationToken cancellationToken = default);
+        
+        Task<Guid> AddJobAsync<TJob>(Expression<Func<TJob,ValueTask>> jobExpression,
+            RetryParameters retryParameters = null,
+            DateTimeOffset? executionTime = null, string queueName = "default",
+            CancellationToken cancellationToken = default);
+        
+        Task<Guid> AddJobAsync<TJob,T>(Expression<Func<TJob,ValueTask<T>>> jobExpression,
+            RetryParameters retryParameters = null,
+            DateTimeOffset? executionTime = null, string queueName = "default",
+            CancellationToken cancellationToken = default);
     }
 }

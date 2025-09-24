@@ -34,6 +34,10 @@ namespace GlutenFree.OddJob
 
     public static class JobCreator
     {
+        public static OddJob Create<T>(LambdaExpression jobExpr)
+        {
+            return ExpressionBasedJobCreator.CreateInternal<T>(jobExpr.Body as MethodCallExpression);
+        }
         public static OddJob Create<T>(Expression<Action<T>> jobExpr)
         {
             return ExpressionBasedJobCreator.CreateInternal<T>(jobExpr.Body as MethodCallExpression);

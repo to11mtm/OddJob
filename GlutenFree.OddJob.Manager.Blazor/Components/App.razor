@@ -1,4 +1,6 @@
-﻿<!DOCTYPE html>
+﻿@using System.Reflection
+@using GlutenFree.OddJob.Manager.Blazor.Components.Layout
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -13,7 +15,16 @@
 </head>
 
 <body>
-<Routes/>
+<Router AppAssembly="@Assembly.GetExecutingAssembly()">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <p>Sorry, there's nothing at this address. (Ami-chan couldn't find it, uwu!)</p>
+        </LayoutView>
+    </NotFound>
+</Router>
 <script src="_framework/blazor.web.js"></script>
 </body>
 

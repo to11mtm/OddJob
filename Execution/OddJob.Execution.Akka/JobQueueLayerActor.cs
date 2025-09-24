@@ -7,9 +7,9 @@ using GlutenFree.OddJob.Interfaces;
 
 namespace GlutenFree.OddJob.Execution.Akka
 {
-    public class aJobQueueLayerActor : ReceiveActor
+    public class JobQueueLayerActor : ReceiveActor
     {
-        public aJobQueueLayerActor(IJobQueueManager jobQueueManager)
+        public JobQueueLayerActor(IJobQueueManager jobQueueManager)
         {
             jobQueue = jobQueueManager;
             ReceiveAsync<GetJobs>(GetJobsAsync);
@@ -88,9 +88,9 @@ namespace GlutenFree.OddJob.Execution.Akka
             Context.Sender.Tell(new JobSweepResponse(jobs, msg.SweepGuid));
         }
     }
-    public class JobQueueLayerActor : ActorBase
+    public class JobQueueLayerActorSync : ActorBase
     {
-        public JobQueueLayerActor(IJobQueueManager jobQueueManager)
+        public JobQueueLayerActorSync(IJobQueueManager jobQueueManager)
         {
             jobQueue = jobQueueManager;
         }

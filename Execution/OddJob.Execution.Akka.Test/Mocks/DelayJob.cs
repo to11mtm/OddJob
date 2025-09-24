@@ -14,5 +14,12 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             await Task.Delay(TimeSpan.FromSeconds(1));
             //SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(1));
         }
+        
+        public async ValueTask DoDelayVT(string msg)
+        {
+            MsgCounter.AddOrUpdate(msg, (m) => 1, (m, i) => i + 1);
+            await Task.Delay(TimeSpan.FromSeconds(1));
+            //SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(1));
+        }
     }
 }

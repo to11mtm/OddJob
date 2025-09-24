@@ -42,8 +42,9 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
                 }
             }
         }
-        
-        public virtual async Task AddJobsAsync(IEnumerable<SerializableOddJob> jobDataSet, CancellationToken cancellationToken = default)
+
+        public virtual async Task AddJobsAsync(IEnumerable<SerializableOddJob> jobDataSet,
+            CancellationToken cancellationToken = default)
         {
             await SynchronizationContextManager.RemoveContext;
             using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
@@ -55,6 +56,9 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
             }
         }
 
+        /// <summary>
+        /// Not reccomended usage - use AddJobAsync where possible.
+        /// </summary>
         public virtual void AddJob(SerializableOddJob jobData)
         {
             using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
@@ -69,7 +73,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
         {
             await SynchronizationContextManager.RemoveContext;
             using (var conn =
-                _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
+                   _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
             {
                 await _addJobImplAsync(jobData, conn, cancellationToken);
             }
@@ -109,9 +113,9 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
                 JobGuid = jobData.JobId,
                 Status = JobStates.Inserting,
                 CreatedDate = DateTime.Now,
-                MaxRetries = (jobData.RetryParameters == null ? 0 : (int) jobData.RetryParameters.MaxRetries),
+                MaxRetries = (jobData.RetryParameters == null ? 0 : (int)jobData.RetryParameters.MaxRetries),
                 MinRetryWait =
-                    jobData.RetryParameters == null ? 0 : (int) jobData.RetryParameters.MinRetryWait.TotalSeconds,
+                    jobData.RetryParameters == null ? 0 : (int)jobData.RetryParameters.MinRetryWait.TotalSeconds,
                 RetryCount = 0
             };
         }
@@ -147,14 +151,15 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
             {
                 return new BulkCopyOptions()
                 {
-                    KeepIdentity = false,
+                    KeepIdentity = false, BulkCopyType = BulkCopyType.MultipleRows
                 };
             }
         }
-        
-        private async Task _addJobImplAsync(SerializableOddJob jobData, DataConnection conn, CancellationToken cancellationToken = default)
-        {
 
+        private async Task _addJobImplAsync(SerializableOddJob jobData, DataConnection conn,
+            CancellationToken cancellationToken = default)
+        {
+            await using var tx = await conn.BeginTransactionAsync(cancellationToken);
             var table = _tableResolver.GetConfigurationForJob(jobData);
             //var jobMetaData = GetMetaDataForJob(jobData);
             var paramData = GetParamDataForJob(jobData);
@@ -167,16 +172,17 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
                 .Value(q => q.JobGuid, jobData.JobId)
                 .Value(q => q.Status, JobStates.Inserting)
                 .Value(q => q.CreatedDate, DateTime.Now)
-                .Value(q => q.MaxRetries, (jobData.RetryParameters == null ? 0 : (int?) jobData.RetryParameters.MaxRetries))
+                .Value(q => q.MaxRetries,
+                    (jobData.RetryParameters == null ? 0 : (int?)jobData.RetryParameters.MaxRetries))
                 .Value(q => q.MinRetryWait,
-                    jobData.RetryParameters == null ? 0 : (int?) jobData.RetryParameters.MinRetryWait.TotalSeconds)
+                    jobData.RetryParameters == null ? 0 : (int?)jobData.RetryParameters.MinRetryWait.TotalSeconds)
                 .Value(q => q.RetryCount, 0);
             var insertedId = await insertedIdExpr.InsertWithInt64IdentityAsync(cancellationToken);
 
             if (paramData.Length > 1)
             {
-                conn.GetTable<SqlCommonOddJobParamMetaData>().TableName(table.ParamTableName)
-                    .BulkCopy(BulkOptions, paramData);
+                await conn.GetTable<SqlCommonOddJobParamMetaData>().TableName(table.ParamTableName)
+                    .BulkCopyAsync(BulkOptions, paramData, cancellationToken);
             }
             else
             {
@@ -192,8 +198,8 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
 
             if (jobGenParams.Length > 0)
             {
-                conn.GetTable<SqlDbOddJobMethodGenericInfo>().TableName(table.JobMethodGenericParamTableName)
-                    .BulkCopy(BulkOptions,jobGenParams);
+                await conn.GetTable<SqlDbOddJobMethodGenericInfo>().TableName(table.JobMethodGenericParamTableName)
+                    .BulkCopyAsync(BulkOptions, jobGenParams, cancellationToken);
             }
 
 
@@ -201,11 +207,13 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
                 .TableName(table.QueueTableName).Where(q => q.Id == insertedId)
                 .Set(q => q.Status, JobStates.New)
                 .UpdateAsync(cancellationToken);
+            await tx.CommitAsync(cancellationToken);
         }
 
         private void _addJobImpl(SerializableOddJob jobData, DataConnection conn)
         {
 
+            using var tx = conn.BeginTransaction();
             var table = _tableResolver.GetConfigurationForJob(jobData);
             //var jobMetaData = GetMetaDataForJob(jobData);
             var paramData = GetParamDataForJob(jobData);
@@ -218,9 +226,10 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
                 .Value(q => q.JobGuid, jobData.JobId)
                 .Value(q => q.Status, JobStates.Inserting)
                 .Value(q => q.CreatedDate, DateTime.Now)
-                .Value(q => q.MaxRetries, (jobData.RetryParameters == null ? 0 : (int?) jobData.RetryParameters.MaxRetries))
+                .Value(q => q.MaxRetries,
+                    (jobData.RetryParameters == null ? 0 : (int?)jobData.RetryParameters.MaxRetries))
                 .Value(q => q.MinRetryWait,
-                    jobData.RetryParameters == null ? 0 : (int?) jobData.RetryParameters.MinRetryWait.TotalSeconds)
+                    jobData.RetryParameters == null ? 0 : (int?)jobData.RetryParameters.MinRetryWait.TotalSeconds)
                 .Value(q => q.RetryCount, 0);
             var insertedId = insertedIdExpr.InsertWithInt64Identity();
 
@@ -233,40 +242,73 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
             if (jobGenParams.Length > 0)
             {
                 conn.GetTable<SqlDbOddJobMethodGenericInfo>().TableName(table.JobMethodGenericParamTableName)
-                    .BulkCopy(BulkOptions,jobGenParams);
+                    .BulkCopy(BulkOptions, jobGenParams);
             }
-            
+
 
             conn.GetTable<SqlCommonDbOddJobMetaData>().TableName(table.QueueTableName).Where(q => q.Id == insertedId)
                 .Set(q => q.Status, JobStates.New)
                 .Update();
+            tx.CommitAsync();
         }
 
         public virtual Guid AddJob<TJob>(Expression<Action<TJob>> jobExpression, RetryParameters retryParameters = null,
             DateTimeOffset? executionTime = null, string queueName = "default")
         {
-                var ser = SerializableJobCreator.CreateJobDefinition(jobExpression, retryParameters, executionTime,queueName);
-                AddJob(ser);
-                return ser.JobId;
+            var ser = SerializableJobCreator.CreateJobDefinition(jobExpression, retryParameters, executionTime,
+                queueName);
+            AddJob(ser);
+            return ser.JobId;
         }
-        
-        public virtual async Task<Guid> AddJobAsync<TJob>(Expression<Action<TJob>> jobExpression, RetryParameters retryParameters = null,
-            DateTimeOffset? executionTime = null, string queueName = "default", CancellationToken cancellationToken = default)
+
+        private async Task<Guid> AddJobAsyncInternal<TJob>(LambdaExpression jobExpression,
+            RetryParameters retryParameters,
+            DateTimeOffset? executionTime, string queueName, CancellationToken cancellationToken)
         {
-                var ser = SerializableJobCreator.CreateJobDefinition(jobExpression, retryParameters, executionTime,queueName);
-                await AddJobAsync(ser, cancellationToken);
-                return ser.JobId;
+            var ser = SerializableJobCreator.CreateJobDefinition<TJob>(jobExpression, retryParameters, executionTime,
+                queueName);
+            await AddJobAsync(ser, cancellationToken);
+            return ser.JobId;
         }
-        
-        public virtual Guid AddJob<TJob>(Expression<Action<Guid,TJob>> jobExpression, RetryParameters retryParameters = null,
+
+        public virtual async Task<Guid> AddJobAsync<TJob>(Expression<Action<TJob>> jobExpression,
+            RetryParameters retryParameters = null,
+            DateTimeOffset? executionTime = null, string queueName = "default",
+            CancellationToken cancellationToken = default)
+            => await AddJobAsyncInternal<TJob>(jobExpression, retryParameters, executionTime, queueName,
+                cancellationToken);
+
+        public virtual async Task<Guid> AddJobAsync<TJob>(Expression<Func<TJob, Task>> jobExpression,
+            RetryParameters retryParameters = null,
+            DateTimeOffset? executionTime = null, string queueName = "default",
+            CancellationToken cancellationToken = default)
+            => await AddJobAsyncInternal<TJob>(jobExpression, retryParameters, executionTime, queueName,
+                cancellationToken);
+
+
+        public virtual async Task<Guid> AddJobAsync<TJob>(Expression<Func<TJob, ValueTask>> jobExpression,
+            RetryParameters retryParameters = null,
+            DateTimeOffset? executionTime = null, string queueName = "default",
+            CancellationToken cancellationToken = default)
+            => await AddJobAsyncInternal<TJob>(jobExpression, retryParameters, executionTime, queueName,
+                cancellationToken);
+
+        public virtual async Task<Guid> AddJobAsync<TJob, TResult>(
+            Expression<Func<TJob, ValueTask<TResult>>> jobExpression,
+            RetryParameters retryParameters = null,
+            DateTimeOffset? executionTime = null, string queueName = "default",
+            CancellationToken cancellationToken = default)
+            => await AddJobAsyncInternal<TJob>(jobExpression, retryParameters, executionTime, queueName,
+                cancellationToken);
+
+        public virtual Guid AddJob<TJob>(Expression<Action<Guid, TJob>> jobExpression,
+            RetryParameters retryParameters = null,
             DateTimeOffset? executionTime = null, string queueName = "default")
         {
-            using (var conn = _jobQueueConnectionFactory.CreateDataConnection(_mappingSchema))
-            {
-                var ser = SerializableJobCreator.CreateJobDefinition(jobExpression, retryParameters, executionTime,queueName);
-                AddJob(ser);
-                return ser.JobId;
-            }
+            var ser = SerializableJobCreator.CreateJobDefinition(jobExpression, retryParameters, executionTime,
+                queueName);
+            AddJob(ser);
+            return ser.JobId;
         }
     }
 }

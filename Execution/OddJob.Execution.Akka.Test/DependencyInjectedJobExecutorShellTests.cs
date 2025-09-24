@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Akka.DI.SimpleInjector;
@@ -18,11 +19,10 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
         {
             AkkaTestUnitTestTableHelper.EnsureTablesExist();
         }
-        
+
         [Fact]
         public void JobShell_Can_Start()
-        {
-
+        { 
             var queueName = QueueNameHelper.CreateQueueName();
             var container = new SimpleInjector.Container();
             container.Register<IContainerFactory, SimpleInjectorContainerFactory>();
@@ -45,7 +45,7 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
 
 
         [Fact]
-        public void JobExecutorShell_Will_Execute_Jobs()
+        public async Task JobExecutorShell_Will_Execute_Jobs()
         {
             var queueName = QueueNameHelper.CreateQueueName();
             var container = new SimpleInjector.Container();
@@ -68,7 +68,7 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             /*var executor = new HardInjectedJobExecutorShell(() => new JobQueueLayerActor(jobStore),
                 () => new JobWorkerActor(new DefaultJobExecutor(new DefaultContainerFactory())), null);*/
             executor.StartJobQueue(queueName, 5, 1,1);
-            jobStore.AddJob((DIShellMockJob m) => m.DoThing(nameof(JobExecutorShell_Will_Execute_Jobs),1), null, null, queueName);
+            await jobStore.AddJobAsync((DIShellMockJob m) => m.DoThing(nameof(JobExecutorShell_Will_Execute_Jobs),1), null, null, queueName);
             SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(8));
             Xunit.Assert.True(DIShellMockJob.MyCounter.ContainsKey(nameof(JobExecutorShell_Will_Execute_Jobs)));
         }

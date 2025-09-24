@@ -29,7 +29,7 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
         }
 
         [Fact]
-        public void JobCoordinator_Will_Not_Fire_OnJobQueueSaturation_For_AggressiveSweep()
+        public async Task JobCoordinator_Will_Not_Fire_OnJobQueueSaturation_For_AggressiveSweep()
         {
             var queueName = QueueNameHelper.CreateQueueName();
             //TODO: Make this less like an integration test; there's no reason we couldn't mock this out with just testprobe.
@@ -40,9 +40,9 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             var queueLayerProps = Props.Create(() => new JobQueueLayerActor(AkkaExecutionTest.GetJobQueueManager));
             var workerProps = Props.Create(() => new JobWorkerActor(executor)).WithRouter(new RoundRobinPool(workerCount));
             var coordinator = Sys.ActorOf(Props.Create(() => new CountingOnJobQueueSaturatedCoordinator()));
-            jobAdder.AddJob((DelayJob j) => j.DoDelay("ar-1"), queueName: queueName);
-            jobAdder.AddJob((DelayJob j) => j.DoDelay("ar-2"), queueName: queueName);
-            jobAdder.AddJob((DelayJob j) => j.DoDelay("ar-3"), queueName: queueName);
+            await jobAdder.AddJobAsync((DelayJob j) => j.DoDelay("ar-1"), queueName: queueName);
+            await jobAdder.AddJobAsync((DelayJob j) => j.DoDelay("ar-2"), queueName: queueName);
+            await jobAdder.AddJobAsync((DelayJob j) => j.DoDelayVT("ar-3"), queueName: queueName);
             coordinator.Tell(new SetJobQueueConfiguration(workerProps, queueLayerProps, queueName, 1, 1, 1, aggressiveSweep:true, allowedPendingSweeps:0));
             coordinator.Tell(new JobSweep());
             coordinator.Tell(new JobSweep());
@@ -66,9 +66,9 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             var queueLayerProps = Props.Create(() => new JobQueueLayerActor(AkkaExecutionTest.GetJobQueueManager));
             var workerProps = Props.Create(() => new JobWorkerActor(executor)).WithRouter(new RoundRobinPool(workerCount));
             var coordinator = Sys.ActorOf(Props.Create(() => new CountingOnJobQueueSaturatedCoordinator()), "coordinator-test");
-            jobAdder.AddJob((DelayJob j) => j.DoDelay("qs-1"), queueName:queueName);
-            jobAdder.AddJob((DelayJob j) => j.DoDelay("qs-2"),queueName:queueName);
-            jobAdder.AddJob((DelayJob j) => j.DoDelay("qs-3"),queueName:queueName);
+            await jobAdder.AddJobAsync((DelayJob j) => j.DoDelay("qs-1"), queueName:queueName);
+            await jobAdder.AddJobAsync((DelayJob j) => j.DoDelay("qs-2"),queueName:queueName);
+            await jobAdder.AddJobAsync((DelayJob j) => j.DoDelay("qs-3"),queueName:queueName);
             coordinator.Tell(new SetJobQueueConfiguration(workerProps, queueLayerProps, queueName, 1, 1, 1, allowedPendingSweeps:1));
             coordinator.Tell(new JobSweep());
             coordinator.Tell(new JobSweep());

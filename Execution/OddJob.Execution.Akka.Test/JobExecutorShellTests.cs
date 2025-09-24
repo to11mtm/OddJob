@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq.Expressions;
 using System.Threading;
 using GlutenFree.OddJob.Execution.Akka.Test.Mocks;
 using GlutenFree.OddJob.Execution.BaseTests;
@@ -20,6 +21,7 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             executor.StartJobQueue(queueName,5,1);
         }
 
+        
         [Fact]
         public void JobExecutorShell_Will_Execute_Jobs()
         {
@@ -33,7 +35,6 @@ namespace GlutenFree.OddJob.Execution.Akka.Test
             SpinWait.SpinUntil(() => false, TimeSpan.FromSeconds(8));
             Xunit.Assert.Equal(1,ShellMockJob.MyCounter);
         }
-
         
     }
 }

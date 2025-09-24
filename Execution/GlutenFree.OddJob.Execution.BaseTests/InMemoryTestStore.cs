@@ -178,5 +178,60 @@ namespace GlutenFree.OddJob.Execution.BaseTests
                 q.LastAttemptTime = DateTime.Now;
             });
         }
+        
+        
+        public Task<Guid> AddJobAsync<TJob>(Expression<Func<TJob, Task>> jobExpression,
+            RetryParameters retryParameters = null,
+            DateTimeOffset? executionTime = null, string queueName = "default",
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(AddJobFromFunc<TJob>(jobExpression, retryParameters, executionTime, queueName));
+        }
+
+        public Task<Guid> AddJobAsync<TJob>(Expression<Func<TJob, ValueTask>> jobExpression,
+            RetryParameters retryParameters = null,
+            DateTimeOffset? executionTime = null, string queueName = "default",
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(AddJobFromFunc<TJob>(jobExpression, retryParameters, executionTime, queueName));
+        }
+
+        public Task<Guid> AddJobAsync<TJob, T>(Expression<Func<TJob, ValueTask<T>>> jobExpression,
+            RetryParameters retryParameters = null,
+            DateTimeOffset? executionTime = null, string queueName = "default",
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(AddJobFromFunc<TJob>(jobExpression, retryParameters, executionTime, queueName));
+        }
+
+// Internal kawaii helper to avoid code duplication, uwu~
+        private Guid AddJobFromFunc<TJob>(LambdaExpression jobExpression,
+            RetryParameters retryParameters,
+            DateTimeOffset? executionTime, string queueName)
+        {
+            var jobInfo = JobCreator.Create<TJob>(jobExpression);
+            var newJob = new OddJobWithMetaAndStorageData()
+            {
+                JobId = Guid.NewGuid(),
+                JobArgs = jobInfo.JobArgs,
+                MethodName = jobInfo.MethodName,
+                RetryParameters = retryParameters,
+                TypeExecutedOn = jobInfo.TypeExecutedOn,
+                CreatedOn = DateTime.Now,
+                Status = JobStates.New
+            };
+            if (!jobStore.ContainsKey(queueName))
+            {
+                lock (dictionaryLock)
+                {
+                    jobStore.GetOrAdd(queueName, new List<OddJobWithMetaAndStorageData>());
+                }
+            }
+            lock (jobLock)
+            {
+                jobStore[queueName].Add(newJob);
+            }
+            return newJob.JobId;
+        }
     }
 }
