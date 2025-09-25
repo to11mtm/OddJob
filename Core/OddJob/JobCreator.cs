@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 
 namespace GlutenFree.OddJob
 {
@@ -35,13 +36,24 @@ namespace GlutenFree.OddJob
     public static class JobCreator
     {
         public static OddJob Create<T>(LambdaExpression jobExpr)
+        => CreateImpl<T>(jobExpr);
+        public static OddJob CreateImpl<T>(LambdaExpression jobExpr)
         {
             return ExpressionBasedJobCreator.CreateInternal<T>(jobExpr.Body as MethodCallExpression);
         }
         public static OddJob Create<T>(Expression<Action<T>> jobExpr)
-        {
-            return ExpressionBasedJobCreator.CreateInternal<T>(jobExpr.Body as MethodCallExpression);
-        }
+            => CreateImpl<T>(jobExpr as LambdaExpression);
+        
+        public static OddJob Create<T>(Expression<Func<T, Task>> jobExpr)
+        => CreateImpl<T>(jobExpr);
+        public static OddJob Create<T,TResult>(Expression<Func<T, Task<TResult>>> jobExpr)
+        => CreateImpl<T>(jobExpr);
+
+        public static OddJob Create<T>(Expression<Func<T, ValueTask>> jobExpr)
+        => CreateImpl<T>(jobExpr);
+        
+        public static OddJob Create<T,TResult>(Expression<Func<T, ValueTask<TResult>>> jobExpr)
+        => CreateImpl<T>(jobExpr);
 
         public static OddJob Create<T>(Expression<Action<Guid, T>> jobExpr)
         {

@@ -36,7 +36,8 @@ create table {0}
     ParamOrdinal int not null,
     SerializedValue text null,
     SerializedType VARCHAR(255) null,
-    ParameterName VARCHAR(255) null
+    ParameterName VARCHAR(255) null,
+    MethodArgType VARCHAR(255) null
 )", config.ParamTableName);
         }
 
@@ -55,4 +56,3 @@ create table {0}
         }
     }
 }
-

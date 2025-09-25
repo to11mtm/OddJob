@@ -397,7 +397,8 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
                                 Ordinal = s.FirstOrDefault().ParamOrdinal,
                                 Name = s.FirstOrDefault().ParameterName,
                                 Value = s.FirstOrDefault().SerializedValue,
-                                TypeName    = s.FirstOrDefault().SerializedType
+                                TypeName    = s.FirstOrDefault().SerializedType,
+                                MethodArgTypeName = s.FirstOrDefault().MethodArgType
                             }).ToArray(),
                         RetryParameters = new RetryParameters(group.First().MetaData.MaxRetries,
                             TimeSpan.FromSeconds(group.First().MetaData.MinRetryWait),
@@ -441,7 +442,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
                             .Select(s => new OddJobParameter() { Name = s.FirstOrDefault()?.ParameterName, Value = 
                                 Newtonsoft.Json.JsonConvert.DeserializeObject(s.FirstOrDefault()?.SerializedValue,
                                     _typeResolver.GetTypeForJob(s.FirstOrDefault()?.SerializedType), SerializableJobCreator.Settings)
-                                , Type= TargetPlatformHelpers.ReplaceCoreTypes(s.FirstOrDefault()?.SerializedType)
+                                , Type= TargetPlatformHelpers.ReplaceCoreTypes(s.FirstOrDefault()?.SerializedType), ArgType = s.FirstOrDefault()?.MethodArgType
                             }).ToArray(),
                         RetryParameters = new RetryParameters(group.First().MetaData.MaxRetries,
                             TimeSpan.FromSeconds(group.First().MetaData.MinRetryWait),

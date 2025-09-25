@@ -41,7 +41,7 @@ namespace GlutenFree.OddJob
                 for (int i = 0; i < args.Length; i++)
                 {
                     hc = unchecked(hc * 31 +
-                                   args[i].Type.GetHashCode());
+                                   args[i].ArgType.GetHashCode());
                 }
 
                 method = genericMethodInfoHash.GetOrAdd(hc,
@@ -69,7 +69,7 @@ namespace GlutenFree.OddJob
 
                 method = nonGenericMethodInfoHash.GetOrAdd(hc,
                     (h) => expr.TypeExecutedOn.GetMethod(expr.MethodName,
-                        expr.JobArgs.Select(q => q.Value.GetType()).ToArray()));
+                        expr.JobArgs.Select(q => q.Value?.GetType() ?? Type.GetType( q.ArgType)).ToArray()));
                 if (expr.TypeExecutedOn.IsAssignableFrom(
                         method.DeclaringType) == false)
                 {
@@ -318,13 +318,28 @@ namespace GlutenFree.OddJob
             }
 
             _containerFactory.Release(instance);
-            if (method.ReturnType != typeof(void))
+            //Todo: Cache return type cleaning based on the MethodInfo.
+            var returnType = CleanMethodReturnTypeForAsyncCases(method);
+                return new OddJobResult() { Result = result, ReturnType = returnType.cleanedType };
+            
+            
+        }
+
+        private static (bool isAsync, Type cleanedType) CleanMethodReturnTypeForAsyncCases(MethodInfo method)
+        {
+            var retType = method.ReturnType;
+            if (retType.IsGenericType && (retType.GetGenericTypeDefinition() == typeof(Task<>) ||
+                retType.GetGenericTypeDefinition() == typeof(ValueTask<>)))
             {
-                return new OddJobResult() { Result = result, ReturnType = method.ReturnType };
+                return (true, retType.GetGenericArguments()[0]);
+            }
+            else if (retType == typeof(Task) || retType == typeof(ValueTask))
+            {
+                return (true, typeof(void));
             }
             else
             {
-                return new OddJobResult() { Result = result, ReturnType = method.ReturnType };
+                return (false, retType);
             }
         }
 

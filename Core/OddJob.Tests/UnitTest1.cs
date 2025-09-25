@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks; // Added for async/await
 using Xunit;
 
 namespace GlutenFree.OddJob.Tests
@@ -24,93 +25,93 @@ namespace GlutenFree.OddJob.Tests
 
 
         [Fact]
-        public void Can_Run_Job_With_Arity_in_class_With_Arity()
+        public async Task Can_Run_Job_With_Arity_in_class_With_Arity()
         {
             var myvalue = new ClassTest() { classTestValue = TestConstants.classTestValue };
             var next = JobCreator.Create<SampleJobInGenericClass<string>>(j =>
                 j.DoThing(TestConstants.derp, TestConstants.herp, myvalue));
             var jobEx = new DefaultJobExecutor(new DefaultContainerFactory());
-            jobEx.ExecuteJob(next);
+            await jobEx.ExecuteJobAsync(next);
         }
         [Fact]
-        public void Can_Run_Job_With_Arity()
+        public async Task Can_Run_Job_With_Arity()
         {
             var myvalue = new ClassTest() {classTestValue = TestConstants.classTestValue};
             var next = JobCreator.Create<SampleJobWithGenericType>(j =>
                 j.DoThing(TestConstants.derp, TestConstants.herp, myvalue));
             var jobEx = new DefaultJobExecutor(new DefaultContainerFactory());
-            jobEx.ExecuteJob(next);
+            await jobEx.ExecuteJobAsync(next);
         }
         [Fact]
-        public void Can_Run_Job_And_pass_parameters()
+        public async Task Can_Run_Job_And_pass_parameters()
         {
             var myValue = new ClassTest() { classTestValue = TestConstants.classTestValue };
             var next = JobCreator.Create<SampleJob>((j) => j.DoThing(TestConstants.derp, TestConstants.herp, myValue));
             var jobEx = new DefaultJobExecutor(new DefaultContainerFactory());
-            jobEx.ExecuteJob(next);
+            await jobEx.ExecuteJobAsync(next);
         }
 
  
 
         [Fact]
-        public void Can_Run_Job_With_Simple_Method_Calls()
+        public async Task Can_Run_Job_With_Simple_Method_Calls()
         {
             var myValue = new ClassTest() { classTestValue = TestConstants.classTestValue };
             var next = JobCreator.Create<SampleJob>((j) => j.DoThing(TestConstants.derp, int.Parse(TestConstants.herp.ToString()), myValue));
             var jobEx = new DefaultJobExecutor(new DefaultContainerFactory());
-            jobEx.ExecuteJob(next);
+            await jobEx.ExecuteJobAsync(next);
         }
         [Fact]
-        public void Can_Run_Jobs_With_Param_Type_Matching()
+        public async Task Can_Run_Jobs_With_Param_Type_Matching()
         {
             var myValue = new ClassTest() { classTestValue = TestConstants.classTestValue };
             var next = JobCreator.Create<SampleJob>((j) => j.DoThing(TestConstants.derp, TestConstants.herp, myValue));
             var jobEx = new DefaultJobExecutor(new DefaultContainerFactory());
-            jobEx.ExecuteJob(next);
+            await jobEx.ExecuteJobAsync(next);
         }
 
         [Fact]
-        public void Can_Run_Jobs_With_Param_Type_Matching_And_Overloads()
+        public async Task Can_Run_Jobs_With_Param_Type_Matching_And_Overloads()
         {
             var myValue = new ClassTest() { classTestValue = TestConstants.classTestValue };
             var next = JobCreator.Create<SampleJob2>((j) => j.DoThing(TestConstants.derp, TestConstants.herp, myValue));
             var jobEx = new DefaultJobExecutor(new DefaultContainerFactory());
-            jobEx.ExecuteJob(next);
+            await jobEx.ExecuteJobAsync(next);
         }
 
         [Fact]
-        public void Can_Run_Jobs_With_No_Params()
+        public async Task Can_Run_Jobs_With_No_Params()
         {
             var next = JobCreator.Create<SampleJobNoParam>((j) => j.DoThing());
             var jobEx = new DefaultJobExecutor(new DefaultContainerFactory());
-            jobEx.ExecuteJob(next);
+            await jobEx.ExecuteJobAsync(next);
             Xunit.Assert.True(SampleJobNoParam.Called);
         }
 
         [Fact]
-        public void Can_Run_Jobs_With_Static_Method()
+        public async Task Can_Run_Jobs_With_Static_Method()
         {
             var next = JobCreator.Create<SampleJobStaticMethod>((j) => SampleJobStaticMethod.DoThing());
             var jobEx = new DefaultJobExecutor(new DefaultContainerFactory());
-            jobEx.ExecuteJob(next);
+            await jobEx.ExecuteJobAsync(next);
             Xunit.Assert.True(SampleJobStaticMethod.Called);
         }
 
         [Fact]
-        public void Can_Run_Static_Method_On_Static_Class()
+        public async Task Can_Run_Static_Method_On_Static_Class()
         {
             var next = JobCreator.Create<object>((j) => SampleJobStaticClass.DoThing());
             var jobEx = new DefaultJobExecutor(new DefaultContainerFactory());
-            jobEx.ExecuteJob(next);
+            await jobEx.ExecuteJobAsync(next);
             Xunit.Assert.True(SampleJobStaticClass.Called);
         }
 
         [Fact]
-        public void Creator_Respects_StaticJob_Handling()
+        public async Task Creator_Respects_StaticJob_Handling()
         {
             var next = JobCreator.Create<StaticClassJob>((j) => SampleJobStaticClass.DoThing());
             var jobEx = new DefaultJobExecutor(new DefaultContainerFactory());
-            jobEx.ExecuteJob(next);
+            await jobEx.ExecuteJobAsync(next);
             Xunit.Assert.True(SampleJobStaticClass.Called);
         }
 

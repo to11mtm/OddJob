@@ -16,5 +16,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common.DbDtos
         public string SerializedType { get; set; }
         [Column(CanBeNull = false, Length =256)]
         public string ParameterName { get; set; }
+        [Column(CanBeNull = false, Length = 1024)]
+        public string MethodArgType { get; set; }
     }
 }

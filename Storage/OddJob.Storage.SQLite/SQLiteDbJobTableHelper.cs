@@ -37,7 +37,8 @@ JobGuid uniqueidentifier not null,
 ParamOrdinal int not null,
 SerializedValue text null,
 SerializedType nvarchar(255) null,
-ParameterName nvarchar(255) null
+ParameterName nvarchar(255) null,
+MethodArgType nvarchar(255) null
 )", config.ParamTableName);
         }
 

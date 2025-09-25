@@ -5,14 +5,6 @@ using System.Threading.Tasks;
 
 namespace GlutenFree.OddJob.Interfaces
 {
-    public interface IJobQueueResultWriter
-    {
-        void WriteJobQueueResult(Guid jobGuid, IOddJobResult result);
-    }
-    public interface IJobQueuePurger
-    {
-        void PurgeQueue(string name, string stateToPurge, DateTime purgeOlderThan);
-    }
     public interface IJobQueueAdder
     {
         /// <summary>

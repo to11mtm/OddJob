@@ -38,6 +38,11 @@ namespace GlutenFree.OddJob
             var argProv = methodCall.Arguments;
             //Kinda Hacky: If the Caller uses OBJECT as the type OR our special StaticJob Class,
             //we get the type from the expression methodcall itself
+            //This allows for static methods on static classes to be called.
+            //This also allows for dynamic proxy classes to be used.
+            //This also allows for using "object" as the type to avoid needing a real type at all.
+            //On the other hand, this encourages best practice of passing interfaces or base classes
+            //as the type to execute on.
             if (TypeExecutedOn == _objectType ||
                 TypeExecutedOn == _staticClassType)
             {
@@ -51,17 +56,17 @@ namespace GlutenFree.OddJob
             var methodInfo = methodCall.Method;
             paramNames = paramNameDictionary.GetOrAdd(methodInfo,
                 (mi) => mi.GetParameters().Select(r => r.Name).ToArray());
+            var argTypes = methodInfo.GetParameters().Select(r => r.ParameterType).ToArray();
 
-            var _jobArgs = ParseJobArgs<T>(parameterExpression, argCount, argProv, jobGuid, paramNames);
+            var _jobArgs = ParseJobArgs<T>(parameterExpression, argCount, argProv, jobGuid, paramNames, argTypes);
             
             var genericArgs = methodInfo.GetGenericArguments();
             return new OddJob(jobGuid, methodInfo.Name, _jobArgs,
                 TypeExecutedOn, genericArgs);
         }
 
-        private static OddJobParameter[] ParseJobArgs<T>(
-            ParameterExpression parameterExpression, int argCount,
-            ReadOnlyCollection<Expression> argProv, Guid jobGuid, string[] paramNames)
+        private static OddJobParameter[] ParseJobArgs<T>(ParameterExpression parameterExpression, int argCount,
+            ReadOnlyCollection<Expression> argProv, Guid jobGuid, string[] paramNames, Type[] argTypes)
         {
             OddJobParameter[] _jobArgs = new OddJobParameter[argCount];
             for (int i = 0; i < argCount; i++)
@@ -137,7 +142,8 @@ namespace GlutenFree.OddJob
                     {
                         Name = paramNames[i],
                         Value = val,
-                        Type = val.GetType().ToString()
+                        ArgType = argTypes[i].ToString(),
+                        Type = val?.GetType()?.ToString() ?? argTypes[i].ToString()
                     };
                 }
                 catch (Exception exception)

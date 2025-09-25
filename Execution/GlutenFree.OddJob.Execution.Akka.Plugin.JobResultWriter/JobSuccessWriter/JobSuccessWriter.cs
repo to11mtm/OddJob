@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Akka.Actor;
 using Akka.Event;
 using GlutenFree.OddJob.Execution.Akka.Messages;
@@ -7,37 +8,30 @@ using GlutenFree.OddJob.Interfaces;
 namespace GlutenFree.OddJob.Execution.Akka
 {
     
-    public class JobSuccessWriter : ActorBase
+    public class JobSuccessWriter : ReceiveActor
     {
         private IJobQueueResultWriter _writer;
         public JobSuccessWriter(IJobQueueResultWriter writer)
         {
             _writer = writer;
+            ReceiveAsync<JobSuceeded>(HandleJobSuccess);
+            Receive<ShutDownQueues>(HandleShutDown);
         }
-        protected override bool Receive(object message)
+        private void HandleShutDown(ShutDownQueues sd)
         {
-            if (message is JobSuceeded succeeded)
+            Context.Sender.Tell(new QueueShutDown());
+        }
+        private async Task HandleJobSuccess(JobSuceeded js)
+        {
+            try
             {
-                try
-                {
-                    _writer.WriteJobQueueResult(succeeded.JobData.JobId, succeeded.Result);
-                }
-                catch (Exception e)
-                {
-                    Context.System.Log.Error(e,
-                        $"Exception writing Success Event for Job {succeeded.JobData.JobId}, Result {succeeded.Result.Result.ToString()}");
-                }
+                await _writer.WriteJobQueueResult(js.JobData.JobId, js.Result);
             }
-            else if (message is ShutDownQueues)
+            catch (Exception e)
             {
-                Context.Sender.Tell(new QueueShutDown());
+                Context.System.Log.Error(e,
+                    $"Exception writing Success Event for Job {js.JobData.JobId}, Result {js.Result.Result.ToString()}");
             }
-            else
-            {
-                return false;
-            }
-
-            return true;
         }
     }
 }

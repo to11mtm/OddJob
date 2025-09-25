@@ -138,7 +138,8 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
                 ParamOrdinal = q.Ordinal,
                 SerializedValue = q.Value,
                 SerializedType = q.TypeName,
-                ParameterName = q.Name
+                ParameterName = q.Name,
+                MethodArgType = q.MethodArgTypeName
             }).ToArray();
 
         }

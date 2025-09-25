@@ -57,11 +57,9 @@ namespace GlutenFree.OddJob.Serializable
         /// <param name="typeNameSerializer">To change the default behavior (nonversioned types) specify a different <see cref="ITypeNameSerializer"/> here.</param>
         /// <returns>A wire-safe Serializable job definition.</returns>
         public static SerializableOddJob CreateJobDefinition<T>(Expression<Action<T>> jobExpression,
-            RetryParameters retryParameters = null, DateTimeOffset? executionTime = null, string queueName = "default", ITypeNameSerializer typeNameSerializer=null)
-        {
-            var job = JobCreator.Create(jobExpression);
-            return Serialize<T>(retryParameters, executionTime, queueName, typeNameSerializer, job);
-        }
+            RetryParameters retryParameters = null, DateTimeOffset? executionTime = null, string queueName = "default", ITypeNameSerializer typeNameSerializer=null) 
+            => CreateJobDefinitionImpl<T>(jobExpression, retryParameters, executionTime,
+                queueName, typeNameSerializer);
 
         public static SerializableOddJob CreateJobDefinition<T>(Expression<Func<Task>> jobExpression,
             RetryParameters retryParameters = null, DateTimeOffset? executionTime = null, string queueName = "default",
@@ -102,7 +100,8 @@ namespace GlutenFree.OddJob.Serializable
                     Ordinal = i,
                     Name = a.Name,
                     Value = Newtonsoft.Json.JsonConvert.SerializeObject(a.Value, Settings),
-                    TypeName = mySer.GetTypeName(a.Value.GetType())
+                    TypeName = mySer.GetTypeName(a.Value.GetType()),
+                    MethodArgTypeName = a.ArgType
                 }).ToArray(),
                 TypeExecutedOn = mySer.GetTypeName(job.TypeExecutedOn),
                 Status = job.Status,
