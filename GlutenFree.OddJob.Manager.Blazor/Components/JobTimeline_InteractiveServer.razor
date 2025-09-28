@@ -58,7 +58,7 @@
 }
 @if (ApexSeriesData != null && ApexSeriesData.Count > 0)
 {
-    <ApexChart TItem="TimelineChartPoint" Title="@($"Job Timeline for '{@SelectedQueue}'")" Height="400" Width="900" Options="ApexChartOptions">
+    <ApexChart @ref="ChartRef" TItem="TimelineChartPoint" Title="@($"Job Timeline for '{@SelectedQueue}'")" Height="400" Width="900" Options="ApexChartOptions">
         @foreach (var series in ApexSeriesData)
         {
             <ApexPointSeries TItem="TimelineChartPoint" Name="@series.Name" Items="@series.Data" XValue="@(pt => pt.X)" YValue="@(pt => pt.Y)" />
@@ -99,6 +99,8 @@
     private List<string> AvailableMethods = new();
     private string SelectedTypeExecutedOn;
     private string SelectedMethodName;
+
+    private ApexChart<TimelineChartPoint> ChartRef;
 
     protected override async Task OnInitializedAsync()
     {
@@ -176,31 +178,37 @@
     /// <summary>
     /// Applies the selected type/method filter to the timeline chart, nyaa~!
     /// </summary>
-    private void ApplyTypeMethodFilter()
+    private async Task ApplyTypeMethodFilter()
     {
         if (TimelineDebug != null)
             BuildApexChartData(TimelineDebug);
-        // CopilotNote: Force UI update so Ami-chan's chart redraws, uwu!
         StateHasChanged();
+        if (ChartRef != null)
+            await ChartRef.UpdateSeriesAsync();
     }
     /// <summary>
     /// Clears the type/method filter and resets the timeline chart, nyaa~!
     /// </summary>
-    private void ClearTypeMethodFilter()
+    private async Task ClearTypeMethodFilter()
     {
         SelectedTypeExecutedOn = null;
         SelectedMethodName = null;
         if (TimelineDebug != null)
             BuildApexChartData(TimelineDebug);
-        // CopilotNote: Force UI update so Ami-chan's chart redraws, uwu!
         StateHasChanged();
+        if (ChartRef != null)
+            await ChartRef.UpdateSeriesAsync();
     }
     private void BuildApexChartData(JobTimelineResult timeline)
     {
-        ApexSeriesData = new();
+        // CopilotNote: Always assign new list/object to trigger chart update, uwu!
+        var newSeriesData = new List<ApexSeriesWrapper>();
+        ApexChartOptions = new ApexChartOptions<TimelineChartPoint>(); // Force rebind for chart options, nyaa~!
         if (timeline == null || timeline.Points == null || timeline.Points.Count == 0)
+        {
+            ApexSeriesData = newSeriesData;
             return;
-        // If filter is set, use breakdowns, else use original logic
+        }
         if (!string.IsNullOrEmpty(SelectedTypeExecutedOn) || !string.IsNullOrEmpty(SelectedMethodName))
         {
             var allStatuses = new HashSet<string>();
@@ -232,7 +240,7 @@
                     X = cat,
                     Y = pointsByTime[cat].TryGetValue(status, out var v) ? v : 0
                 }).ToList();
-                ApexSeriesData.Add(new ApexSeriesWrapper
+                newSeriesData.Add(new ApexSeriesWrapper
                 {
                     Name = status,
                     Data = data
@@ -257,7 +265,7 @@
                     X = p.TimeLabel,
                     Y = p.StatusCounts.TryGetValue(status, out var v) ? v : 0
                 }).ToList();
-                ApexSeriesData.Add(new ApexSeriesWrapper
+                newSeriesData.Add(new ApexSeriesWrapper
                 {
                     Name = status,
                     Data = data
@@ -271,6 +279,7 @@
                 }
             };
         }
+        ApexSeriesData = newSeriesData;
     }
     public class ApexSeriesWrapper
     {
