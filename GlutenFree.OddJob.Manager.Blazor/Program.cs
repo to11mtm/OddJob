@@ -52,6 +52,7 @@ using (var s = app.Services.CreateScope())
     // Warm up OddJob services (add a sample job)
     var sjqa = s.ServiceProvider.GetService<IJobQueueAdder>();
     sjqa.AddJob((SampleJob j) => j.DoThing(new SampleData() { Id = 1 }));
+    sjqa.AddJob((SampleJob j) => j.DoThing(new SampleData() { Id = 2 }));
 }
 
 // Configure the HTTP request pipeline.

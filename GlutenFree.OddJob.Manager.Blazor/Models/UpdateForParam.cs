@@ -7,4 +7,6 @@ public class UpdateForParam
     public string NewParamType;
     public bool UpdateParamValue;
     public string NewParamValue;
+    public bool UpdateArgTypeName;
+    public string NewArgTypeNameValue;
 }

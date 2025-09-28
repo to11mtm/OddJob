@@ -4,6 +4,155 @@
 @using GlutenFree.OddJob.Manager.Blazor.Controllers
 @using GlutenFree.OddJob.Manager.Blazor
 
+<style>
+    .job-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 16px;
+        margin-top: 16px;
+    }
+    .job-card {
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        background: #f9f9ff;
+        box-shadow: 0 2px 8px rgba(180,180,255,0.08);
+        padding: 16px;
+        transition: box-shadow 0.2s;
+        min-width: 0;
+        word-break: break-word;
+        /* Remove display: flex from base card, add to .job-card-flex */
+    }
+    .job-card-flex {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    .job-main-info {
+        flex: 2;
+    }
+    .job-args {
+        flex: 1;
+        background: #f3f3ff;
+        border-left: 2px solid #b3b3ff;
+        padding-left: 12px;
+        margin-left: 8px;
+        border-radius: 0 8px 8px 0;
+        min-width: 120px;
+        font-size: 0.95em;
+        word-break: break-word;
+    }
+    .job-args ul {
+        padding-left: 18px;
+        margin: 4px 0 0 0;
+    }
+    .job-args li {
+        margin-bottom: 2px;
+    }
+    .job-card:hover {
+        box-shadow: 0 4px 16px rgba(120,120,255,0.18);
+        border-color: #b3b3ff;
+    }
+    .job-card b {
+        color: #6c63ff;
+    }
+    .job-card button {
+        margin-top: 8px;
+        background: #e0e0ff;
+        border: 1px solid #b3b3ff;
+        border-radius: 5px;
+        padding: 4px 12px;
+        cursor: pointer;
+        font-size: 1em;
+    }
+    .job-card button:hover {
+        background: #d1cfff;
+    }
+    .edit-card {
+        max-width: 520px;
+        margin: 32px auto 0 auto;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(120,120,255,0.13);
+        padding: 28px 32px 24px 32px;
+        border: 1.5px solid #b3b3ff;
+        position: relative;
+    }
+    .edit-form-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 18px;
+        gap: 12px;
+    }
+    .edit-form-row label {
+        min-width: 120px;
+        color: #6c63ff;
+        font-weight: 500;
+    }
+    .edit-form-actions {
+        display: flex;
+        gap: 16px;
+        margin-top: 18px;
+    }
+    .edit-form-actions button {
+        background: #e0e0ff;
+        border: 1px solid #b3b3ff;
+        border-radius: 6px;
+        padding: 6px 20px;
+        cursor: pointer;
+        font-size: 1em;
+        color: #444;
+        font-weight: 500;
+        transition: background 0.15s;
+    }
+    .edit-form-actions button:hover {
+        background: #d1cfff;
+    }
+    .edit-arg-card {
+        background: #f7f7ff;
+        border: 1.5px solid #b3b3ff;
+        border-radius: 10px;
+        padding: 16px 18px 10px 18px;
+        margin: 18px 0 0 0;
+        box-shadow: 0 2px 8px rgba(180,180,255,0.08);
+    }
+    .edit-arg-row {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 16px;
+        gap: 4px;
+    }
+    .edit-arg-label {
+        font-size: 1.05em;
+        margin-bottom: 2px;
+    }
+    .edit-arg-controls {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+    }
+    .edit-arg-input {
+        min-width: 180px;
+        padding: 3px 8px;
+        border-radius: 5px;
+        border: 1px solid #b3b3ff;
+        background: #fff;
+        color: #333;
+        font-size: 1em;
+        flex: 1;
+    }
+    .edit-result-msg {
+        margin-top: 18px;
+        color: #6c63ff;
+        font-weight: 500;
+        text-align: center;
+    }
+</style>
+
 <h3>Job Search (Blazor ver. by Ami-chan, uwu!)</h3>
 
 <button @onclick="SearchJobs">Test Search (Ami-chan debug)</button>
@@ -60,45 +209,97 @@
 @if (JobResults != null)
 {
     <h4>Results:</h4>
-    @foreach (var job in JobResults)
-    {
-        <div style="border:1px solid #ccc; margin:10px; padding:10px;">
-            <b>Method:</b> @job.MethodName <br />
-            <b>Queue:</b> @job.Queue <br />
-            <b>Status:</b> @job.Status <br />
-            <b>JobId:</b> @job.JobId <br />
-            <button @onclick="() => EditJob(job)">Edit</button>
-        </div>
-    }
+    <div class="job-grid">
+        @foreach (var job in JobResults)
+        {
+            <div class="job-card job-card-flex">
+                <div class="job-main-info">
+                    <b>Method:</b> @job.MethodName <br />
+                    <b>Queue:</b> @job.Queue <br />
+                    <b>Status:</b> @job.Status <br />
+                    <b>JobId:</b> @job.JobId <br />
+                    <button @onclick="() => EditJob(job)">Edit</button>
+                </div>
+                <div class="job-args">
+                    <b>Args:</b>
+                    @if (job.JobArgs != null && job.JobArgs.Length > 0)
+                    {
+                        <ul>
+                        @foreach (var arg in job.JobArgs)
+                        {
+                            <li>
+                                <span style="font-weight:bold;">@arg.Name</span><br />
+                                <span style="color:#888;">Type:</span> <span style="color:#333;">@arg.Type</span><br />
+                                <span style="color:#888;">Value:</span> <span style="color:#333;">@arg.Value</span>
+                                <span style="color:#888;">ArgType:</span> <span style="color:#333;">@arg.ArgType</span>
+                            </li>
+                        }
+                        </ul>
+                    }
+                    else
+                    {
+                        <span style="color:#aaa;">No args</span>
+                    }
+                </div>
+            </div>
+        }
+    </div>
 }
 
 @if (EditingJob != null)
 {
-    <EditForm Model="EditingJob" OnValidSubmit="UpdateJob">
-        <h5>Edit Job (@EditingJob.JobGuid)</h5>
-        <div>
-            <label>Status:</label>
-            <input @bind="EditingJob.UpdateData.UpdateStatus" placeholder="@EditingJob.MetaData.Status" />
-        </div>
-        <div>
-            <label>Method Name:</label>
-            <input @bind="EditingJob.UpdateData.UpdateMethodName" placeholder="@EditingJob.MetaData.MethodName" />
-        </div>
-        <div>
-            <label>Queue Name:</label>
-            <input @bind="EditingJob.UpdateData.UpdateQueueName" placeholder="@EditingJob.MetaData.Queue" />
-        </div>
-        <div>
-            <label>Max Retry Count:</label>
-            <input type="number" @bind="EditingJob.UpdateData.UpdateRetryCount" placeholder="@EditingJob.MetaData.RetryParameters.MaxRetries" />
-        </div>
-        <button type="submit">Update</button>
-        <button type="button" @onclick="CancelEdit">Cancel</button>
-    </EditForm>
-    @if (UpdateResult != null)
-    {
-        <div>@UpdateResult</div>
-    }
+    <div class="edit-card">
+        <EditForm Model="EditingJob" OnValidSubmit="UpdateJob">
+            <h5>Edit Job <span style="color:#6c63ff;">(@EditingJob.JobGuid)</span></h5>
+            <div class="edit-form-row">
+                <label>Status:</label>
+                <input @bind="EditingJob.UpdateData.UpdateStatus" placeholder="@EditingJob.MetaData.Status" />
+            </div>
+            <div class="edit-form-row">
+                <label>Method Name:</label>
+                <input @bind="EditingJob.UpdateData.UpdateMethodName" placeholder="@EditingJob.MetaData.MethodName" />
+            </div>
+            <div class="edit-form-row">
+                <label>Queue Name:</label>
+                <input @bind="EditingJob.UpdateData.UpdateQueueName" placeholder="@EditingJob.MetaData.Queue" />
+            </div>
+            <div class="edit-form-row">
+                <label>Max Retry Count:</label>
+                <input type="number" @bind="EditingJob.UpdateData.UpdateRetryCount" placeholder="@EditingJob.MetaData.RetryParameters.MaxRetries" />
+            </div>
+            @if (EditingJob.MetaData.JobArgs != null && EditingJob.MetaData.JobArgs.Length > 0)
+            {
+                <div class="edit-arg-card">
+                    <legend style="color:#6c63ff; font-weight:bold; margin-bottom:8px;">Edit Job Args</legend>
+                    @for (int i = 0; i < EditingJob.MetaData.JobArgs.Length; i++)
+                    {
+                        var arg = EditingJob.MetaData.JobArgs[i];
+                        var paramUpdate = EditingJob.UpdateData.ParamUpdates[i];
+                        <div class="edit-arg-row">
+                            <div class="edit-arg-label">
+                                <span style="font-weight:bold;">@arg.Name</span>
+                                <span style="color:#888;">(@arg.Type)</span>
+                            </div>
+                            <div class="edit-arg-controls">
+                                <label style="color:#888; margin-bottom:4px;">
+                                    <input type="checkbox" @bind="paramUpdate.UpdateParamValue" /> Update Value
+                                </label>
+                                <input class="edit-arg-input" @bind="paramUpdate.NewParamValue" placeholder="@arg.Value" disabled="@(!paramUpdate.UpdateParamValue)" />
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            <div class="edit-form-actions">
+                <button type="submit">Update</button>
+                <button type="button" @onclick="CancelEdit">Cancel</button>
+            </div>
+        </EditForm>
+        @if (UpdateResult != null)
+        {
+            <div class="edit-result-msg">@UpdateResult</div>
+        }
+    </div>
 }
 
 @if (!string.IsNullOrEmpty(LastSearchFired))
@@ -162,7 +363,11 @@
             {
                 JobGuid = job.JobId,
                 OldStatus = job.Status,
-                ParamUpdates = job.JobArgs.Select(arg => new UpdateForParam { ParamOrdinal = arg.Ordinal }).ToArray()
+                ParamUpdates = job.JobArgs.Select(arg => new UpdateForParam {
+                    ParamOrdinal = arg.Ordinal,
+                    NewParamValue = arg.Value,
+                    UpdateParamValue = false // Default to not updating, user must check the box
+                }).ToArray()
             }
         };
         UpdateResult = null;

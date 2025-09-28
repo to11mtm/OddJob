@@ -75,7 +75,7 @@ public class OddJobRemotingHandler
             {
                 ExecutionTime = q.ExecutionTime.ToString(),
                 JobArgs = q.JobArgs.Select(r => new JobParameterDto()
-                { Ordinal = r.Ordinal, Name = r.Name, Type = r.TypeName, Value = r.Value }).ToArray(),
+                { Ordinal = r.Ordinal, Name = r.Name, Type = r.TypeName, Value = r.Value, ArgType = r.MethodArgTypeName}).ToArray(),
                 JobId = q.JobId,
                 MethodGenericTypes = q.MethodGenericTypes.ToArray(),
                 MethodName = q.MethodName,
@@ -166,6 +166,11 @@ public class OddJobRemotingHandler
             if (updateForParam.UpdateParamValue == true)
             {
                 updateDict.Add(q => q.SerializedValue, updateForParam.NewParamValue);
+            }
+
+            if (updateForParam.UpdateArgTypeName == true)
+            {
+                updateDict.Add(q=>q.MethodArgType, updateForParam.NewArgTypeNameValue);
             }
 
             return new KeyValuePair<int, Dictionary<Expression<Func<SqlCommonOddJobParamMetaData, object>>, object>>(
