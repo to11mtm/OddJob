@@ -411,6 +411,51 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
                     });
             return finalSet;
         }
+        
+        protected async Task<IEnumerable<SerializableOddJob>> ExecuteSerializableJoinQueryAsync(IQueryable<SqlCommonDbOddJobMetaData> jobWithParamQuery, DataConnection conn)
+        {
+            var newQuery = jobWithParamQuery.LeftJoin(ParamTable(conn)
+                , (job, param) => job.JobGuid == param.JobGuid
+                , (job, param) => new SqlQueueRowSet() {MetaData = job, ParamData = param}
+            ).LeftJoin(MethodGenericParameterTable(conn)
+                , (job_param, jobGeneric) => job_param.MetaData.JobGuid == jobGeneric.JobGuid
+                , (job_param, jobGeneric) => new {MetaData = job_param.MetaData, ParamData = job_param.ParamData, JobMethodGenericData = jobGeneric});
+            var resultSet = await newQuery.ToListAsync();
+            var finalSet = resultSet.GroupBy(q => q.MetaData.JobGuid)
+                .Select(group =>
+                    new SerializableOddJob()
+                    {
+                        JobId = group.Key,
+                        MethodName = group.First().MetaData.MethodName,
+                        TypeExecutedOn = group.First().MetaData.TypeExecutedOn,
+                        Status = group.First().MetaData.Status,
+                        ExecutionTime = group.First().MetaData.DoNotExecuteBefore,
+                        QueueName = group.First().MetaData.QueueName,
+                        CreatedAt = group.First().MetaData.CreatedDate,
+                        JobArgs = group.Where(r=>r.ParamData!=null)
+                            .OrderBy(p => p.ParamData.ParamOrdinal) //Order by for Reader paranoia
+                            .Select(param => param.ParamData)
+                            .Where(s => s.SerializedType != null)
+                            .GroupBy(param => param.ParamOrdinal)
+                            .Select(s => new OddJobSerializedParameter()
+                            {
+                                Ordinal = s.FirstOrDefault().ParamOrdinal,
+                                Name = s.FirstOrDefault().ParameterName,
+                                Value = s.FirstOrDefault().SerializedValue,
+                                TypeName    = s.FirstOrDefault().SerializedType,
+                                MethodArgTypeName = s.FirstOrDefault().MethodArgType
+                            }).ToArray(),
+                        RetryParameters = new RetryParameters(group.First().MetaData.MaxRetries,
+                            TimeSpan.FromSeconds(group.First().MetaData.MinRetryWait),
+                            group.First().MetaData.RetryCount, group.First().MetaData.LastAttempt),
+                        MethodGenericTypes = group.Where(r=>r.JobMethodGenericData != null).OrderBy(q => q.JobMethodGenericData.ParamOrder) //Order by for reader paranoia.
+                            .Where(t => t.JobMethodGenericData.ParamTypeName != null)
+                            .Select(q => q.JobMethodGenericData)
+                            .GroupBy(q => q.ParamOrder)
+                            .Select(t => t.FirstOrDefault().ParamTypeName).ToArray()
+                    });
+            return finalSet;
+        }
 
         protected IEnumerable<SqlDbOddJob> ExecuteJoinQuery(IQueryable<SqlCommonDbOddJobMetaData> jobWithParamQuery, DataConnection conn)
         {

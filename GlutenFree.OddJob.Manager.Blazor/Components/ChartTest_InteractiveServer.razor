@@ -1,0 +1,33 @@
+﻿@page "/charttest"
+@rendermode InteractiveServer
+
+<h3>Minimal Chart Test (Ami-chan's Debug Mode, uwu!)</h3>
+
+<LineChart Config="TestConfig" Style="max-width:600px; margin-top:24px;" />
+
+@code {
+    private LineConfig TestConfig;
+
+    protected override void OnInitialized()
+    {
+        TestConfig = new LineConfig();
+        TestConfig.Options = new LineOptions
+        {
+            Responsive = true,
+            Title = new OptionsTitle { Display = true, Text = "Static Test Chart" }
+        };
+        foreach (var label in new[]{ "Mon", "Tue", "Wed", "Thu", "Fri" })
+        {
+            TestConfig.Data.Labels.Add(label);    
+        }
+        var data = new List<double> { 1, 3, 2, 5, 4 };
+        TestConfig.Data.Datasets.Add(new LineDataset<double>(data)
+        {
+            Label = "Test Data",
+            BackgroundColor = ColorUtil.FromDrawingColor(System.Drawing.Color.LightBlue),
+            BorderColor = ColorUtil.FromDrawingColor(System.Drawing.Color.Blue),
+            Fill = false
+        });
+    }
+}
+

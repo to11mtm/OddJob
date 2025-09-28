@@ -26,5 +26,6 @@ namespace GlutenFree.OddJob.Serializable
         public RetryParameters RetryParameters { get; set; }
         public DateTimeOffset? ExecutionTime { get; set; }
         public string QueueName { get; set; }
+        public DateTime? CreatedAt { get; set; }
     }
 }

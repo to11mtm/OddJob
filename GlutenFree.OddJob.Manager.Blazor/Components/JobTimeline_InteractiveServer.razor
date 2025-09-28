@@ -1,0 +1,145 @@
+﻿@page "/jobtimeline"
+@rendermode InteractiveServer
+@using GlutenFree.OddJob.Manager.Blazor.Controllers
+@using GlutenFree.OddJob.Manager.Blazor
+@using GlutenFree.OddJob.Manager.Blazor.Models
+@using System.Globalization
+
+<h3>Job Timeline (Ami-chan's ApexCharts Magic, uwu!)</h3>
+
+@if (IsLoading)
+{
+    <p>Loading... (Ami-chan is drawing the timeline, nyaa~!)</p>
+}
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div style="color: red;">@ErrorMessage</div>
+}
+<div>
+    <label>Queue Name:</label>
+    <select @bind="SelectedQueue">
+        <option value="">Please Select a Queue...</option>
+        @foreach (var q in QueueNames)
+        {
+            <option value="@q">@q</option>
+        }
+    </select>
+    <button @onclick="LoadTimelineData" disabled="@(string.IsNullOrEmpty(SelectedQueue))" style="margin-left: 12px;">Update Timeline</button>
+</div>
+@if (ApexSeriesData != null && ApexSeriesData.Count > 0)
+{
+    <ApexChart TItem="TimelineChartPoint" Title="@($"Job Timeline for '{@SelectedQueue}'")" Height="400" Width="900" Options="ApexChartOptions">
+        @foreach (var series in ApexSeriesData)
+        {
+            <ApexPointSeries TItem="TimelineChartPoint" Name="@series.Name" Items="@series.Data" XValue="@(pt => pt.X)" YValue="@(pt => pt.Y)" />
+        }
+        <ApexChartLegend Show="true" Position="LegendPosition.Top" />
+    </ApexChart>
+}
+@if (TimelineDebug != null)
+{
+    <div style="margin-top:24px; font-size:small; color:#888;">
+        <b>Debug Timeline Data:</b>
+        <ul>
+            @foreach (var pt in TimelineDebug.Points)
+            {
+                <li>@pt.TimeLabel: @string.Join(", ", pt.StatusCounts.Select(sc => $"{sc.Key}={sc.Value}"))</li>
+            }
+        </ul>
+    </div>
+}
+
+@code {
+    [Inject] OddJobRemotingHandler RemotingHandler { get; set; }
+
+    private List<string> QueueNames = new();
+    private string SelectedQueue;
+    private List<ApexSeriesWrapper> ApexSeriesData = new();
+    private ApexChartOptions<TimelineChartPoint> ApexChartOptions = new();
+    private JobTimelineResult TimelineDebug;
+    private bool IsLoading = false;
+    private string ErrorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadQueues();
+    }
+
+    private async Task LoadQueues()
+    {
+        try
+        {
+            var queueNames = await RemotingHandler.Handle(new QueueNameListRequest());
+            QueueNames = queueNames?.ToList() ?? new List<string>();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to load queues: {ex.Message}";
+        }
+    }
+
+    private async Task LoadTimelineData()
+    {
+        if (string.IsNullOrEmpty(SelectedQueue))
+        {
+            ApexSeriesData = new();
+            ApexChartOptions = new();
+            TimelineDebug = null;
+            return;
+        }
+        IsLoading = true;
+        ErrorMessage = null;
+        StateHasChanged();
+        try
+        {
+            var timeline = await RemotingHandler.Handle(new JobTimelineRequest { QueueName = SelectedQueue });
+            TimelineDebug = timeline;
+            BuildApexChartData(timeline);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to load timeline: {ex.Message}";
+        }
+        IsLoading = false;
+        StateHasChanged();
+    }
+
+    private void BuildApexChartData(JobTimelineResult timeline)
+    {
+        ApexSeriesData = new();
+        if (timeline == null || timeline.Points == null || timeline.Points.Count == 0)
+            return;
+        var allStatuses = timeline.Points.SelectMany(p => p.StatusCounts.Keys).Distinct().OrderBy(x => x).ToList();
+        var categories = timeline.Points.Select(p => p.TimeLabel).ToList();
+        foreach (var status in allStatuses)
+        {
+            var data = timeline.Points.Select(p => new TimelineChartPoint
+            {
+                X = p.TimeLabel,
+                Y = p.StatusCounts.TryGetValue(status, out var v) ? v : 0
+            }).ToList();
+            ApexSeriesData.Add(new ApexSeriesWrapper
+            {
+                Name = status,
+                Data = data
+            });
+        }
+        ApexChartOptions = new ApexChartOptions<TimelineChartPoint>
+        {
+            Xaxis = new ApexCharts.XAxis
+            {
+                Categories = categories
+            }
+        };
+    }
+    public class ApexSeriesWrapper
+    {
+        public string Name { get; set; }
+        public List<TimelineChartPoint> Data { get; set; }
+    }
+    public class TimelineChartPoint
+    {
+        public string X { get; set; }
+        public int Y { get; set; }
+    }
+}

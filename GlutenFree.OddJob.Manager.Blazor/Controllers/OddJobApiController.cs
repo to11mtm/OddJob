@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using GlutenFree.OddJob.Manager.Blazor.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace GlutenFree.OddJob.Manager.Blazor.Controllers
 {
@@ -70,6 +71,20 @@ namespace GlutenFree.OddJob.Manager.Blazor.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, $"Error updating job: {ex.Message}");
+            }
+        }
+
+        [HttpPost("jobs/timeline")]
+        public async Task<ActionResult<JobTimelineResult>> GetJobTimeline([FromBody] JobTimelineRequest request)
+        {
+            try
+            {
+                var result = await _remotingHandler.Handle(request);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error retrieving job timeline: {ex.Message}");
             }
         }
     }

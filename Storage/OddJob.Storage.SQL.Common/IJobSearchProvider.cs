@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using GlutenFree.OddJob.Interfaces;
 using GlutenFree.OddJob.Serializable;
 using GlutenFree.OddJob.Storage.Sql.Common.DbDtos;
@@ -29,5 +30,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
             Expression<Func<SqlCommonDbOddJobMetaData, bool>> criteria);
         IEnumerable<IOddJobWithMetadata> GetJobsByCriteria(
             Expression<Func<SqlCommonDbOddJobMetaData, bool>> criteria);
+
+        Task<IEnumerable<SerializableOddJob>> GetSerializableJobsByCriteriaAsync(Expression<Func<SqlCommonDbOddJobMetaData, bool>> func);
     }
 }

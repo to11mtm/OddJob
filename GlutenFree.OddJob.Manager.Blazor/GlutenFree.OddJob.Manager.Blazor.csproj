@@ -15,6 +15,8 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Blazor-ApexCharts" Version="6.0.2" />
+      <PackageReference Include="ChartJs.Blazor.Fork" Version="2.0.2" />
       <PackageReference Include="FluentMigrator.Runner.SQLite" Version="3.2.1" />
       <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.9" />
     </ItemGroup>

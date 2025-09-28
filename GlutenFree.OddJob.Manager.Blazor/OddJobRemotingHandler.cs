@@ -1,6 +1,7 @@
 ﻿using System.Linq.Expressions;
 using GlutenFree.Linq2Db.Helpers;
 using GlutenFree.OddJob.Manager.Blazor.Controllers;
+using GlutenFree.OddJob.Manager.Blazor.Models;
 using GlutenFree.OddJob.Storage.Sql.Common;
 using GlutenFree.OddJob.Storage.Sql.Common.DbDtos;
 
@@ -153,6 +154,22 @@ public class OddJobRemotingHandler
             return Task.FromResult(result);
         }
 
+        public async Task<JobTimelineResult> Handle(JobTimelineRequest request)
+        {
+            var jobs = await _provider.GetSerializableJobsByCriteriaAsync(q => q.QueueName == request.QueueName);
+            var grouped = jobs
+                .GroupBy(j => j.CreatedAt.GetValueOrDefault(DateTime.MinValue).Date)
+                .OrderBy(g => g.Key)
+                .Select(g => new JobTimelinePoint
+                {
+                    TimeLabel = g.Key.ToString("yyyy-MM-dd"),
+                    StatusCounts = g.GroupBy(j => j.Status)
+                        .ToDictionary(sg => sg.Key ?? "(null)", sg => sg.Count())
+                })
+                .ToList();
+            return new JobTimelineResult { Points = grouped };
+        }
+
         private static KeyValuePair<int, Dictionary<Expression<Func<SqlCommonOddJobParamMetaData, object>>, object>>
             BuildParamUpdateSet(UpdateForParam updateForParam)
         {
@@ -181,3 +198,4 @@ public class OddJobRemotingHandler
 
         
     }
+
