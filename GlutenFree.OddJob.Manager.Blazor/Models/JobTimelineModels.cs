@@ -17,5 +17,15 @@
     {
         public string TimeLabel { get; set; }
         public Dictionary<string, int> StatusCounts { get; set; } = new Dictionary<string, int>();
+        // Ami-chan's kawaii breakdown for filtering, nyaa~
+        public List<JobTimelineTypeMethodBreakdown> TypeMethodBreakdowns { get; set; } = new List<JobTimelineTypeMethodBreakdown>();
+    }
+
+    // Kawaii breakdown class for type and method, uwu!
+    public class JobTimelineTypeMethodBreakdown
+    {
+        public string TypeExecutedOn { get; set; }
+        public string MethodName { get; set; }
+        public Dictionary<string, int> StatusCounts { get; set; } = new Dictionary<string, int>();
     }
 }
