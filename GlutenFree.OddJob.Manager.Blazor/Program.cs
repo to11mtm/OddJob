@@ -53,6 +53,8 @@ using (var s = app.Services.CreateScope())
     var sjqa = s.ServiceProvider.GetService<IJobQueueAdder>();
     sjqa.AddJob((SampleJob j) => j.DoThing(new SampleData() { Id = 1 }));
     sjqa.AddJob((SampleJob j) => j.DoThing(new SampleData() { Id = 2 }));
+    sjqa.AddJob((SampleJob2 j) => j.DoThing(new MoreSampleData() { Name = "Ami-chan" }));
+    sjqa.AddJob((SampleJob2 j) => j.DoOtherThing(new SampleData() { Id = 3 }, new MoreSampleData() { Name = "Nyaa~" }));
 }
 
 // Configure the HTTP request pipeline.

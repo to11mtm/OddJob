@@ -175,7 +175,17 @@ public class OddJobRemotingHandler
                 {
                     TimeLabel = g.Key.ToString("yyyy-MM-dd HH:mm"),
                     StatusCounts = g.GroupBy(j => j.Status)
-                        .ToDictionary(sg => sg.Key ?? "(null)", sg => sg.Count())
+                        .ToDictionary(sg => sg.Key ?? "(null)", sg => sg.Count()),
+                    TypeMethodBreakdowns = g
+                        .GroupBy(j => new { j.TypeExecutedOn, j.MethodName })
+                        .Select(tg => new JobTimelineTypeMethodBreakdown
+                        {
+                            TypeExecutedOn = tg.Key.TypeExecutedOn ?? "(null)",
+                            MethodName = tg.Key.MethodName ?? "(null)",
+                            StatusCounts = tg.GroupBy(j => j.Status)
+                                .ToDictionary(sg => sg.Key ?? "(null)", sg => sg.Count())
+                        })
+                        .ToList()
                 })
                 .ToList();
             return new JobTimelineResult { Points = grouped };
