@@ -24,6 +24,13 @@
             <option value="@q">@q</option>
         }
     </select>
+    <br />
+    <label>Start Date/Time:</label>
+    <input type="datetime-local" @bind="StartDate" />
+    <label style="margin-left:8px;">End Date/Time:</label>
+    <input type="datetime-local" @bind="EndDate" />
+    <label style="margin-left:8px;">Resolution (minutes):</label>
+    <input type="number" min="1" max="1440" @bind="ResolutionMinutes" style="width:60px;" />
     <button @onclick="LoadTimelineData" disabled="@(string.IsNullOrEmpty(SelectedQueue))" style="margin-left: 12px;">Update Timeline</button>
 </div>
 @if (ApexSeriesData != null && ApexSeriesData.Count > 0)
@@ -60,6 +67,11 @@
     private bool IsLoading = false;
     private string ErrorMessage;
 
+    // New fields for date/time and resolution, nyaa~
+    private DateTime StartDate { get; set; } = DateTime.Today.AddHours(-24); // Default: last 7 days
+    private DateTime EndDate { get; set; } = DateTime.Now;
+    private int ResolutionMinutes { get; set; } = 60; // Default: 1 hour
+
     protected override async Task OnInitializedAsync()
     {
         await LoadQueues();
@@ -92,7 +104,12 @@
         StateHasChanged();
         try
         {
-            var timeline = await RemotingHandler.Handle(new JobTimelineRequest { QueueName = SelectedQueue });
+            var timeline = await RemotingHandler.Handle(new JobTimelineRequest {
+                QueueName = SelectedQueue,
+                Start = StartDate,
+                End = EndDate,
+                ResolutionMinutes = ResolutionMinutes
+            });
             TimelineDebug = timeline;
             BuildApexChartData(timeline);
         }

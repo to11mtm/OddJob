@@ -157,12 +157,23 @@ public class OddJobRemotingHandler
         public async Task<JobTimelineResult> Handle(JobTimelineRequest request)
         {
             var jobs = await _provider.GetSerializableJobsByCriteriaAsync(q => q.QueueName == request.QueueName);
-            var grouped = jobs
-                .GroupBy(j => j.CreatedAt.GetValueOrDefault(DateTime.MinValue).Date)
+            // Filter by date range
+            var filtered = jobs.Where(j =>
+                j.CreatedAt.HasValue &&
+                j.CreatedAt.Value >= request.Start &&
+                j.CreatedAt.Value <= request.End).ToList();
+            // Group by resolution bucket
+            var grouped = filtered
+                .GroupBy(j => {
+                    var created = j.CreatedAt.Value;
+                    var bucketMinutes = (int)((created - request.Start).TotalMinutes / request.ResolutionMinutes) * request.ResolutionMinutes;
+                    var bucketTime = request.Start.AddMinutes(bucketMinutes);
+                    return bucketTime;
+                })
                 .OrderBy(g => g.Key)
                 .Select(g => new JobTimelinePoint
                 {
-                    TimeLabel = g.Key.ToString("yyyy-MM-dd"),
+                    TimeLabel = g.Key.ToString("yyyy-MM-dd HH:mm"),
                     StatusCounts = g.GroupBy(j => j.Status)
                         .ToDictionary(sg => sg.Key ?? "(null)", sg => sg.Count())
                 })
@@ -198,4 +209,3 @@ public class OddJobRemotingHandler
 
         
     }
-
