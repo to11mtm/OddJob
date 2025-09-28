@@ -173,17 +173,27 @@
         SelectedTypeExecutedOn = null;
         SelectedMethodName = null;
     }
+    /// <summary>
+    /// Applies the selected type/method filter to the timeline chart, nyaa~!
+    /// </summary>
     private void ApplyTypeMethodFilter()
     {
         if (TimelineDebug != null)
             BuildApexChartData(TimelineDebug);
+        // CopilotNote: Force UI update so Ami-chan's chart redraws, uwu!
+        StateHasChanged();
     }
+    /// <summary>
+    /// Clears the type/method filter and resets the timeline chart, nyaa~!
+    /// </summary>
     private void ClearTypeMethodFilter()
     {
         SelectedTypeExecutedOn = null;
         SelectedMethodName = null;
         if (TimelineDebug != null)
             BuildApexChartData(TimelineDebug);
+        // CopilotNote: Force UI update so Ami-chan's chart redraws, uwu!
+        StateHasChanged();
     }
     private void BuildApexChartData(JobTimelineResult timeline)
     {
