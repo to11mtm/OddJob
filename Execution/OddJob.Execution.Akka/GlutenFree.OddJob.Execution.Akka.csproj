@@ -5,6 +5,7 @@
     <AssemblyName>GlutenFree.OddJob.Execution.Akka</AssemblyName>
     <Description>Basic Execution engine using Akka.NET for underlying Architecture.</Description>
     <PackageTags>job jobs jobscheduler scheduler oddjob task future later akka</PackageTags>
+      <LangVersion>9.0</LangVersion>
   </PropertyGroup>
 
       <ItemGroup>
