@@ -261,7 +261,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
         public virtual Guid AddJob<TJob>(Expression<Action<TJob>> jobExpression, RetryParameters retryParameters = null,
             DateTimeOffset? executionTime = null, string queueName = "default")
         {
-            var ser = SerializableJobCreator.CreateJobDefinition(jobExpression, retryParameters, executionTime,
+            var ser = SerializableJobCreator.CreateJobDefinitionImpl<TJob>(jobExpression, retryParameters, executionTime,
                 queueName);
             AddJob(ser);
             return ser.JobId;

@@ -114,7 +114,7 @@ namespace GlutenFree.OddJob.PerfTests
         {
             PerfTest_Execute(iters);
         }
-        public string PerfTest_Execute(int iters)
+        public async Task<string> PerfTest_Execute(int iters)
         {
             var sw1 = Stopwatch.StartNew();
             var myvalue = new ClassTest()
@@ -125,7 +125,7 @@ namespace GlutenFree.OddJob.PerfTests
                 new DefaultJobExecutor(new DefaultContainerFactory());
             for (int i = 0; i < iters; i++)
             {
-                executor.ExecuteJob(next);
+                await executor.ExecuteJobAsync(next);
             }
 
             sw1.Stop();

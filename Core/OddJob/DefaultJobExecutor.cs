@@ -277,52 +277,60 @@ namespace GlutenFree.OddJob
                 Expression.Lambda<Func<object, object[], Task<object>>>(call, instancePar, param).Compile());
         }
 
-        public static bool UseBuiltExpressions = true;
+        public static readonly bool UseBuiltExpressions = true;
 
         public async Task<IOddJobResult> ExecuteJobAsync(IOddJob expr)
         {
             //IsAbstract and IsSealed means we are dealing with a static class invocation and want NULL.
-            var instance = (expr.TypeExecutedOn.IsAbstract && expr.TypeExecutedOn.IsSealed)
-                    ? null
-                    : _containerFactory.CreateInstance(expr.TypeExecutedOn)
-                ;
-            MethodInfo method = null;
-
-            method = MethodInfoHelper.GetMethodInfoForExpr(expr);
-
-            //var method = expr.TypeExecutedOn.GetMethod(expr.MethodName, expr.JobArgs.Select(q=>q.Value.GetType()).ToArray());
-
-            var args = expr.JobArgs;
-            object result = null;
+            object instance = null;
             try
             {
 
+                instance = (expr.TypeExecutedOn.IsAbstract && expr.TypeExecutedOn.IsSealed)
+                        ? null
+                        : _containerFactory.CreateInstance(expr.TypeExecutedOn);
+                MethodInfo method = null;
 
-                if (UseBuiltExpressions)
+                method = MethodInfoHelper.GetMethodInfoForExpr(expr);
+
+                //var method = expr.TypeExecutedOn.GetMethod(expr.MethodName, expr.JobArgs.Select(q=>q.Value.GetType()).ToArray());
+
+                var args = expr.JobArgs;
+                object result = null;
+                try
                 {
-                    var mc = ExecutionCacheContainer
-                        .GetContainer(expr.TypeExecutedOn)
-                        .GetOrAdd(method.GetHashCode(), (mi) => CreateExpr(method));
-                    result = await mc.func(instance, GetValues(args));
 
+
+                    if (UseBuiltExpressions)
+                    {
+                        var mc = ExecutionCacheContainer
+                            .GetContainer(expr.TypeExecutedOn)
+                            .GetOrAdd(method.GetHashCode(), (mi) => CreateExpr(method));
+                        result = await mc.func(instance, GetValues(args));
+
+                    }
+                    else
+                    {
+                        result = method.Invoke(instance, GetValues(args));
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    result = method.Invoke(instance, GetValues(args));
+                    //TODO: Log
+                    throw;
                 }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
-
-            _containerFactory.Release(instance);
-            //Todo: Cache return type cleaning based on the MethodInfo.
-            var returnType = CleanMethodReturnTypeForAsyncCases(method);
+                
+                // Todo: Cache return type cleaning based on the MethodInfo.
+                var returnType = CleanMethodReturnTypeForAsyncCases(method);
                 return new OddJobResult() { Result = result, ReturnType = returnType.cleanedType };
-            
-            
+            }
+            finally
+            {
+                if (instance != null)
+                {
+                    _containerFactory.Release(instance);
+                }
+            }
         }
 
         private static (bool isAsync, Type cleanedType) CleanMethodReturnTypeForAsyncCases(MethodInfo method)
@@ -343,7 +351,7 @@ namespace GlutenFree.OddJob
             }
         }
 
-        public IOddJobResult ExecuteJob(IOddJob expr)
+        private IOddJobResult ExecuteJob(IOddJob expr)
         {
             //IsAbstract and IsSealed means we are dealing with a static class invocation and want NULL.
             var instance = (expr.TypeExecutedOn.IsAbstract && expr.TypeExecutedOn.IsSealed)
@@ -381,7 +389,6 @@ namespace GlutenFree.OddJob
             }
         }
 
-        //private ArrayPool<object> arrayPool = new ArrayPool<object>
         private static object[] GetValues(OddJobParameter[] args)
         {
             var objArr = new object[args.Length];
