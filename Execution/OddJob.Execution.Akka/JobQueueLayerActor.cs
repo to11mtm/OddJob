@@ -47,8 +47,7 @@ namespace GlutenFree.OddJob.Execution.Akka
 
         private async Task MarkJobInRetryAndIncrementAsync(MarkJobInRetryAndIncrement mjirai)
         {
-            
-          await  jobQueue.MarkJobInRetryAndIncrementAsync(mjirai.JobId, mjirai.LastAttempt);
+            await jobQueue.MarkJobInRetryAndIncrementAsync(mjirai.JobId, mjirai.LastAttempt);
         }
 
         private async Task MarkJobSuccessAsync(MarkJobSuccess mjs)

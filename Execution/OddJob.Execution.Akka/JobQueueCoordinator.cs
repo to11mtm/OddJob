@@ -52,7 +52,6 @@ namespace GlutenFree.OddJob.Execution.Akka
         {
             try
             {
-                
                 if (message is SetJobQueueConfiguration configuration)
                 {
                     SetConfiguration(configuration);
