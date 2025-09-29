@@ -13,7 +13,7 @@ namespace GlutenFree.OddJob.Execution.Akka
     /// <summary>
     /// A Job Queue Coordinator For handling jobs and their logic.
     /// </summary>
-    public class JobQueueCoordinator : ActorBase
+    public partial class JobQueueCoordinator : ActorBase
     {
         protected List<IActorRef> PluginRefs { get; set; }
         protected int PluginCount { get;  set; }
@@ -52,53 +52,52 @@ namespace GlutenFree.OddJob.Execution.Akka
         {
             try
             {
-
-            
-            if (message is SetJobQueueConfiguration)
-            {
-                SetConfiguration(message as SetJobQueueConfiguration);
-            }
-            else if (message is ShutDownQueues)
-            {
-                StartQueueShutdown();
-            }
-            else if (message is QueueShutDown)
-            {
-                HandleQueueShutdownMessage();
-            }
-            else if (message is GetSpecificJob && !ShuttingDown)
-            {
-                HandleSpecificJob(message);
-            }
-            else if ((message is JobSweep || message is SilentRetrySweep) && !ShuttingDown)
-            {
-                HandleSweep(message);
-            }
-            else if (message is JobSweepResponse)
-            {
-                HandleJobSet((JobSweepResponse)message);
-            }
-            else if (message is ExecuteJobCommand jobCommand)
-            {
-                HandleExecuteJobItem(jobCommand.Job);
-            }
-            else if (message is JobSuceeded)
-            {
-                HandleJobSuccess((JobSuceeded)message);
-            }
-            else if (message is JobFailed)
-            {
-                HandleJobFailed((JobFailed)message);
-            }
-            else if (message is PluginRecoveryRequest)
-            {
-                Context.Sender.Tell(message);
-            }
-            else
-            {
-                return OnCustomMessage(message);
-            }
-            return true;
+                
+                if (message is SetJobQueueConfiguration configuration)
+                {
+                    SetConfiguration(configuration);
+                }
+                else if (message is ShutDownQueues)
+                {
+                    StartQueueShutdown();
+                }
+                else if (message is QueueShutDown)
+                {
+                    HandleQueueShutdownMessage();
+                }
+                else if (message is GetSpecificJob && !ShuttingDown)
+                {
+                    HandleSpecificJob(message);
+                }
+                else if ((message is JobSweep || message is SilentRetrySweep) && !ShuttingDown)
+                {
+                    HandleSweep(message);
+                }
+                else if (message is JobSweepResponse)
+                {
+                    HandleJobSet((JobSweepResponse)message);
+                }
+                else if (message is ExecuteJobCommand jobCommand)
+                {
+                    HandleExecuteJobItem(jobCommand.Job);
+                }
+                else if (message is JobSuceeded)
+                {
+                    HandleJobSuccess((JobSuceeded)message);
+                }
+                else if (message is JobFailed)
+                {
+                    HandleJobFailed((JobFailed)message);
+                }
+                else if (message is PluginRecoveryRequest)
+                {
+                    Context.Sender.Tell(message);
+                }
+                else
+                {
+                    return OnCustomMessage(message);
+                }
+                return true;
             }
             catch (Exception e)
             {
@@ -276,13 +275,10 @@ namespace GlutenFree.OddJob.Execution.Akka
                 PluginShutdownCount = PluginShutdownCount + 1;
             }
 
-            if (ShutdownCount >= WorkerCount + WriterCount + 1)
+            if (ShutdownCount >= WorkerCount + WriterCount + 1 && PluginCount == PluginShutdownCount)
             {
-                if (PluginCount == PluginShutdownCount)
-                {
-                    //Tell our requester that we are truly done.
-                    ShutdownRequester.Tell(new QueueShutDown());
-                }
+                //Tell our requester that we are truly done.
+                ShutdownRequester.Tell(new QueueShutDown());
             }
         }
 
@@ -365,83 +361,6 @@ namespace GlutenFree.OddJob.Execution.Akka
             WorkerRouterRef.Tell(new ExecuteJobRequest(job));
             JobQueueWritersRef.Tell(new MarkJobInProgress(job.JobId));
             PendingItems = PendingItems + 1;
-        }
-
-        /// <summary>
-        /// An Extension point to allow special handling of logic here.
-        /// </summary>
-        /// <param name="message"></param>
-        /// <returns></returns>
-        public virtual bool OnCustomMessage(object message)
-        {
-            return false;
-        }
-
-        /// <summary>
-        /// Method to handle Missing Types on a Job.
-        /// If a Job's type is missing, it will be marked in an error state (to prevent queue backup)
-        /// But this method will let you specify a specific sort of warning/handler for the issue.
-        /// </summary>
-        /// <param name="job">The job missing a type.</param>
-        protected virtual void OnJobTypeMissing(IOddJobWithMetadata job)
-        {
-            
-        }
-
-        /// <summary>
-        /// Method to handle Queue Read Failures(e.x. Timeouts).
-        /// This can be used to do things like send email, perhaps trigger a Queue shutdown, etc.
-        /// </summary>
-        /// <param name="requestGuid"></param>
-        /// <param name="ex">The Queue Failure recieved.</param>
-        /// <param name="expirationTime"></param>
-        protected virtual void OnQueueTimeout(Guid requestGuid,
-            DateTime expirationTime)
-        {
-
-        }
-        /// <summary>
-        /// Method to handle action taken when a job has suceeded.
-        /// This method is called after the success has been marked in storage.
-        /// </summary>
-        /// <param name="msg">the Job success</param>
-        protected virtual void OnJobSuccess(JobSuceeded msg)
-        {
-
-        }
-
-
-        /// <summary>
-        /// Method to handle action taken when a job is put in a Failed state.
-        /// This method is called after the retry has been marked in storage.
-        /// </summary>
-        /// <param name="msg">the Job failure message</param>
-        protected virtual void OnJobFailed(JobFailed msg)
-        {
-
-        }
-        /// <summary>
-        /// Method to handle action taken when a job is put in retry.
-        /// This method is called after the retry has been marked in storage.
-        /// </summary>
-        /// <param name="msg">the Job retry message</param>
-        protected virtual void OnJobRetry(JobFailed msg)
-        {
-
-        }
-
-        /// <summary>
-        /// Method to handle Job Queue Saturation;
-        /// As an example, if you want an Email or other notification sent when the queue is saturated. 
-        /// The time saturation started as well as the number of missed pulses are provided for use of threshholds.
-        /// e.x. Send an email when you have had a saturated queue for more than 10 minutes, or have missed more than 10 pulses.
-        /// </summary>
-        /// <param name="saturationTime">The time Saturation initially started</param>
-        /// <param name="saturationMissedPulseCount">The number of pulses that have been missed due to saturation.</param>
-        /// <param name="queueLifeSaturationPulseCount">The total number of pulses that have been missed over the life of the queue.</param>
-        protected virtual void OnJobQueueSaturated(DateTime saturationTime, int saturationMissedPulseCount, long queueLifeSaturationPulseCount)
-        {
-
         }
     }
 }
