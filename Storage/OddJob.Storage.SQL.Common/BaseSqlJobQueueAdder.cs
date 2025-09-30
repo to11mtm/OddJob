@@ -203,6 +203,7 @@ namespace GlutenFree.OddJob.Storage.Sql.Common
                     .Value(r => r.ParamOrdinal, paramData[0].ParamOrdinal)
                     .Value(r => r.SerializedType, paramData[0].SerializedType)
                     .Value(r => r.SerializedValue, paramData[0].SerializedValue)
+                    .Value(r=>r.MethodArgType, paramData[0].MethodArgType)
                     .InsertAsync(cancellationToken);
             }
 
