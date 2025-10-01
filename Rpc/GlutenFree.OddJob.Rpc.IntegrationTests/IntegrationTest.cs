@@ -147,7 +147,7 @@ namespace OddJob.Rpc.IntegrationTests
             container.Register<RpcJobCreationServer>();
             container.Register<StreamingJobCreationServer<TimedCache<Guid>>>();
             container.Register(()=> new StreamingJobCreationServerOptions(4,4));
-            await StreamingSample(container, 2000,5);
+            await StreamingSample(container, 2000,1);
             
             //RPCSample(container);
         }
