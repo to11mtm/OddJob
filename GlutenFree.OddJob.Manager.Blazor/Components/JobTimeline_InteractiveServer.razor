@@ -1,0 +1,294 @@
+﻿@page "/jobtimeline"
+@rendermode InteractiveServer
+@using GlutenFree.OddJob.Manager.Blazor.Controllers
+@using GlutenFree.OddJob.Manager.Blazor
+@using GlutenFree.OddJob.Manager.Blazor.Models
+@using System.Globalization
+
+<h3>Job Timeline (Ami-chan's ApexCharts Magic, uwu!)</h3>
+
+@if (IsLoading)
+{
+    <p>Loading... (Ami-chan is drawing the timeline, nyaa~!)</p>
+}
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <div style="color: red;">@ErrorMessage</div>
+}
+<div>
+    <label>Queue Name:</label>
+    <select @bind="SelectedQueue">
+        <option value="">Please Select a Queue...</option>
+        @foreach (var q in QueueNames)
+        {
+            <option value="@q">@q</option>
+        }
+    </select>
+    <br />
+    <label>Start Date/Time:</label>
+    <input type="datetime-local" @bind="StartDate" />
+    <label style="margin-left:8px;">End Date/Time:</label>
+    <input type="datetime-local" @bind="EndDate" />
+    <label style="margin-left:8px;">Resolution (minutes):</label>
+    <input type="number" min="1" max="1440" @bind="ResolutionMinutes" style="width:60px;" />
+    <button @onclick="LoadTimelineData" disabled="@(string.IsNullOrEmpty(SelectedQueue))" style="margin-left: 12px;">Update Timeline</button>
+</div>
+@if (AvailableTypes?.Count > 0)
+{
+    <div style="margin-top:8px;">
+        <label>TypeExecutedOn:</label>
+        <select @bind="SelectedTypeExecutedOn">
+            <option value="">All Types</option>
+            @foreach (var t in AvailableTypes)
+            {
+                <option value="@t">@t</option>
+            }
+        </select>
+        <label style="margin-left:8px;">MethodName:</label>
+        <select @bind="SelectedMethodName">
+            <option value="">All Methods</option>
+            @foreach (var m in AvailableMethods)
+            {
+                <option value="@m">@m</option>
+            }
+        </select>
+        <button @onclick="ApplyTypeMethodFilter" style="margin-left: 12px;">Apply Filter</button>
+        <button @onclick="ClearTypeMethodFilter" style="margin-left: 4px;">Clear</button>
+    </div>
+}
+@if (ApexSeriesData != null && ApexSeriesData.Count > 0)
+{
+    <ApexChart @ref="ChartRef" TItem="TimelineChartPoint" Title="@($"Job Timeline for '{@SelectedQueue}'")" Height="400" Width="900" Options="ApexChartOptions">
+        @foreach (var series in ApexSeriesData)
+        {
+            <ApexPointSeries TItem="TimelineChartPoint" Name="@series.Name" Items="@series.Data" XValue="@(pt => pt.X)" YValue="@(pt => pt.Y)" />
+        }
+        <ApexChartLegend Show="true" Position="LegendPosition.Top" />
+    </ApexChart>
+}
+@if (TimelineDebug != null)
+{
+    <div style="margin-top:24px; font-size:small; color:#888;">
+        <b>Debug Timeline Data:</b>
+        <ul>
+            @foreach (var pt in TimelineDebug.Points)
+            {
+                <li>@pt.TimeLabel: @string.Join(", ", pt.StatusCounts.Select(sc => $"{sc.Key}={sc.Value}"))</li>
+            }
+        </ul>
+    </div>
+}
+
+@code {
+    [Inject] OddJobRemotingHandler RemotingHandler { get; set; }
+
+    private List<string> QueueNames = new();
+    private string SelectedQueue;
+    private List<ApexSeriesWrapper> ApexSeriesData = new();
+    private ApexChartOptions<TimelineChartPoint> ApexChartOptions = new();
+    private JobTimelineResult TimelineDebug;
+    private bool IsLoading = false;
+    private string ErrorMessage;
+
+    // New fields for date/time and resolution, nyaa~
+    private DateTime StartDate { get; set; } = DateTime.Today.AddHours(-24); // Default: last 7 days
+    private DateTime EndDate { get; set; } = DateTime.Now;
+    private int ResolutionMinutes { get; set; } = 60; // Default: 1 hour
+
+    private List<string> AvailableTypes = new();
+    private List<string> AvailableMethods = new();
+    private string SelectedTypeExecutedOn;
+    private string SelectedMethodName;
+
+    private ApexChart<TimelineChartPoint> ChartRef;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadQueues();
+    }
+
+    private async Task LoadQueues()
+    {
+        try
+        {
+            var queueNames = await RemotingHandler.Handle(new QueueNameListRequest());
+            QueueNames = queueNames?.ToList() ?? new List<string>();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to load queues: {ex.Message}";
+        }
+    }
+
+    private async Task LoadTimelineData()
+    {
+        if (string.IsNullOrEmpty(SelectedQueue))
+        {
+            ApexSeriesData = new();
+            ApexChartOptions = new();
+            TimelineDebug = null;
+            return;
+        }
+        IsLoading = true;
+        ErrorMessage = null;
+        StateHasChanged();
+        try
+        {
+            var timeline = await RemotingHandler.Handle(new JobTimelineRequest {
+                QueueName = SelectedQueue,
+                Start = StartDate,
+                End = EndDate,
+                ResolutionMinutes = ResolutionMinutes
+            });
+            TimelineDebug = timeline;
+            ExtractTypeMethodOptions(timeline);
+            StateHasChanged();
+            BuildApexChartData(timeline);
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to load timeline: {ex.Message}";
+        }
+        IsLoading = false;
+        StateHasChanged();
+    }
+    private void ExtractTypeMethodOptions(JobTimelineResult timeline)
+    {
+        var types = new HashSet<string>();
+        var methods = new HashSet<string>();
+        if (timeline?.Points != null)
+        {
+            foreach (var pt in timeline.Points)
+            {
+                if (pt.TypeMethodBreakdowns != null)
+                {
+                    foreach (var b in pt.TypeMethodBreakdowns)
+                    {
+                        if (!string.IsNullOrEmpty(b.TypeExecutedOn)) types.Add(b.TypeExecutedOn);
+                        if (!string.IsNullOrEmpty(b.MethodName)) methods.Add(b.MethodName);
+                    }
+                }
+            }
+        }
+        AvailableTypes = types.OrderBy(x => x).ToList();
+        AvailableMethods = methods.OrderBy(x => x).ToList();
+        SelectedTypeExecutedOn = null;
+        SelectedMethodName = null;
+    }
+    /// <summary>
+    /// Applies the selected type/method filter to the timeline chart, nyaa~!
+    /// </summary>
+    private async Task ApplyTypeMethodFilter()
+    {
+        if (TimelineDebug != null)
+            BuildApexChartData(TimelineDebug);
+        StateHasChanged();
+        if (ChartRef != null)
+            await ChartRef.UpdateSeriesAsync();
+    }
+    /// <summary>
+    /// Clears the type/method filter and resets the timeline chart, nyaa~!
+    /// </summary>
+    private async Task ClearTypeMethodFilter()
+    {
+        SelectedTypeExecutedOn = null;
+        SelectedMethodName = null;
+        if (TimelineDebug != null)
+            BuildApexChartData(TimelineDebug);
+        StateHasChanged();
+        if (ChartRef != null)
+            await ChartRef.UpdateSeriesAsync();
+    }
+    private void BuildApexChartData(JobTimelineResult timeline)
+    {
+        // CopilotNote: Always assign new list/object to trigger chart update, uwu!
+        var newSeriesData = new List<ApexSeriesWrapper>();
+        ApexChartOptions = new ApexChartOptions<TimelineChartPoint>(); // Force rebind for chart options, nyaa~!
+        if (timeline == null || timeline.Points == null || timeline.Points.Count == 0)
+        {
+            ApexSeriesData = newSeriesData;
+            return;
+        }
+        if (!string.IsNullOrEmpty(SelectedTypeExecutedOn) || !string.IsNullOrEmpty(SelectedMethodName))
+        {
+            var allStatuses = new HashSet<string>();
+            var categories = new List<string>();
+            var pointsByTime = new Dictionary<string, Dictionary<string, int>>();
+            foreach (var pt in timeline.Points)
+            {
+                categories.Add(pt.TimeLabel);
+                var filteredBreakdowns = pt.TypeMethodBreakdowns
+                    .Where(b => (string.IsNullOrEmpty(SelectedTypeExecutedOn) || b.TypeExecutedOn == SelectedTypeExecutedOn)
+                             && (string.IsNullOrEmpty(SelectedMethodName) || b.MethodName == SelectedMethodName))
+                    .ToList();
+                var statusCounts = new Dictionary<string, int>();
+                foreach (var b in filteredBreakdowns)
+                {
+                    foreach (var kv in b.StatusCounts)
+                    {
+                        if (!statusCounts.ContainsKey(kv.Key)) statusCounts[kv.Key] = 0;
+                        statusCounts[kv.Key] += kv.Value;
+                        allStatuses.Add(kv.Key);
+                    }
+                }
+                pointsByTime[pt.TimeLabel] = statusCounts;
+            }
+            foreach (var status in allStatuses.OrderBy(x => x))
+            {
+                var data = categories.Select(cat => new TimelineChartPoint
+                {
+                    X = cat,
+                    Y = pointsByTime[cat].TryGetValue(status, out var v) ? v : 0
+                }).ToList();
+                newSeriesData.Add(new ApexSeriesWrapper
+                {
+                    Name = status,
+                    Data = data
+                });
+            }
+            ApexChartOptions = new ApexChartOptions<TimelineChartPoint>
+            {
+                Xaxis = new ApexCharts.XAxis
+                {
+                    Categories = categories
+                }
+            };
+        }
+        else
+        {
+            var allStatuses = timeline.Points.SelectMany(p => p.StatusCounts.Keys).Distinct().OrderBy(x => x).ToList();
+            var categories = timeline.Points.Select(p => p.TimeLabel).ToList();
+            foreach (var status in allStatuses)
+            {
+                var data = timeline.Points.Select(p => new TimelineChartPoint
+                {
+                    X = p.TimeLabel,
+                    Y = p.StatusCounts.TryGetValue(status, out var v) ? v : 0
+                }).ToList();
+                newSeriesData.Add(new ApexSeriesWrapper
+                {
+                    Name = status,
+                    Data = data
+                });
+            }
+            ApexChartOptions = new ApexChartOptions<TimelineChartPoint>
+            {
+                Xaxis = new ApexCharts.XAxis
+                {
+                    Categories = categories
+                }
+            };
+        }
+        ApexSeriesData = newSeriesData;
+    }
+    public class ApexSeriesWrapper
+    {
+        public string Name { get; set; }
+        public List<TimelineChartPoint> Data { get; set; }
+    }
+    public class TimelineChartPoint
+    {
+        public string X { get; set; }
+        public int Y { get; set; }
+    }
+}

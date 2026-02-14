@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+        
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Akka" Version="1.5.49" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\execution\OddJob.Execution.Akka\GlutenFree.OddJob.Execution.Akka.csproj" />
+      <ProjectReference Include="..\GlutenFree.OddJob.Rpc.Client\GlutenFree.OddJob.Rpc.Client.csproj" />
+      <ProjectReference Include="..\GlutenFree.OddJob.Rpc\GlutenFree.OddJob.Rpc.csproj" />
+    </ItemGroup>
+
+</Project>

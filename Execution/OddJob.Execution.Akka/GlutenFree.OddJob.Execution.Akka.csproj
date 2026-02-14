@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+    <AssemblyName>GlutenFree.OddJob.Execution.Akka</AssemblyName>
+    <Description>Basic Execution engine using Akka.NET for underlying Architecture.</Description>
+    <PackageTags>job jobs jobscheduler scheduler oddjob task future later akka</PackageTags>
+      <LangVersion>9.0</LangVersion>
+  </PropertyGroup>
+
+      <ItemGroup>
+        <PackageReference Include="Akka" Version="1.5.49" />
+        <PackageReference Include="Akka.DI.Core" Version="1.4.51" />
+      </ItemGroup>
+
+      <ItemGroup>
+        <ProjectReference Include="..\..\core\OddJob\GlutenFree.OddJob.csproj" />
+      </ItemGroup>
+
+      <ItemGroup>
+        <Folder Include="Properties\" />
+      </ItemGroup>
+
+</Project>

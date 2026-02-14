@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+        
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MagicOnion" Version="3.0.9" />
+      <PackageReference Include="SimpleInjector" Version="4.9.0" />
+    </ItemGroup>
+
+</Project>

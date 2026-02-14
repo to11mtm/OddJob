@@ -1,0 +1,22 @@
+﻿@page "/"
+@using GlutenFree.OddJob.Manager.Blazor.Components
+@using Microsoft.AspNetCore.Components.Web
+@namespace GlutenFree.OddJob.Manager.Blazor.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>OddJob Manager</title>
+    <base href="~\/" />
+    <link rel="stylesheet" href="~/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/app.css" />
+    <link rel="stylesheet" href="~/GlutenFree.OddJob.Manager.Blazor.styles.css" />
+    <link rel="icon" type="image/png" href="~/favicon.png" />
+    <component type="typeof(HeadOutlet)" render-mode="Server" />
+</head>
+<body>
+<component type="typeof(App)" render-mode="ServerPrerendered" />
+    <script src="_framework/blazor.server.js"></script>
+</body>
+</html>

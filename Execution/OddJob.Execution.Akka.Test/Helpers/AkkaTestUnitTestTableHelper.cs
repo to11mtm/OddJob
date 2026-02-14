@@ -1,0 +1,85 @@
+﻿using System.Data;
+using System.Runtime.CompilerServices;
+using GlutenFree.OddJob.Storage.Sql.Common;
+using GlutenFree.OddJob.Storage.Sql.SQLite;
+using Microsoft.Data.Sqlite;
+
+namespace GlutenFree.OddJob.Execution.Akka.Test
+{
+    public static class AkkaTestUnitTestTableHelper
+    {
+        public static readonly string connString = new SqliteConnectionStringBuilder()
+            { DataSource = "memdb", Cache = SqliteCacheMode.Shared, Mode = SqliteOpenMode.Memory }.ToString();
+        /// <summary>
+        /// This is here because SQLite will only hold In-memory DBs as long as ONE connection is open. so we just open one here and keep it around for appdomain life.
+        /// </summary>
+        public static readonly SqliteConnection heldConnection;
+
+        public static bool TablesCreated = false;
+        static AkkaTestUnitTestTableHelper()
+        {
+            heldConnection = new SqliteConnection(connString);
+        }
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public static void EnsureTablesExist()
+        {
+            if (TablesCreated)
+            {
+                return;
+                ;
+            }
+            if (heldConnection.State != ConnectionState.Open)
+            {
+                heldConnection.Open();
+            }
+
+            using (var db = new SqliteConnection(connString))
+            {
+                db.Open();
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandText = string.Format(@"DROP TABLE IF EXISTS {0}; ", SqlDbJobQueueDefaultTableConfiguration.DefaultQueueTableName);
+                    cmd.ExecuteNonQuery();
+                }
+
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandText = string.Format(@"DROP TABLE IF EXISTS {0}; ", SqlDbJobQueueDefaultTableConfiguration.DefaultQueueParamTableName);
+                    cmd.ExecuteNonQuery();
+                }
+
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandText = string.Format(@"DROP TABLE IF EXISTS {0}; ",
+                        SqlDbJobQueueDefaultTableConfiguration.DefaultJobMethodGenericParamTableName);
+                }
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandText = SQLiteDbJobTableHelper.JobQueueParamTableCreateScript(
+                        new SqlDbJobQueueDefaultTableConfiguration());
+                    cmd.ExecuteNonQuery();
+                }
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandText = SQLiteDbJobTableHelper.JobTableCreateScript(
+                        new SqlDbJobQueueDefaultTableConfiguration());
+                    cmd.ExecuteNonQuery();
+                }
+
+                using (var cmd = db.CreateCommand())
+                {
+                    cmd.CommandText =
+                        SQLiteDbJobTableHelper.JobQueueJobMethodGenericParamTableCreateScript(
+                            new SqlDbJobQueueDefaultTableConfiguration());
+                    cmd.ExecuteNonQuery();
+                }
+            }
+
+            TablesCreated = true;
+
+
+
+
+        }
+    }
+}

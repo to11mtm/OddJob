@@ -328,9 +328,8 @@ ASALocalRun/
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
 *.nupkg
-GlutenFree.OddJob.Manager.Presentation.WS/Scripts/WebSharper/
-GlutenFree.OddJob.Manager.Presentation.WS-AspnetCore/WebSharper.UI.Templates/
-GlutenFree.OddJob.Manager.Presentation.WS-AspnetCore/wwwroot/Scripts/WebSharper/
-GlutenFree.OddJob.Manager.WebSharper/Scripts/WebSharper/
-GlutenFree.OddJob.Manager.WebSharper/WebSharper.UI.Templates/
-GlutenFree.OddJob.Manager.Presentation.WS/Scripts/WebSharper/
+Manager/GlutenFree.OddJob.Manager.Presentation.WS/Scripts/WebSharper/
+Manager/GlutenFree.OddJob.Manager.Presentation.WS-AspnetCore/WebSharper.UI.Templates/
+Manager/GlutenFree.OddJob.Manager.Presentation.WS-AspnetCore/wwwroot/Scripts/WebSharper/
+Manager/GlutenFree.OddJob.Manager.WebSharper/Scripts/WebSharper/
+Manager/GlutenFree.OddJob.Manager.WebSharper/WebSharper.UI.Templates/
